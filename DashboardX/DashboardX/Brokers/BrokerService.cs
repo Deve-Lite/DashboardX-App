@@ -1,13 +1,17 @@
-﻿using DashboardX.Auth.Services;
+﻿using Blazored.LocalStorage;
 using DashboardXModels.Brokers;
+using Microsoft.AspNetCore.Components;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace DashboardX.Brokers;
 
-public class BrokerService : BaseService, IBrokerService
+public class BrokerService : AuthorizedBaseService, IBrokerService
 {
-    public BrokerService(HttpClient httpClient, IAuthorizationService authorizationService) : base(httpClient, authorizationService)
+    public BrokerService(HttpClient httpClient, 
+                         IAuthorizationService authorizationService, 
+                         NavigationManager navigationManager, 
+                         ILocalStorageService localStorage) : base(httpClient, authorizationService, navigationManager, localStorage)
     {
     }
 
@@ -16,15 +20,13 @@ public class BrokerService : BaseService, IBrokerService
         var request = new Request
         {
             Method = HttpMethod.Post,
-            Route = "api/brokers",
+            Route = "brokers",
             Data = broker
         };
 
         var response = await SendAuthorizedAsync<Broker>(request);
 
         broker.BrokerId = response.Data.BrokerId;
-        broker.CreatedAtTicks = response.Data.CreatedAtTicks;
-        broker.EditedAtTicks = response.Data.CreatedAtTicks;
 
         response.Data = broker;
 
@@ -36,7 +38,7 @@ public class BrokerService : BaseService, IBrokerService
         var request = new Request
         {
             Method = HttpMethod.Delete,
-            Route = $"api/brokers/{id}",
+            Route = $"brokers/{id}",
             Data = new Broker 
             { 
                 BrokerId = id
@@ -51,7 +53,7 @@ public class BrokerService : BaseService, IBrokerService
         var request = new Request
         {
             Method = HttpMethod.Get,
-            Route = $"api/brokers/{id}",
+            Route = $"brokers/{id}",
             Data = new Broker
             {
                 BrokerId = id
@@ -66,7 +68,7 @@ public class BrokerService : BaseService, IBrokerService
         var request = new Request
         {
             Method = HttpMethod.Post,
-            Route = "api/brokers"
+            Route = "brokers"
         };
 
         return await SendAuthorizedAsync<List<Broker>>(request);
@@ -77,7 +79,7 @@ public class BrokerService : BaseService, IBrokerService
         var request = new Request
         {
             Method = HttpMethod.Put,
-            Route = $"api/brokers{broker.BrokerId}",
+            Route = $"brokers{broker.BrokerId}",
             Data = broker
         };
 
@@ -86,9 +88,7 @@ public class BrokerService : BaseService, IBrokerService
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-        var response = await SendAuthorizedAsync<Broker>(request);
-
-        broker.EditedAtTicks = response.Data.EditedAtTicks;
+        var response = await SendAuthorizedAsync<Broker>(request, options);
 
         return response!;
     }

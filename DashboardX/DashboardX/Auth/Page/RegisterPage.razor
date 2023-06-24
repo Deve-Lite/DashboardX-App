@@ -1,0 +1,85 @@
+﻿@page "/auth/register"
+@using DashboardX.Helpers;
+@inject IAuthenticationService _authenticationService
+@inject NavigationManager _navigationManager
+@inject IJSRuntime _jsRuntime
+
+<div class="d-flex justify-content-center align-items-center vh-100">
+    <div class="p-4 max-width-lg bg-light">
+        <EditForm Model="RegisterData" OnValidSubmit="Register" style="max-width">
+            <DataAnnotationsValidator />
+
+            <div class="form-outline mb-4">
+                <label class="form-label" for="form2Example1">Email address</label>
+                <InputText @bind-Value="RegisterData.Email" id="email" placeholder="Email" class="form-control mb-1" />
+                <ValidationMessage For="(()=>RegisterData.Email)"></ValidationMessage>
+            </div>
+
+            <div class="form-outline mb-4">
+                <label class="form-label" for="form2Example1">Username</label>
+                <InputText @bind-Value="RegisterData.Username" id="username" placeholder="Username" class="form-control mb-1" />
+                <ValidationMessage For="(()=>RegisterData.Username)"></ValidationMessage>
+            </div>
+
+            <div class="form-outline mb-1">
+                <label class="form-label" for="form2Example2">Password</label>
+                <InputText @bind-Value="RegisterData.Password" type="password" placeholder="Password" id="password" class="form-control mb-1" />
+                <ValidationMessage For="(()=>RegisterData.Password)"></ValidationMessage>
+            </div>
+
+            <div class="form-outline mb-4">
+                <label class="form-label" for="form2Example2">Confirm Password</label>
+                <InputText @bind-Value="RegisterData.ConfirmPassword" type="password" placeholder="Password" id="confirmpassword" class="form-control mb-1" />
+                <ValidationMessage For="(()=>RegisterData.ConfirmPassword)"></ValidationMessage>
+            </div>
+
+
+            <!-- Submit button -->
+            <div class="d-flex justify-content-center">
+                <button type="button" class="btn btn-primary btn-block mb-4">Sign up</button>
+            </div>
+
+            @if (Errors.Count() > 0)
+            {
+                <div class="row">
+                    <div class="col">
+                        @foreach (var errorMessage in Errors)
+                        {
+                            <p class="text-danger">@errorMessage</p>
+                            <br />
+                        }
+
+                    </div>
+                </div>
+            }
+
+            <!-- Register buttons -->
+            <div class="text-center">
+                <p>Already a member? <a href="/auth/login">Login</a></p>
+            </div>
+
+        </EditForm>
+    </div>
+</div>
+
+@code 
+{
+    private RegisterData RegisterData { get; set; } = new RegisterData();
+
+    private IEnumerable<string> Errors { get; set; } = new List<string>();
+
+    public async Task Register()
+    {
+        var result = await _authenticationService.Register(RegisterData);
+
+        if (result.Success)
+        {
+            await _jsRuntime.Success();
+            _navigationManager.NavigateTo("/auth/login");
+        }
+        else
+        {
+            Errors = result.Errors;
+        }
+    }
+}

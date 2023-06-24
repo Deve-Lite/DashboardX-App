@@ -1,0 +1,117 @@
+@page "/auth/login"
+@page "/auth"
+@using DashboardX.Tokens;
+@inject IAuthenticationService _authenticationService
+@inject ILocalStorageService _localStorage
+@inject IAuthorizationService _authorizationService
+@inject NavigationManager _navigationManager
+
+<div class="d-flex justify-content-center align-items-center vh-100">
+    <div class="p-4 max-width-lg bg-light">
+        <EditForm Model="LoginData" OnValidSubmit="Login" style="max-width">
+            <DataAnnotationsValidator />
+
+            <div class="form-outline mb-4">
+                <label class="form-label" for="form2Example1">Email address</label>
+                <InputText @bind-Value="LoginData.Email" id="email" placeholder="Email" class="form-control mb-1" />
+                <ValidationMessage For="(()=>LoginData.Email)"></ValidationMessage>
+            </div>
+
+            <div class="form-outline mb-1">
+                <label class="form-label" for="form2Example2">Password</label>
+                <InputText @bind-Value="LoginData.Password" type="password" placeholder="Password" id="password" class="form-control mb-1" />
+                <ValidationMessage For="(()=>LoginData.Password)"></ValidationMessage>
+            </div>
+
+            <!-- 2 column grid layout for inline styling -->
+            <div class="row mb-2">
+                <div class="col d-flex justify-content-center">
+                    <!-- Checkbox -->
+                    <div class="form-check">
+                        <InputCheckbox @bind-Value="RememberMe" class="form-check-input" type="checkbox" id="remember"/>
+                        <label class="form-check-label" style="width:150px;" for="remember"> Remember me </label>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <!-- Simple link -->
+                    <a href="/auth/forgot-password">Forgot password?</a>
+                </div>
+            </div>
+
+            <!-- Submit button -->
+            <div class="d-flex justify-content-center">
+                <button type="button" class="btn btn-primary btn-block mb-2">Sign in</button>
+            </div>
+
+            @if (Errors.Count() > 0)
+            {
+                <div class="row">
+                    <div class="col">
+                        @foreach (var errorMessage in Errors)
+                        {
+                            <p class="text-danger">@errorMessage</p>
+                            <br/>
+                        }
+
+                    </div>
+                </div>
+            }
+            
+            <!-- Register buttons -->
+            <div class="text-center">
+                <p>Not a member? <a href="/auth/register">Register</a></p>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+
+    private LoginData LoginData { get; set; } = new LoginData();
+    private IEnumerable<string> Errors { get; set; } = new List<string>();
+    private bool RememberMe { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var rememberMe = await _localStorage.GetItemAsync<bool>("rememberMe");
+
+        if(rememberMe == true)
+        {
+            var access = await _localStorage.GetItemAsync<string>(Token.AccessTokenName);
+            var refresh = await _localStorage.GetItemAsync<string>(Token.RefreshTokenName);
+
+            var maxRequestTime = _authorizationService.MaxRequestTime;
+
+            var accessToken = new AccessToken(access, maxRequestTime);
+            var refreshToken = new RefreshToken(refresh, maxRequestTime);
+
+            if (!refreshToken.RequiresRefresh)
+            {
+                _authorizationService.SaveTokens(accessToken, refreshToken);
+                _navigationManager.NavigateTo("/brokers");
+            }
+        }
+    }
+
+
+    public async Task Login()
+    {
+        var result = await _authenticationService.Login(LoginData);
+
+        if (result.Success)
+        {
+            if (RememberMe)
+            {
+                
+            }
+
+            _navigationManager.NavigateTo("/brokers");
+        }
+        else
+        {
+            Errors = result.Errors;
+        }
+    }
+
+}

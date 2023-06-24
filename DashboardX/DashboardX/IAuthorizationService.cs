@@ -1,13 +1,18 @@
-﻿using System.Diagnostics.Contracts;
+﻿using DashboardX.Tokens;
+using System.Diagnostics.Contracts;
 
-namespace DashboardX.Auth.Services;
+namespace DashboardX;
 
 public interface IAuthorizationService
 {
     void SaveTokens(string accessToken, string refreshToken);
+    void SaveTokens(AccessToken accessToken, RefreshToken refreshToken);
     Task AuthorizeClient(HttpClient httpClient);
     Task AuthorizeMessage(HttpRequestMessage message);
     Task RefreshTokens();
     Task Logout();
-    bool IsAuthenticated { get; }
+
+    TimeSpan MaxRequestTime { get; }
+    AccessToken AccessToken { get; }
+    RefreshToken RefreshToken { get; }
 }

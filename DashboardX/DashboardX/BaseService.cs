@@ -1,27 +1,23 @@
-﻿using System.Net;
+﻿using Blazored.LocalStorage;
+using DashboardX.Tokens;
+using Microsoft.AspNetCore.Components;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 
 namespace DashboardX;
 
-public class BaseService : IBaseService
+public abstract class BaseService : IBaseService
 {
-    protected readonly HttpClient client;
-    protected readonly Auth.Services.IAuthorizationService authorizationService;
+    protected readonly HttpClient _client;
 
-    public BaseService(HttpClient httpClient, 
-                           Auth.Services.IAuthorizationService authorizationService)
+    public BaseService(HttpClient httpClient)//, 
+                       //NavigationManager navigationManager,
+                       //ILocalStorageService localStorage)
     {
-        client = httpClient;
-        this.authorizationService = authorizationService;
-    }
-
-    public async Task<Response<T>> SendAuthorizedAsync<T>(Request request, JsonSerializerOptions? options = null) where T : class, new()
-    {
-        HttpRequestMessage message = CreateMessage(request, options);
-        await authorizationService.AuthorizeMessage(message);
-
-        return await Run<T>(message);
+        _client = httpClient;
+        //_localStorage = localStorage;
+        //_navigationManager = navigationManager;
     }
 
     public async Task<Response<T>> SendAsync<T>(Request request, JsonSerializerOptions? options = null) where T : class, new()
@@ -38,16 +34,7 @@ public class BaseService : IBaseService
         return await Run(message);
     }
 
-    public async Task<Response> SendAuthorizedAsync(Request request, JsonSerializerOptions? options = null)
-    {
-        HttpRequestMessage message = CreateMessage(request, options);
-
-        await authorizationService.AuthorizeMessage(message);
-
-        return await Run(message);
-    }
-
-    private HttpRequestMessage CreateMessage(Request request, JsonSerializerOptions? options = null)
+    protected virtual HttpRequestMessage CreateMessage(Request request, JsonSerializerOptions? options = null)
     {
         options ??= new();
 
@@ -60,18 +47,24 @@ public class BaseService : IBaseService
         return message;
     }
 
-    private async Task<Response> Run(HttpRequestMessage message)
+    protected virtual Task OnUnauthorised(HttpResponseMessage response) => Task.CompletedTask;
+
+    protected async Task<Response> Run(HttpRequestMessage message)
     {
         try
         {
-            var response = await client.SendAsync(message);
+            var response = await _client.SendAsync(message);
 
             if (response.IsSuccessStatusCode)
                 return new Response
                 {
                     StatusCode = response.StatusCode,
                 };
-            
+
+            //TODO: Wrapper -> data propably will be wrapped in some object
+
+            if(response.StatusCode == HttpStatusCode.Unauthorized)
+                await OnUnauthorised(response);
 
             var errors = JsonSerializer.Deserialize<List<string>>(await response.Content.ReadAsStringAsync())!;
 
@@ -81,24 +74,25 @@ public class BaseService : IBaseService
                 Errors = errors
             };
         }
-        catch (TaskCanceledException e)
+        catch (TaskCanceledException)
         {
             return new Response
             {
                 StatusCode = HttpStatusCode.RequestTimeout,
-                Errors = new List<string> { e.Message }
+                Errors = new List<string> { "Operation timed out." }
             };
         }
     }
 
-    private async Task<Response<T>> Run<T>(HttpRequestMessage message) where T : class, new()
+    protected async Task<Response<T>> Run<T>(HttpRequestMessage message) where T : class, new()
     {
         try
         {
-            var response = await client.SendAsync(message);
+            var response = await _client.SendAsync(message);
 
             if (response.IsSuccessStatusCode)
             {
+                //TODO: Wrapper -> data propably will be wrapped in some object
                 var data = JsonSerializer.Deserialize<T>(await response.Content.ReadAsStringAsync())!;
 
                 return new Response<T>
@@ -108,6 +102,11 @@ public class BaseService : IBaseService
                 };
             }
 
+            if(response.StatusCode == HttpStatusCode.Unauthorized)
+                 await OnUnauthorised(response);
+            
+            //TODO: Wrapper -> data propably will be wrapped in some object
+
             var errors = JsonSerializer.Deserialize<List<string>>(await response.Content.ReadAsStringAsync())!;
 
             return new Response<T>
@@ -116,12 +115,12 @@ public class BaseService : IBaseService
                 Errors = errors
             };
         }
-        catch (TaskCanceledException e)
+        catch (TaskCanceledException)
         {
             return new Response<T>
             {
                 StatusCode = HttpStatusCode.RequestTimeout,
-                Errors = new List<string> { e.Message }
+                Errors = new List<string> { "Operation timed out." }
             };
         }
     }

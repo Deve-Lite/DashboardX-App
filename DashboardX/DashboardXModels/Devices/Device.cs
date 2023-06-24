@@ -5,12 +5,12 @@ public class Device
 {
     [Key]
     public string DeviceId { get; set; } = string.Empty;
-    public long EditedAtTicks { get; set; }
-    public long CreatedAtTicks { get; set; }
 
     public string Name { get; set; } = string.Empty;
     public string Placing { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
+
+    public string Icon { get; set; } = string.Empty;
+    public string IconBackgroundColor { get; set; } = string.Empty;
 
     public string BrokerId { get; set; } = string.Empty;
     public string BaseDevicePath { get; set; } = string.Empty;

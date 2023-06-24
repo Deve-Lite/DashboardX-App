@@ -1,34 +1,36 @@
-﻿using DashboardX.Auth.Services;
+﻿using DashboardXModels.Auth;
 using DashboardXModels.Auth.DTO;
 
 namespace DashboardX.Auth;
 
 public class AuthenticationService : BaseService, IAuthenticationService
 {
-    public AuthenticationService(HttpClient httpClient, IAuthorizationService authorizationService) : base(httpClient, authorizationService)
+    private readonly IAuthorizationService _authorizationService;
+    public AuthenticationService(HttpClient httpClient, IAuthorizationService authorizationService) : base(httpClient)
     {
+        _authorizationService = authorizationService;
     }
 
-    public async Task<Response> Login(string email, string password)
+    public async Task<Response> Login(LoginData data)
     {
-        var data = new LoginDTO
+        var loginDto = new LoginDTO
         {
-            Email = email,
-            Password = password
+            Email = data.Email,
+            Password = data.Password
         };
 
         var request = new Request
         {
             Method = HttpMethod.Post,
-            Route = "api/auth/login",
-            Data = data
+            Route = "auth/login",
+            Data = loginDto
         };
 
         var response = await SendAsync<TokenDTO>(request);
 
         if (response.Success)
         {
-            authorizationService.SaveTokens(response.Data.AccessToken, response.Data.RefreshToken);
+            _authorizationService.SaveTokens(response.Data.AccessToken, response.Data.RefreshToken);
 
             return new Response 
             { 
@@ -43,20 +45,20 @@ public class AuthenticationService : BaseService, IAuthenticationService
         };
     }
 
-    public async Task<Response> Register(string username, string email, string password)
+    public async Task<Response> Register(RegisterData data)
     {
-        var data = new RegisterDTO
+        var registerDto = new RegisterDTO
         {
-            Username = username,
-            Email = email,
-            Password = password
+            Email = data.Email,
+            Password = data.Password,
+            Username = data.Username
         };
 
         var request = new Request
         {
             Method = HttpMethod.Post, 
-            Route = "api/auth/register", 
-            Data = data 
+            Route = "auth/register", 
+            Data = registerDto
         };
 
         return await SendAsync(request);

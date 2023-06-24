@@ -1,41 +1,55 @@
-﻿using DashboardX.Tokens;
+﻿using Blazored.LocalStorage;
+using DashboardX.Tokens;
+using DashboardXModels.Auth.DTO;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Routing;
 using System.Net.Http.Headers;
 
-namespace DashboardX.Auth.Services;
+namespace DashboardX;
 
-public class AuthorizationService : IAuthorizationService
+public class AuthorizationService : BaseService, IAuthorizationService
 {
-    private AccessToken accessToken;
-    private RefreshToken refreshToken;
-    private readonly HttpClient client;
+    private readonly HttpClient _client;
     private readonly AuthenticationStateProvider _authStateProvider;
     private readonly NavigationManager _navigationManager;
+    private readonly ILocalStorageService _localStorage;
+
+    private AccessToken accessToken;
+    public AccessToken AccessToken => accessToken;
+
+    private RefreshToken refreshToken;
+    public RefreshToken RefreshToken => refreshToken;
+
     private readonly TimeSpan maxRequestTime;
+    public TimeSpan MaxRequestTime => maxRequestTime;
 
-    public bool IsAuthenticated => accessToken != null && !string.IsNullOrWhiteSpace(accessToken.Value);
-
-    public AuthorizationService(HttpClient httpClient, 
+    public AuthorizationService(HttpClient client, 
                                 IConfiguration configuration, 
                                 NavigationManager  navigationManager, 
-                                AuthenticationStateProvider authStateProvider)
+                                AuthenticationStateProvider authStateProvider,
+                                ILocalStorageService localStorage) : base(client)
     {
-        client = httpClient;
+        _client = client;
         maxRequestTime = TimeSpan.FromSeconds(configuration.GetValue<int>("API:MaxReuestTimeSeconds"));
         _navigationManager = navigationManager;
         _authStateProvider = authStateProvider;
+        _localStorage = localStorage;
 
-        //TODO default values
-        accessToken = new AccessToken("",maxRequestTime);
-        refreshToken = new RefreshToken("", maxRequestTime);
+
+        accessToken = new AccessToken();
+        refreshToken = new RefreshToken();
     }
 
     public void SaveTokens(string accessToken, string refreshToken)
     {
         this.accessToken = new AccessToken(accessToken, maxRequestTime);
         this.refreshToken = new RefreshToken(refreshToken, maxRequestTime);
+    }
+
+    public void SaveTokens(AccessToken accessToken, RefreshToken refreshToken)
+    {
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
     }
 
     public async Task AuthorizeClient(HttpClient httpClient)
@@ -54,15 +68,48 @@ public class AuthorizationService : IAuthorizationService
         message.Headers.Authorization = new AuthenticationHeaderValue("bearer", accessToken.Value);
     }
 
-    public  Task Logout()
+    public async Task Logout()
     {
-        // return tokens to api
-        //navigate user to login page using _navigationManager
-        throw new NotImplementedException();
+        var data = new TokenDTO
+        {
+            RefreshToken = refreshToken.Value,
+            AccessToken = accessToken.Value
+        };
+
+        var request = new Request
+        {
+            Method = HttpMethod.Post,
+            Route = "auth/logout",
+            Data = data
+        };
+
+        await SendAsync(request);
+
+        await _localStorage.RemoveItemAsync(Token.AccessTokenName);
+        await _localStorage.RemoveItemAsync(Token.RefreshTokenName);
     }
 
-    public  Task RefreshTokens()
+    public async Task RefreshTokens()
     {
-        throw new NotImplementedException();
+
+        var tokens = await SendAsync<TokenDTO>(null);
+
+        if (tokens.Success)
+        {
+            accessToken = new AccessToken(tokens.Data.AccessToken, maxRequestTime);
+            refreshToken = new RefreshToken(tokens.Data.RefreshToken, maxRequestTime);
+
+            await _localStorage.SetItemAsync(Token.AccessTokenName, accessToken.Value);
+            await _localStorage.SetItemAsync(Token.RefreshTokenName, refreshToken.Value);
+        }
+        else
+        {
+            await _localStorage.RemoveItemAsync(Token.AccessTokenName);
+            await _localStorage.RemoveItemAsync(Token.RefreshTokenName);
+
+            await _authStateProvider.GetAuthenticationStateAsync();
+            _navigationManager.NavigateTo("/auth/login");
+        }
     }
+
 }
