@@ -1,4 +1,6 @@
-﻿using DashboardXModels.Auth;
+﻿using DashboardX.Services;
+using DashboardX.Services.Interfaces;
+using DashboardXModels.Auth;
 using DashboardXModels.Auth.DTO;
 
 namespace DashboardX.Auth;
@@ -11,7 +13,7 @@ public class AuthenticationService : BaseService, IAuthenticationService
         _authorizationService = authorizationService;
     }
 
-    public async Task<Response> Login(LoginData data)
+    public async Task<Response<TokenDTO>> Login(LoginData data)
     {
         var loginDto = new LoginDTO
         {
@@ -30,15 +32,16 @@ public class AuthenticationService : BaseService, IAuthenticationService
 
         if (response.Success)
         {
-            _authorizationService.SaveTokens(response.Data.AccessToken, response.Data.RefreshToken);
+            _authorizationService.AuthenticateSession(response.Data.AccessToken, response.Data.RefreshToken);
 
-            return new Response 
+            return new Response<TokenDTO>
             { 
-                StatusCode = response.StatusCode
+                StatusCode = response.StatusCode,
+                Data = response.Data
             };
         }
 
-        return new Response 
+        return new Response<TokenDTO>
         { 
             StatusCode = response.StatusCode, 
             Errors = response.Errors

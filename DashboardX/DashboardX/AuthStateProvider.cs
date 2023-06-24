@@ -7,7 +7,6 @@ using System.Security.Claims;
 
 namespace DashboardX;
 
-//TODO: Implement this class
 public class AuthStateProvider : AuthenticationStateProvider
 {
     private AccessToken accessToken;
@@ -22,15 +21,14 @@ public class AuthStateProvider : AuthenticationStateProvider
         if (!accessToken.IsValid)
             return Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity())));
 
-        //TODO: Read from token
-        return Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity())));
+        return Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(accessToken.Claims,"jwt"))));
     }
 
     public void NotifyUserLoggedIn(AccessToken token)
     {
         accessToken = token;
-        //TODO: Read from token
-        var authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity());
+
+        var authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity(accessToken.Claims, "jwt"));
         var authState = Task.FromResult(new AuthenticationState(authenticatedUser));
         NotifyAuthenticationStateChanged(authState);
     }

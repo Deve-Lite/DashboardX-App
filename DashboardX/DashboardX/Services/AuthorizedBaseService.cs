@@ -1,9 +1,10 @@
 ﻿using Blazored.LocalStorage;
+using DashboardX.Services.Interfaces;
 using DashboardX.Tokens;
 using Microsoft.AspNetCore.Components;
 using System.Text.Json;
 
-namespace DashboardX;
+namespace DashboardX.Services;
 
 public class AuthorizedBaseService : BaseService, IAuthorizedBaseService
 {
@@ -11,7 +12,7 @@ public class AuthorizedBaseService : BaseService, IAuthorizedBaseService
     protected readonly NavigationManager _navigationManager;
     protected readonly ILocalStorageService _localStorage;
 
-    public AuthorizedBaseService(HttpClient httpClient, 
+    public AuthorizedBaseService(HttpClient httpClient,
                                  IAuthorizationService authorizationService,
                                  NavigationManager navigationManager,
                                  ILocalStorageService localStorage) : base(httpClient)

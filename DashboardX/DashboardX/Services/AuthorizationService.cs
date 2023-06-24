@@ -1,15 +1,15 @@
 ﻿using Blazored.LocalStorage;
+using DashboardX.Services.Interfaces;
 using DashboardX.Tokens;
 using DashboardXModels.Auth.DTO;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Net.Http.Headers;
 
-namespace DashboardX;
+namespace DashboardX.Services;
 
 public class AuthorizationService : BaseService, IAuthorizationService
 {
-    private readonly HttpClient _client;
     private readonly AuthenticationStateProvider _authStateProvider;
     private readonly NavigationManager _navigationManager;
     private readonly ILocalStorageService _localStorage;
@@ -23,13 +23,12 @@ public class AuthorizationService : BaseService, IAuthorizationService
     private readonly TimeSpan maxRequestTime;
     public TimeSpan MaxRequestTime => maxRequestTime;
 
-    public AuthorizationService(HttpClient client, 
-                                IConfiguration configuration, 
-                                NavigationManager  navigationManager, 
+    public AuthorizationService(HttpClient client,
+                                IConfiguration configuration,
+                                NavigationManager navigationManager,
                                 AuthenticationStateProvider authStateProvider,
                                 ILocalStorageService localStorage) : base(client)
     {
-        _client = client;
         maxRequestTime = TimeSpan.FromSeconds(configuration.GetValue<int>("API:MaxReuestTimeSeconds"));
         _navigationManager = navigationManager;
         _authStateProvider = authStateProvider;
@@ -40,16 +39,28 @@ public class AuthorizationService : BaseService, IAuthorizationService
         refreshToken = new RefreshToken();
     }
 
-    public void SaveTokens(string accessToken, string refreshToken)
+    public void AuthenticateSession(string accessToken, string refreshToken)
     {
         this.accessToken = new AccessToken(accessToken, maxRequestTime);
         this.refreshToken = new RefreshToken(refreshToken, maxRequestTime);
     }
 
-    public void SaveTokens(AccessToken accessToken, RefreshToken refreshToken)
+    public void AuthenticateSession(AccessToken accessToken, RefreshToken refreshToken)
     {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
+    }
+
+    public async Task SaveTokensInStorage()
+    {
+        await _localStorage.SetItemAsync(Token.AccessTokenName, accessToken.Value);
+        await _localStorage.SetItemAsync(Token.RefreshTokenName, refreshToken);
+    }
+
+    public async Task RemoveTokensFromStorage()
+    {
+        await _localStorage.RemoveItemAsync(Token.AccessTokenName);
+        await _localStorage.RemoveItemAsync(Token.RefreshTokenName);
     }
 
     public async Task AuthorizeClient(HttpClient httpClient)
@@ -91,21 +102,31 @@ public class AuthorizationService : BaseService, IAuthorizationService
 
     public async Task RefreshTokens()
     {
+        var oldTokens = new TokenDTO
+        {
+            RefreshToken = refreshToken.Value,
+            AccessToken = accessToken.Value
+        };
 
-        var tokens = await SendAsync<TokenDTO>(null);
+        var request = new Request
+        {
+            Method = HttpMethod.Post,
+            Route = "auth/refresh",
+            Data = oldTokens
+        };
+
+        var tokens = await SendAsync<TokenDTO>(request);
 
         if (tokens.Success)
         {
             accessToken = new AccessToken(tokens.Data.AccessToken, maxRequestTime);
             refreshToken = new RefreshToken(tokens.Data.RefreshToken, maxRequestTime);
 
-            await _localStorage.SetItemAsync(Token.AccessTokenName, accessToken.Value);
-            await _localStorage.SetItemAsync(Token.RefreshTokenName, refreshToken.Value);
+            await SaveTokensInStorage();
         }
         else
         {
-            await _localStorage.RemoveItemAsync(Token.AccessTokenName);
-            await _localStorage.RemoveItemAsync(Token.RefreshTokenName);
+            await RemoveTokensFromStorage();
 
             await _authStateProvider.GetAuthenticationStateAsync();
             _navigationManager.NavigateTo("/auth/login");

@@ -1,6 +1,70 @@
 ﻿@page "/brokers"
-<h3>BrokerList</h3>
+@using Microsoft.AspNetCore.Authorization;
+@inject IBrokerService _brokerService;
+@attribute [Authorize]
+
+@if (IsProcessing)
+{
+    <div style="position:fixed;top:50%;left:50%;margin-top:-50px;margin-left:-100px;">
+        <p>TODO: GIF?</p>
+    </div>
+}
+else if (LoadingFailed)
+{
+    <div style="position:fixed;top:50%;left:50%;margin-top:-50px;margin-left:-100px;">
+        <p>Fetching data failed. Please Try again</p>
+    </div>
+}
+else
+{
+    
+}
+
 
 @code {
+    private bool IsProcessing { get; set; } = false;
+    private bool LoadingFailed { get; set; } = false;
+    private List<Broker> Brokers { get; set; } = new List<Broker>();
 
+    protected override async Task OnInitializedAsync()
+    {
+        IsProcessing = true;
+
+        var response = await _brokerService.GetBrokers();
+
+        if (response.Success)
+        {
+            Brokers = response.Data;
+            LoadingFailed = false;
+            await Task.Run(async () =>
+            {
+                await Task.Delay(200);
+            });
+        }
+        else
+        {
+            LoadingFailed = true;
+        }
+
+        IsProcessing = false;
+    }
+
+    private async Task RefreshBrokers()
+    {
+        IsProcessing = true;
+
+        var response = await _brokerService.GetBrokers();
+
+        if (response.Success)
+        {
+            Brokers = response.Data;
+            LoadingFailed = false;
+        }
+        else
+        {
+            LoadingFailed = true;
+        }
+
+        IsProcessing = false;
+    }
 }

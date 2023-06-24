@@ -1,4 +1,6 @@
 ﻿using Blazored.LocalStorage;
+using DashboardX.Services;
+using DashboardX.Services.Interfaces;
 using DashboardXModels.Brokers;
 using Microsoft.AspNetCore.Components;
 using System.Text.Json;
@@ -8,11 +10,15 @@ namespace DashboardX.Brokers;
 
 public class BrokerService : AuthorizedBaseService, IBrokerService
 {
+    //TODO: for 30x response
+    private IEnumerable<Broker> _brokers;
+
     public BrokerService(HttpClient httpClient, 
                          IAuthorizationService authorizationService, 
                          NavigationManager navigationManager, 
                          ILocalStorageService localStorage) : base(httpClient, authorizationService, navigationManager, localStorage)
     {
+        _brokers = new List<Broker>();
     }
 
     public async Task<Response<Broker>> CreateBroker(Broker broker)

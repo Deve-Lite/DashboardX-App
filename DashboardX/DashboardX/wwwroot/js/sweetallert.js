@@ -1,4 +1,4 @@
-﻿window.ShowAllert = (type, message) => {
+﻿window.ShowAlert = (type, message) => {
     if (type === "success") {
         Swal.fire({
             icon: 'success',

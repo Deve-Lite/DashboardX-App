@@ -1,16 +1,16 @@
-﻿@page "/auth/register"
+@page "/auth/register"
 @using DashboardX.Helpers;
 @inject IAuthenticationService _authenticationService
 @inject NavigationManager _navigationManager
 @inject IJSRuntime _jsRuntime
 
-<div class="d-flex justify-content-center align-items-center vh-100">
+<div class="d-flex justify-content-center align-items-center ">
     <div class="p-4 max-width-lg bg-light">
         <EditForm Model="RegisterData" OnValidSubmit="Register" style="max-width">
             <DataAnnotationsValidator />
 
             <div class="form-outline mb-4">
-                <label class="form-label" for="form2Example1">Email address</label>
+                <label class="form-label" for="form2Example1">Email</label>
                 <InputText @bind-Value="RegisterData.Email" id="email" placeholder="Email" class="form-control mb-1" />
                 <ValidationMessage For="(()=>RegisterData.Email)"></ValidationMessage>
             </div>

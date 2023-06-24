@@ -1,6 +1,9 @@
 @page "/auth/login"
 @page "/auth"
+@using DashboardX.Services.Interfaces;
 @using DashboardX.Tokens;
+@using DashboardX.Services;
+
 @inject IAuthenticationService _authenticationService
 @inject ILocalStorageService _localStorage
 @inject IAuthorizationService _authorizationService
@@ -12,7 +15,7 @@
             <DataAnnotationsValidator />
 
             <div class="form-outline mb-4">
-                <label class="form-label" for="form2Example1">Email address</label>
+                <label class="form-label" for="form2Example1">Email</label>
                 <InputText @bind-Value="LoginData.Email" id="email" placeholder="Email" class="form-control mb-1" />
                 <ValidationMessage For="(()=>LoginData.Email)"></ValidationMessage>
             </div>
@@ -88,7 +91,7 @@
 
             if (!refreshToken.RequiresRefresh)
             {
-                _authorizationService.SaveTokens(accessToken, refreshToken);
+                _authorizationService.AuthenticateSession(accessToken, refreshToken);
                 _navigationManager.NavigateTo("/brokers");
             }
         }
@@ -102,9 +105,7 @@
         if (result.Success)
         {
             if (RememberMe)
-            {
-                
-            }
+                await _authorizationService.SaveTokensInStorage();
 
             _navigationManager.NavigateTo("/brokers");
         }

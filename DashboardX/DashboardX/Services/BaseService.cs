@@ -1,19 +1,20 @@
 ﻿using Blazored.LocalStorage;
+using DashboardX.Services.Interfaces;
 using DashboardX.Tokens;
 using Microsoft.AspNetCore.Components;
 using System.Net;
 using System.Text;
 using System.Text.Json;
 
-namespace DashboardX;
+namespace DashboardX.Services;
 
 public abstract class BaseService : IBaseService
 {
     protected readonly HttpClient _client;
 
     public BaseService(HttpClient httpClient)//, 
-                       //NavigationManager navigationManager,
-                       //ILocalStorageService localStorage)
+                                             //NavigationManager navigationManager,
+                                             //ILocalStorageService localStorage)
     {
         _client = httpClient;
         //_localStorage = localStorage;
@@ -63,7 +64,7 @@ public abstract class BaseService : IBaseService
 
             //TODO: Wrapper -> data propably will be wrapped in some object
 
-            if(response.StatusCode == HttpStatusCode.Unauthorized)
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
                 await OnUnauthorised(response);
 
             var errors = JsonSerializer.Deserialize<List<string>>(await response.Content.ReadAsStringAsync())!;
@@ -102,9 +103,9 @@ public abstract class BaseService : IBaseService
                 };
             }
 
-            if(response.StatusCode == HttpStatusCode.Unauthorized)
-                 await OnUnauthorised(response);
-            
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+                await OnUnauthorised(response);
+
             //TODO: Wrapper -> data propably will be wrapped in some object
 
             var errors = JsonSerializer.Deserialize<List<string>>(await response.Content.ReadAsStringAsync())!;

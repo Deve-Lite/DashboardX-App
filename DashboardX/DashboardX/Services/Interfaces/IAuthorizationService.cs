@@ -1,12 +1,14 @@
 ﻿using DashboardX.Tokens;
 using System.Diagnostics.Contracts;
 
-namespace DashboardX;
+namespace DashboardX.Services.Interfaces;
 
 public interface IAuthorizationService
 {
-    void SaveTokens(string accessToken, string refreshToken);
-    void SaveTokens(AccessToken accessToken, RefreshToken refreshToken);
+    void AuthenticateSession(string accessToken, string refreshToken);
+    void AuthenticateSession(AccessToken accessToken, RefreshToken refreshToken);
+    Task SaveTokensInStorage();
+    Task RemoveTokensFromStorage();
     Task AuthorizeClient(HttpClient httpClient);
     Task AuthorizeMessage(HttpRequestMessage message);
     Task RefreshTokens();
