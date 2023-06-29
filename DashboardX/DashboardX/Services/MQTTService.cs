@@ -21,6 +21,8 @@ public class MQTTService
     private HashSet<string> topics;
     public HashSet<string> Topics => topics;
 
+    public Action OnMessageReceived { get; set; }
+
     public MQTTService(MqttFactory factory)
     {
         _factory = factory;

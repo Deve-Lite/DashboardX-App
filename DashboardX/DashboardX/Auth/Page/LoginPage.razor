@@ -1,5 +1,6 @@
 @page "/auth/login"
 @page "/auth"
+@page "/"
 @using DashboardX.Services.Interfaces;
 @using DashboardX.Tokens;
 @using DashboardX.Services;
@@ -75,9 +76,11 @@
     private IEnumerable<string> Errors { get; set; } = new List<string>();
     private bool RememberMe { get; set; } = false;
 
+    private const string RememberMeName = "rememberMe";
+
     protected override async Task OnInitializedAsync()
     {
-        var rememberMe = await _localStorage.GetItemAsync<bool>("rememberMe");
+        var rememberMe = await _localStorage.GetItemAsync<bool>(RememberMeName);
 
         if(rememberMe == true)
         {
@@ -97,7 +100,6 @@
         }
     }
 
-
     public async Task Login()
     {
         var result = await _authenticationService.Login(LoginData);
@@ -105,7 +107,10 @@
         if (result.Success)
         {
             if (RememberMe)
+            {
+                await _localStorage.SetItemAsync(RememberMeName, true);
                 await _authorizationService.SaveTokensInStorage();
+            }
 
             _navigationManager.NavigateTo("/brokers");
         }

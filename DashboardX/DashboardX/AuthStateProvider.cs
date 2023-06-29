@@ -1,8 +1,7 @@
 ﻿
-using Blazored.LocalStorage;
+
 using DashboardX.Tokens;
 using Microsoft.AspNetCore.Components.Authorization;
-using System.Net.Http.Headers;
 using System.Security.Claims;
 
 namespace DashboardX;
