@@ -15,6 +15,8 @@ public class Device
     public string BrokerId { get; set; } = string.Empty;
     public string BaseDevicePath { get; set; } = string.Empty;
 
+    public DateTime EditedAt { get; set; }
+
     public IEnumerable<SwitchControl> SwitchControls { get; set; } = new List<SwitchControl>();
     public IEnumerable<SliderControl> SliderControls { get; set; } = new List<SliderControl>();
     public IEnumerable<RadioControl> RadioControls { get; set; } = new List<RadioControl>();

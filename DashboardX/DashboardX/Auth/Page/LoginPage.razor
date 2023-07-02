@@ -9,6 +9,7 @@
 @inject ILocalStorageService _localStorage
 @inject IAuthorizationService _authorizationService
 @inject NavigationManager _navigationManager
+@inject IJSRuntime _jsRuntime
 
 <div class="d-flex justify-content-center align-items-center vh-100">
     <div class="p-4 max-width-lg bg-light">
@@ -45,7 +46,7 @@
 
             <!-- Submit button -->
             <div class="d-flex justify-content-center">
-                <button type="button" class="btn btn-primary btn-block mb-2">Sign in</button>
+                <button type="submit" class="btn btn-primary btn-block mb-2">Sign in</button>
             </div>
 
             @if (Errors.Count() > 0)
@@ -117,6 +118,7 @@
         else
         {
             Errors = result.Errors;
+            await _jsRuntime.Error("Unsuccesfull logging.");
         }
     }
 

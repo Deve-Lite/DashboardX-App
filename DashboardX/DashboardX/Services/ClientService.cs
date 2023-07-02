@@ -7,13 +7,12 @@ using System.Text;
 
 namespace DashboardX.Services;
 
-public class MQTTService
+public class ClientService
 {
     private readonly MqttFactory _factory;
 
     private IDictionary<string, IMqttClient> clients;
     public IDictionary<string, IMqttClient> Clients => clients;
-
 
     private IDictionary<string, string> lastMessages;
     public IDictionary<string, string> LastMessages => lastMessages;
@@ -23,13 +22,41 @@ public class MQTTService
 
     public Action OnMessageReceived { get; set; }
 
-    public MQTTService(MqttFactory factory)
+    public ClientService(MqttFactory factory)
     {
         _factory = factory;
         clients = new Dictionary<string, IMqttClient>();
         topics = new HashSet<string>();
         lastMessages = new Dictionary<string, string>();
     }
+
+    public async Task Connect(Broker broker)
+    {
+        var client = _factory.CreateMqttClient();
+
+        var options = _factory.CreateClientOptionsBuilder()
+            .WithClientId(broker.ClientId)
+            .WithWebSocketServer($"wss://{broker.Server}:{broker.Port}")
+            .WithCredentials(broker.Username, broker.Password)
+            .Build();
+
+        client.ApplicationMessageReceivedAsync += (e) =>
+        {
+            var topic = e.ApplicationMessage.Topic;
+            var message = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
+
+
+            LastMessages[topic] = message;
+
+            return Task.CompletedTask;
+        };
+
+        await client.ConnectAsync(options);
+
+        clients[broker.BrokerId] = client;
+    }
+
+
 
     public async Task RefreshTopics(IEnumerable<Device> devices)
     {
@@ -99,6 +126,7 @@ public class MQTTService
         {
             var topic = e.ApplicationMessage.Topic;
             var message = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
+
 
             LastMessages[topic] = message;
 

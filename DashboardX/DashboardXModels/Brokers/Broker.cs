@@ -22,5 +22,7 @@ public class Broker
     public string ClientId { get; set; } = string.Empty;
     public int KeepAlive { get; set; } = 90;
 
+    public DateTime EditedAt { get; set; }
+
     public IEnumerable<Device> Devices { get; set; } = new List<Device>();
 }

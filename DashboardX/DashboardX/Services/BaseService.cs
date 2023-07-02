@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components;
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DashboardX.Services;
 
@@ -67,12 +68,21 @@ public abstract class BaseService : IBaseService
             if (response.StatusCode == HttpStatusCode.Unauthorized)
                 await OnUnauthorised(response);
 
-            var errors = JsonSerializer.Deserialize<List<string>>(await response.Content.ReadAsStringAsync())!;
+            var payload = await response.Content.ReadAsStringAsync();
+
+            if (string.IsNullOrEmpty(payload))
+            {
+                var errors = JsonSerializer.Deserialize<List<string>>(payload)!;
+                return new Response
+                {
+                    StatusCode = response.StatusCode,
+                    Errors = errors
+                };
+            }
 
             return new Response
             {
                 StatusCode = response.StatusCode,
-                Errors = errors
             };
         }
         catch (TaskCanceledException)
@@ -108,12 +118,21 @@ public abstract class BaseService : IBaseService
 
             //TODO: Wrapper -> data propably will be wrapped in some object
 
-            var errors = JsonSerializer.Deserialize<List<string>>(await response.Content.ReadAsStringAsync())!;
+            var payload = await response.Content.ReadAsStringAsync();
+
+            if(!string.IsNullOrEmpty(payload))
+            {
+                var errors = JsonSerializer.Deserialize<List<string>>(payload)!;
+                return new Response<T>
+                {
+                    StatusCode = response.StatusCode,
+                    Errors = errors
+                };
+            }
 
             return new Response<T>
             {
                 StatusCode = response.StatusCode,
-                Errors = errors
             };
         }
         catch (TaskCanceledException)
