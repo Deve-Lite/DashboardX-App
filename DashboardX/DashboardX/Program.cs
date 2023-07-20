@@ -2,6 +2,7 @@ using Blazored.LocalStorage;
 using DashboardX;
 using DashboardX.Auth;
 using DashboardX.Brokers;
+using DashboardX.Devices;
 using DashboardX.Services;
 using DashboardX.Services.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -18,15 +19,14 @@ builder.Services.AddScoped(sp => new HttpClient
     Timeout = TimeSpan.FromSeconds(Convert.ToDouble(builder.Configuration.GetValue<string>("API:MaxReuestTimeSeconds")!))
 });
 
-
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
 builder.Services.AddScoped<IBrokerService, BrokerService>();
+builder.Services.AddScoped<IDeviceService, DeviceService>();
 
-
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+//TODO add auth
 
 await builder.Build().RunAsync();

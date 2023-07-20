@@ -1,36 +1,100 @@
-﻿using DashboardXModels.Brokers;
+﻿using DashboardX.Brokers;
+using DashboardX.Devices;
+using DashboardXModels;
+using DashboardXModels.Brokers;
 using DashboardXModels.Controls;
 using DashboardXModels.Devices;
 using MQTTnet;
 using MQTTnet.Client;
+using System.Collections.ObjectModel;
 using System.Text;
 
 namespace DashboardX.Services;
 
+
+//TODO thinkof if better is to return InitializedBroker where Needed Single Item 
 public class ClientService
 {
     private readonly MqttFactory _factory;
+    private readonly IBrokerService _brokerService;
+    private readonly IDeviceService _deviceService;
 
-    private IDictionary<string, IMqttClient> clients;
-    public IDictionary<string, IMqttClient> Clients => clients;
+    private ICollection<InitializedBroker> clients;
+    public ICollection<InitializedBroker> Clients => clients;
 
-    private IDictionary<string, string> lastMessages;
-    public IDictionary<string, string> LastMessages => lastMessages;
-
-    private HashSet<string> topics;
-    public HashSet<string> Topics => topics;
+    public bool LoadedSuccessfully { get; private set; }
 
     public Action OnMessageReceived { get; set; }
 
-    public ClientService(MqttFactory factory)
+    public ClientService(MqttFactory factory, IBrokerService brokerService, IDeviceService deviceService)
     {
+        _deviceService = deviceService;
+        _brokerService = brokerService;
         _factory = factory;
-        clients = new Dictionary<string, IMqttClient>();
-        topics = new HashSet<string>();
-        lastMessages = new Dictionary<string, string>();
+        clients = new Collection<InitializedBroker>();
     }
 
-    public async Task Connect(Broker broker)
+    public async Task Initialize()
+    {
+        var brokerResponse = await _brokerService.GetBrokers();
+        var deviceResponse = await _deviceService.GetDevices(); 
+
+        // TODO: In case of error show toast
+    }
+
+    public async Task<List<Broker>> GetBrokers()
+    {
+        var response = await _brokerService.GetBrokers();
+
+        //TODO: In case of error show toast
+
+        response.Data.ForEach(async x => await HandleBrokerConnection(x));
+
+        return response.Data;
+    }
+    public async Task<Broker> GetBroker(string id)
+    {
+        var response = await _brokerService.GetBroker(id);
+        var broker = response.Data;
+
+        //TODO: In case of error show toast
+
+        await HandleBrokerConnection(broker);
+
+        return broker;
+    }
+
+    public async Task<IEnumerable<Device>> GetDevices(string brokerId)
+    {
+        //TODO: device methods should also call broker methods!! 
+
+        var response = await _deviceService.GetDevices(brokerId);
+        var devices = response.Data;
+
+        foreach (var device in devices) 
+        {
+
+        }
+        //TODO: In case of error show toast
+
+        return response.Data;
+
+    }
+
+    public async Task<IEnumerable<Device>> GetDevice(string deviceId)
+    {
+        //TODO: device methods should also call broker methods!! 
+
+        var response = await _deviceService.GetDevice(deviceId);
+        var device = response.Data;
+
+        //TODO: In case of error show toast
+
+
+        return device;
+    }
+
+    public async Task<IMqttClient> Connect(Broker broker)
     {
         var client = _factory.CreateMqttClient();
 
@@ -43,21 +107,47 @@ public class ClientService
         client.ApplicationMessageReceivedAsync += (e) =>
         {
             var topic = e.ApplicationMessage.Topic;
-            var message = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
+            var message = Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment);
 
+            var hash = broker.BrokerId + topic;
 
-            LastMessages[topic] = message;
+            topics[hash] = message;
 
             return Task.CompletedTask;
         };
 
+        //TODO : add reconnect logic
+        client.DisconnectedAsync += async (e) =>
+        {
+            
+        }
+
         await client.ConnectAsync(options);
 
-        clients[broker.BrokerId] = client;
+        return client;
+    }
+
+    public async Task Disconnect(string brokerId)
+    {
+        var client = clients[brokerId];
+
+        await client.DisconnectAsync();
+    }
+
+    public async Task RemoveBroker(string brokerId)
+    {
+        //TODO device and broker service should remove from here !
+       await Disconnect(brokerId);
+    }
+
+    public async Task RemoveDevice()
+    {
+        //TODO device and broker service should remove from here !
+        
     }
 
 
-
+    [Obsolete]
     public async Task RefreshTopics(IEnumerable<Device> devices)
     {
         List<(string,string, QualityOfService)> brokersToTopic = new();
@@ -98,7 +188,7 @@ public class ClientService
         }
 
     }
-
+    [Obsolete]
     public async Task RefreshClients(IEnumerable<Broker> brokers)
     {
         var brokerIds = new HashSet<string>(brokers.Select(broker => broker.BrokerId));
@@ -111,7 +201,7 @@ public class ClientService
             if (!clients.ContainsKey(broker.BrokerId))
                 await CreateClient(broker);
     }
-
+    [Obsolete]
     public async Task CreateClient(Broker broker)
     {
         var client = _factory.CreateMqttClient();
@@ -137,13 +227,13 @@ public class ClientService
 
         clients[broker.BrokerId] = client;
     }
-
+    [Obsolete]
     public async Task UpdateClient(Broker broker)
     {
         await DeleteClient(broker.BrokerId);
         await CreateClient(broker);
     }
-
+    [Obsolete]
     public async Task DeleteClient(string id)
     {
         var client = clients[id];
@@ -154,4 +244,45 @@ public class ClientService
         clients.Remove(id);
     }
 
+
+
+    #region Privates 
+
+    private async Task HandleBrokerConnection(Broker broker)
+    {
+        if (clients.ContainsKey(broker.BrokerId))
+        {
+            // TODO: Verify if changes occurred since the last connection
+        }
+        else
+        {
+            var client = await Connect(broker);
+            clients[broker.BrokerId] = client;
+        }
+    }
+
+    private async Task HandleDeviceConnection(Device device)
+    {
+        var controls = device.GetControls();
+
+        foreach (var control in controls)
+        {
+            var topic = GetControlTopicPath(device, control);
+            var hash = device.BrokerId + topic;
+
+            if (topics.ContainsKey(hash))
+            {
+                // TODO: Verify if changes occurred since the last connection
+            }
+            else
+            {
+                var client = await Connect(broker);
+                clients[broker.BrokerId] = client;
+            }
+        }
+    }
+
+    private string GetControlTopicPath(Device device, Control control) => string.IsNullOrEmpty(device.BaseDevicePath) ? control.Topic : $"{device.BaseDevicePath}/{control.Topic}";
+
+    #endregion
 }
