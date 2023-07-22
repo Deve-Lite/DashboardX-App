@@ -1,100 +1,157 @@
 ﻿using DashboardX.Brokers;
 using DashboardX.Devices;
+using DashboardX.Helpers;
+using DashboardX.Services.Interfaces;
 using DashboardXModels;
 using DashboardXModels.Brokers;
 using DashboardXModels.Controls;
 using DashboardXModels.Devices;
 using MQTTnet;
 using MQTTnet.Client;
-using System.Collections.ObjectModel;
 using System.Text;
 
 namespace DashboardX.Services;
 
-
-//TODO thinkof if better is to return InitializedBroker where Needed Single Item 
 public class ClientService
 {
+    private readonly ToastR _toastR;
     private readonly MqttFactory _factory;
     private readonly IBrokerService _brokerService;
     private readonly IDeviceService _deviceService;
+    private readonly ITopicService _topicService;
 
-    private ICollection<InitializedBroker> clients;
-    public ICollection<InitializedBroker> Clients => clients;
+    private IList<InitializedBroker> clients;
+    private bool firstLoad = true;
 
-    public bool LoadedSuccessfully { get; private set; }
+    public bool UpdatedSuccessfully { get; private set; }
 
     public Action OnMessageReceived { get; set; }
 
-    public ClientService(MqttFactory factory, IBrokerService brokerService, IDeviceService deviceService)
+    public ClientService(ToastR toastR, 
+                         MqttFactory factory,
+                         IBrokerService brokerService, 
+                         IDeviceService deviceService,
+                         ITopicService topicService)
     {
+        _topicService = topicService;
+        _toastR = toastR;
         _deviceService = deviceService;
         _brokerService = brokerService;
         _factory = factory;
-        clients = new Collection<InitializedBroker>();
+
+        clients = new List<InitializedBroker>();
+
+        OnMessageReceived = () => { };
     }
 
-    public async Task Initialize()
+    public async Task<IList<InitializedBroker>> GetInitializedBrokers()
+    {
+        if (firstLoad)
+        {
+            await Initialize();
+            firstLoad = false;
+            return clients;
+        }
+
+        var brokersResponse = await _brokerService.GetBrokers();
+        var devicesResponse = await _deviceService.GetDevices();
+
+        // TODO : Update brokers
+
+        // TODO : Update devices
+
+        return clients;
+    }
+    public async Task<InitializedBroker> GetInitializedBroker(string id)
+    {
+        if (firstLoad)
+        {
+            await Initialize();
+            firstLoad = false;
+            return clients.FirstOrDefault(x => x.Id == id)!;
+        }
+
+        var brokerResponse = await _brokerService.GetBroker(id);
+        var devicesResponse = await _deviceService.GetDevices(id);
+
+        var currentBroker = clients.FirstOrDefault(x => x.Id == id)!;
+
+        // TODO : Update broker 
+
+        // TODO : Update devices
+
+
+        return clients!.FirstOrDefault(x => x.Id == id)!;
+    }
+    private async Task Initialize()
     {
         var brokerResponse = await _brokerService.GetBrokers();
-        var deviceResponse = await _deviceService.GetDevices(); 
+        var deviceResponse = await _deviceService.GetDevices();
 
-        // TODO: In case of error show toast
+        if(!await InitalizeBrokers(brokerResponse))
+            return;
+
+        if (!await InitializeDevices(deviceResponse))
+            return;
     }
 
-    public async Task<List<Broker>> GetBrokers()
+    #region Initialization
+
+    private async Task<bool> InitalizeBrokers(Response<List<Broker>> response)
     {
-        var response = await _brokerService.GetBrokers();
+        if (response.Success)
+        {
+            await _toastR.Error("Failed to load brokers and devices.");
+            UpdatedSuccessfully = false;
+            return false;
+        }
 
-        //TODO: In case of error show toast
+        var brokers = response.Data;
 
-        response.Data.ForEach(async x => await HandleBrokerConnection(x));
+        foreach (var broker in brokers)
+            await ConnectBroker(broker);
 
-        return response.Data;
+        return true;
     }
-    public async Task<Broker> GetBroker(string id)
+    private async Task<bool> InitializeDevices(Response<List<Device>> response) 
     {
-        var response = await _brokerService.GetBroker(id);
-        var broker = response.Data;
+        if (!response.Success)
+        {
+            await _toastR.Error("Failed to load devices.");
+            UpdatedSuccessfully = false;
+            return false;
+        }
 
-        //TODO: In case of error show toast
-
-        await HandleBrokerConnection(broker);
-
-        return broker;
-    }
-
-    public async Task<IEnumerable<Device>> GetDevices(string brokerId)
-    {
-        //TODO: device methods should also call broker methods!! 
-
-        var response = await _deviceService.GetDevices(brokerId);
         var devices = response.Data;
 
-        foreach (var device in devices) 
+        foreach (var device in devices)
         {
+            var broker = clients!.FirstOrDefault(x => x.Id == device.BrokerId)!;
 
+            InitializeControls(broker, device);
+            
+            broker.Devices[device.DeviceId] = device;
         }
-        //TODO: In case of error show toast
 
-        return response.Data;
-
+        return true;
     }
-
-    public async Task<IEnumerable<Device>> GetDevice(string deviceId)
+    public void InitializeControls(InitializedBroker broker, Device device)
     {
-        //TODO: device methods should also call broker methods!! 
-
-        var response = await _deviceService.GetDevice(deviceId);
-        var device = response.Data;
-
-        //TODO: In case of error show toast
-
-
-        return device;
+        foreach(var control in device.GetControls())
+        {
+            var topic = control.GetTopic(device);
+            broker.Client.SubscribeAsync(topic);
+        }
     }
 
-    public async Task<IMqttClient> Connect(Broker broker)
+    private async Task ConnectBroker(Broker broker)
+    { 
+        var client = await ConnectMqttClient(broker);
+        var initializedBroker = new InitializedBroker(broker, client);
+
+        clients.Add(initializedBroker);
+    }
+    private async Task<IMqttClient> ConnectMqttClient(Broker broker)
     {
         var client = _factory.CreateMqttClient();
 
@@ -104,185 +161,42 @@ public class ClientService
             .WithCredentials(broker.Username, broker.Password)
             .Build();
 
+        await client.ConnectAsync(options);
+
+        InitializeCallbacks(client, broker);
+
+        return client;
+    }
+    private void InitializeCallbacks(IMqttClient client, Broker broker)
+    {
         client.ApplicationMessageReceivedAsync += (e) =>
         {
             var topic = e.ApplicationMessage.Topic;
             var message = Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment);
 
-            var hash = broker.BrokerId + topic;
-
-            topics[hash] = message;
+            _topicService.UpdateTopic(broker.BrokerId, topic, message);
 
             return Task.CompletedTask;
         };
-
-        //TODO : add reconnect logic
-        client.DisconnectedAsync += async (e) =>
-        {
-            
-        }
-
-        await client.ConnectAsync(options);
-
-        return client;
+        client.DisconnectedAsync += Disconnect;
     }
 
-    public async Task Disconnect(string brokerId)
+    #endregion
+
+    #region Events
+
+    private Task Disconnect(MqttClientDisconnectedEventArgs e)
     {
-        var client = clients[brokerId];
-
-        await client.DisconnectAsync();
+        return Task.CompletedTask;
     }
 
-    public async Task RemoveBroker(string brokerId)
-    {
-        //TODO device and broker service should remove from here !
-       await Disconnect(brokerId);
-    }
+    #endregion
 
-    public async Task RemoveDevice()
-    {
-        //TODO device and broker service should remove from here !
-        
-    }
+    #region Consts
 
-
-    [Obsolete]
-    public async Task RefreshTopics(IEnumerable<Device> devices)
-    {
-        List<(string,string, QualityOfService)> brokersToTopic = new();
-
-        foreach(var device in devices) 
-            foreach(var control in device.GetControls())
-            {
-                var topic = string.IsNullOrEmpty(device.BaseDevicePath) ? control.Topic : $"{device.BaseDevicePath}/{control.Topic}";
-                brokersToTopic.Add((device.BrokerId, topic, control.QualityOfService));
-            }
-
-        
-        foreach(var (brokerId, topic, qualityOfService) in brokersToTopic)
-        {
-            if (!topics.Contains(topic))
-            {
-                topics.Add(topic);
-
-                var client = clients[brokerId]; 
-
-                var options = _factory.CreateTopicFilterBuilder()
-                    .WithTopic(topic)
-                    .WithQualityOfServiceLevel((MQTTnet.Protocol.MqttQualityOfServiceLevel) qualityOfService)
-                    .Build();
-
-                await client.SubscribeAsync(options);
-                
-            }
-        }
-
-        foreach(var topic in topics.ToList())
-        {
-            if (!brokersToTopic.Any(brokerToTopic => brokerToTopic.Item2 == topic))
-            {
-                //var client = clients[brokerId];
-                
-            }
-        }
-
-    }
-    [Obsolete]
-    public async Task RefreshClients(IEnumerable<Broker> brokers)
-    {
-        var brokerIds = new HashSet<string>(brokers.Select(broker => broker.BrokerId));
-        var keysToRemove = clients.Keys.Where(key => !brokerIds.Contains(key)).ToList();
-
-        foreach (var key in keysToRemove)
-            await DeleteClient(key);
-        
-        foreach (var broker in brokers)
-            if (!clients.ContainsKey(broker.BrokerId))
-                await CreateClient(broker);
-    }
-    [Obsolete]
-    public async Task CreateClient(Broker broker)
-    {
-        var client = _factory.CreateMqttClient();
-
-        var options = _factory.CreateClientOptionsBuilder()
-            .WithClientId(broker.ClientId)
-            .WithTcpServer(broker.Server, broker.Port)
-            .WithCredentials(broker.Username, broker.Password)
-            .Build();
-
-        client.ApplicationMessageReceivedAsync += (e) =>
-        {
-            var topic = e.ApplicationMessage.Topic;
-            var message = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
-
-
-            LastMessages[topic] = message;
-
-            return Task.CompletedTask;
-        };
-
-        await client.ConnectAsync(options);
-
-        clients[broker.BrokerId] = client;
-    }
-    [Obsolete]
-    public async Task UpdateClient(Broker broker)
-    {
-        await DeleteClient(broker.BrokerId);
-        await CreateClient(broker);
-    }
-    [Obsolete]
-    public async Task DeleteClient(string id)
-    {
-        var client = clients[id];
-
-        await client.DisconnectAsync();
-        client.Dispose();
-
-        clients.Remove(id);
-    }
-
-
-
-    #region Privates 
-
-    private async Task HandleBrokerConnection(Broker broker)
-    {
-        if (clients.ContainsKey(broker.BrokerId))
-        {
-            // TODO: Verify if changes occurred since the last connection
-        }
-        else
-        {
-            var client = await Connect(broker);
-            clients[broker.BrokerId] = client;
-        }
-    }
-
-    private async Task HandleDeviceConnection(Device device)
-    {
-        var controls = device.GetControls();
-
-        foreach (var control in controls)
-        {
-            var topic = GetControlTopicPath(device, control);
-            var hash = device.BrokerId + topic;
-
-            if (topics.ContainsKey(hash))
-            {
-                // TODO: Verify if changes occurred since the last connection
-            }
-            else
-            {
-                var client = await Connect(broker);
-                clients[broker.BrokerId] = client;
-            }
-        }
-    }
-
-    private string GetControlTopicPath(Device device, Control control) => string.IsNullOrEmpty(device.BaseDevicePath) ? control.Topic : $"{device.BaseDevicePath}/{control.Topic}";
+    public const string BrokersFail = "Failed to load brokers and devices.";
+    public const string BrokerFail = "Failed to load broker and connected devices.";
+    public const string DevicesFail = "Failed to load devices.";
 
     #endregion
 }

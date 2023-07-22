@@ -1,19 +1,31 @@
-﻿using MQTTnet.Client;
+﻿using DashboardXModels.Brokers;
+using MQTTnet.Client;
+using System.Text;
 
 namespace DashboardXModels;
 
-public class InitializedBroker
+/// <summary>
+/// In case of any broker update create new InitializedBroker and replace old one.
+/// </summary>
+public class InitializedBroker : IDisposable
 {
-    public InitializedBroker(IMqttClient client, Broker broker)
+    public IDictionary<string, Device> Devices { get; private set; }
+    public IMqttClient Client { get; private set; }
+    public Broker Broker { get; private set; }
+
+    public string Id { get => Broker.BrokerId; }
+
+    public InitializedBroker(Broker broker, IMqttClient client)
     {
         Client = client;
         Broker = broker;
-        Topics  = new Dictionary<string, string>();
         Devices = new Dictionary<string, Device>();
     }
 
-    public IMqttClient Client { get; set; }
-    public Broker Broker { get; set; }
-    public IDictionary<string,string > Topics { get; set; }
-    public IDictionary<string, Device> Devices { get; set; }
+    public void UpdateClient(IMqttClient client)
+    {
+        Client = client;
+    }
+
+    public void Dispose() => Client.Dispose();
 }

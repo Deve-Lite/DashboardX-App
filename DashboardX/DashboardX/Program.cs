@@ -27,6 +27,8 @@ builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
 builder.Services.AddScoped<IBrokerService, BrokerService>();
 builder.Services.AddScoped<IDeviceService, DeviceService>();
 
+builder.Services.AddSingleton<ITopicService, TopicService>();
+
 //TODO add auth
 
 await builder.Build().RunAsync();

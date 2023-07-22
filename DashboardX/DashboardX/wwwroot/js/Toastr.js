@@ -6,7 +6,7 @@
                 timeOut: 1000
             });
     }
-    if (type === "fail") {
+    if (type === "error") {
         toastr.error(message,
             {
                 timeOut: 1000
