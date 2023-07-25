@@ -1,4 +1,5 @@
 ﻿using DashboardXModels.Brokers;
+using MQTTnet;
 using MQTTnet.Client;
 using System.Text;
 
@@ -15,11 +16,20 @@ public class InitializedBroker : IDisposable
 
     public string Id { get => Broker.BrokerId; }
 
+    public bool NotAvailable { get => Broker.BrokerId == null; }
+
     public InitializedBroker(Broker broker, IMqttClient client)
     {
         Client = client;
         Broker = broker;
         Devices = new Dictionary<string, Device>();
+    }
+
+    public InitializedBroker()
+    {
+        Devices = new Dictionary<string, Device>();
+        Broker = new Broker();
+        Client = new MqttFactory().CreateMqttClient();
     }
 
     public void UpdateClient(IMqttClient client)

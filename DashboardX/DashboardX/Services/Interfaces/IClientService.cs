@@ -4,6 +4,6 @@ namespace DashboardX.Services.Interfaces;
 
 public interface IClientService
 {
-    Task<IList<InitializedBroker>> GetBrokers();
-    Task<InitializedBroker> GetBroker(string id);
+    Task<IList<InitializedBroker>> GetInitializedBrokers();
+    Task<InitializedBroker> GetInitializedBroker(string id);
 }
