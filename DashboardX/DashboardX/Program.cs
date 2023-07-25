@@ -26,6 +26,7 @@ builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
 builder.Services.AddScoped<IBrokerService, BrokerService>();
 builder.Services.AddScoped<IDeviceService, DeviceService>();
+builder.Services.AddScoped<IClientService, ClientService>();
 
 builder.Services.AddSingleton<ITopicService, TopicService>();
 

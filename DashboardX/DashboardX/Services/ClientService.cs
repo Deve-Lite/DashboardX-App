@@ -21,9 +21,10 @@ public class ClientService : IClientService
     private readonly ITopicService _topicService;
 
     private IList<InitializedBroker> clients;
-    private bool firstLoad = true;
 
-    public bool UpdatedSuccessfully { get; private set; }
+    private bool firstLoad;
+    private bool updatedSuccessfully;
+    public bool UpdatedSuccessfully { get; }
 
     public Action OnMessageReceived { get; set; }
 
@@ -42,6 +43,9 @@ public class ClientService : IClientService
         clients = new List<InitializedBroker>();
 
         OnMessageReceived = () => { };
+
+        updatedSuccessfully = true;
+        firstLoad = true;
     }
 
     public async Task<IList<InitializedBroker>> GetInitializedBrokers()
@@ -229,15 +233,13 @@ public class ClientService : IClientService
                 broker.Devices[newDevice.DeviceId] = newDevice;
                 await SubscribeDeviceControls(broker, newDevice);
             }
-
         }
 
         foreach (var client in clients)
             foreach (var device in client.Devices)
-                foreach (var control in device.Value.GetControls())
-                    await client.Client.UnsubscribeAsync(control.GetTopic(device.Value));
-                
-
+                if(!updatedDevices.Contains(device.Key))
+                    await UnsubscribeDeviceControls(client, device.Value);
+            
         return true;
     }
 
@@ -261,10 +263,10 @@ public class ClientService : IClientService
         if (response.Success)
         {
             await _toastR.Error("Failed to load brokers and devices.");
-            UpdatedSuccessfully = false;
+            updatedSuccessfully = false;
             return false;
         }
-
+        updatedSuccessfully = true;
         return true;
     }
 
