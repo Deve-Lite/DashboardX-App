@@ -1,4 +1,4 @@
-name: Build
+name: Build and Test
 
 on:
   push:
@@ -19,13 +19,11 @@ jobs:
           dotnet-version: '7.x' 
 
       - name: Restore NuGet packages
-        run: dotnet restore
+        run: dotnet restore DashboardX.csproj DashboardXModels.csproj
 
       - name: Build the project
-        run: dotnet build --configuration Release
+        run: dotnet build --configuration Release DashboardX.csproj DashboardXModels.csproj
 
       - name: Run tests (if you have tests)
         run: dotnet test --configuration Release --no-restore --verbosity normal
 
-      - name: Publish the Blazor app
-        run: dotnet publish -c Release -o publish
