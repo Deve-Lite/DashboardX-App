@@ -3,25 +3,6 @@
   <h1> Dashboard X </h1>
   <p> Let's make IT 😎 </p>
   
-  <div>
-    <a href="">
-      <img src="https://img.shields.io/github/last-commit/DashboardX/" alt="last update" />
-    </a>
-    <a href="https://github.com/DashboardX/ReadMeTemplate/network/members">
-      <img src="https://img.shields.io/github/forks/DashboardX/ReadMeTemplate" alt="forks" />
-    </a>
-    <a href="https://github.com/DashboardX/ReadMeTemplate/stargazers">
-      <img src="https://img.shields.io/github/stars/DashboardX/ReadMeTemplate" alt="stars" />
-    </a>
-    <a href="https://github.com/DashboardX/ReadMeTemplate/issues/">
-      <img src="https://img.shields.io/github/issues/DashboardX/ReadMeTemplate" alt="open issues" />
-    </a>
-    <a href="https://github.com/DashboardX/ReadMeTemplate/blob/master/LICENSE">
-      <img src="https://img.shields.io/github/license/DashboardX/ReadMeTemplate" alt="license" />
-    </a>
-  </div>
-</div>  
-
 <br/>
 
 ### About The Project
