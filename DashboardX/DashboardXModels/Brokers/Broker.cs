@@ -6,6 +6,8 @@ public class Broker
     public string BrokerId { get; set; } = string.Empty;
     public string UserId { get; set; } = string.Empty;
 
+    //TODO: Tell kamil about new field icon posibility
+    public string Icon { get; set; } = string.Empty;
 
     [Required, StringLength(30, MinimumLength = 3)]
     public string Name { get; set; } = string.Empty;
@@ -21,6 +23,8 @@ public class Broker
     [Required]
     public string ClientId { get; set; } = string.Empty;
     public int KeepAlive { get; set; } = 90;
+
+    public DateTime EditedAt { get; set; }
 
     public IEnumerable<Device> Devices { get; set; } = new List<Device>();
 }

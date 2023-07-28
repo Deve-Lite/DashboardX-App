@@ -3,35 +3,16 @@
   <h1> Dashboard X </h1>
   <p> Let's make IT 😎 </p>
   
-  <div>
-    <a href="">
-      <img src="https://img.shields.io/github/last-commit/DashboardX/ReadMeTemplate" alt="last update" />
-    </a>
-    <a href="https://github.com/DashboardX/ReadMeTemplate/network/members">
-      <img src="https://img.shields.io/github/forks/DashboardX/ReadMeTemplate" alt="forks" />
-    </a>
-    <a href="https://github.com/DashboardX/ReadMeTemplate/stargazers">
-      <img src="https://img.shields.io/github/stars/DashboardX/ReadMeTemplate" alt="stars" />
-    </a>
-    <a href="https://github.com/DashboardX/ReadMeTemplate/issues/">
-      <img src="https://img.shields.io/github/issues/DashboardX/ReadMeTemplate" alt="open issues" />
-    </a>
-    <a href="https://github.com/DashboardX/ReadMeTemplate/blob/master/LICENSE">
-      <img src="https://img.shields.io/github/license/DashboardX/ReadMeTemplate" alt="license" />
-    </a>
-  </div>
-</div>  
-
 <br/>
 
 ### About The Project
 
-DashboardX is modern MQTT Client for custom devices. TODO
+DashboardX is modern MQTT Client for custom devices.
 
 ### Built With
 
 ![C#](https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=c-sharp&logoColor=white&style=flat)
-![Blazor](https://img.shields.io/badge/blazor-%235C2D91.svg?style=for-the-badge&logo=blazor&logoColor=white)
+![Blazor](https://img.shields.io/badge/Blazor-8B008B?style=for-the-badge&logo=blazor&logoColor=white&style=flat)
 
 ### Getting started. 
 

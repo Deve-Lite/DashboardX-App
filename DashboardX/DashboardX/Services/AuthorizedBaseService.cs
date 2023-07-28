@@ -14,8 +14,9 @@ public class AuthorizedBaseService : BaseService, IAuthorizedBaseService
 
     public AuthorizedBaseService(HttpClient httpClient,
                                  IAuthorizationService authorizationService,
+                                 IConfiguration configuration,
                                  NavigationManager navigationManager,
-                                 ILocalStorageService localStorage) : base(httpClient)
+                                 ILocalStorageService localStorage) : base(httpClient, configuration)
     {
         _authorizationService = authorizationService;
         _navigationManager = navigationManager;
@@ -27,6 +28,10 @@ public class AuthorizedBaseService : BaseService, IAuthorizedBaseService
         HttpRequestMessage message = CreateMessage(request, options);
         await _authorizationService.AuthorizeMessage(message);
 
+        #if DEBUG
+        await Task.Delay(1000);
+        #endif
+
         return await Run<T>(message);
     }
 
@@ -35,6 +40,10 @@ public class AuthorizedBaseService : BaseService, IAuthorizedBaseService
         HttpRequestMessage message = CreateMessage(request, options);
 
         await _authorizationService.AuthorizeMessage(message);
+
+        #if DEBUG
+        await Task.Delay(1000);
+        #endif
 
         return await Run(message);
     }
