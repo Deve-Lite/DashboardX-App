@@ -50,7 +50,7 @@ else
     {
         IsProcessing = true;
 
-        var initializedBrokers = await _clientService.GetInitializedBrokers();
+        var initializedBrokers = new List<InitializedBroker>(); // await _clientService.GetInitializedBrokers();
 
         if (_clientService.UpdatedSuccessfully)
         {

@@ -18,23 +18,28 @@ public class AuthStateProvider : AuthenticationStateProvider
     public override Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         if (!accessToken.IsValid)
-            return Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity())));
+            return Task.FromResult(NoAuthState());
 
-        return Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(accessToken.Claims,"jwt"))));
+        return Task.FromResult(AuthState());
     }
 
     public void NotifyUserLoggedIn(AccessToken token)
     {
         accessToken = token;
-
-        var authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity(accessToken.Claims, "jwt"));
-        var authState = Task.FromResult(new AuthenticationState(authenticatedUser));
-        NotifyAuthenticationStateChanged(authState);
+        NotifyAuthenticationStateChanged(Task.FromResult(AuthState()));
     }
 
-    public void NotifyUserLogout()
+    public void NotifyUserLogout() => NotifyAuthenticationStateChanged(Task.FromResult(NoAuthState()));
+
+    private AuthenticationState NoAuthState() => new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+
+    private AuthenticationState AuthState()
     {
-        var authState = Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity())));
-        NotifyAuthenticationStateChanged(authState);
+        var identity = new ClaimsIdentity(new[]
+        {
+            accessToken.Role(),
+        }, "jwt");
+
+        return new AuthenticationState(new ClaimsPrincipal(identity));
     }
 }

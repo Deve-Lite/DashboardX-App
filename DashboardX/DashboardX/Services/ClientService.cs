@@ -24,7 +24,7 @@ public class ClientService : IClientService
 
     private bool firstLoad;
     private bool updatedSuccessfully;
-    public bool UpdatedSuccessfully { get; }
+    public bool UpdatedSuccessfully { get => updatedSuccessfully; }
 
     public Action OnMessageReceived { get; set; }
 

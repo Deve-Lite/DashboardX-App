@@ -27,9 +27,9 @@ public class AuthorizationService : BaseService, IAuthorizationService
                                 IConfiguration configuration,
                                 NavigationManager navigationManager,
                                 AuthenticationStateProvider authStateProvider,
-                                ILocalStorageService localStorage) : base(client)
+                                ILocalStorageService localStorage) : base(client, configuration)
     {
-        maxRequestTime = TimeSpan.FromSeconds(configuration.GetValue<int>("API:MaxReuestTimeSeconds"));
+        maxRequestTime = TimeSpan.FromSeconds(configuration.GetValue<int>("Api:MaxRequestTimeSeconds"));
         _navigationManager = navigationManager;
         _authStateProvider = authStateProvider;
         _localStorage = localStorage;
@@ -43,6 +43,8 @@ public class AuthorizationService : BaseService, IAuthorizationService
     {
         this.accessToken = new AccessToken(accessToken, maxRequestTime);
         this.refreshToken = new RefreshToken(refreshToken, maxRequestTime);
+
+        (_authStateProvider as AuthStateProvider)!.NotifyUserLoggedIn(this.accessToken);
     }
 
     public void AuthenticateSession(AccessToken accessToken, RefreshToken refreshToken)
@@ -61,6 +63,8 @@ public class AuthorizationService : BaseService, IAuthorizationService
     {
         await _localStorage.RemoveItemAsync(Token.AccessTokenName);
         await _localStorage.RemoveItemAsync(Token.RefreshTokenName);
+
+        (_authStateProvider as AuthStateProvider)!.NotifyUserLogout();
     }
 
     public async Task AuthorizeClient(HttpClient httpClient)
@@ -96,8 +100,7 @@ public class AuthorizationService : BaseService, IAuthorizationService
 
         await SendAsync(request);
 
-        await _localStorage.RemoveItemAsync(Token.AccessTokenName);
-        await _localStorage.RemoveItemAsync(Token.RefreshTokenName);
+        await RemoveTokensFromStorage();
     }
 
     public async Task RefreshTokens()
@@ -119,16 +122,12 @@ public class AuthorizationService : BaseService, IAuthorizationService
 
         if (tokens.Success)
         {
-            accessToken = new AccessToken(tokens.Data.AccessToken, maxRequestTime);
-            refreshToken = new RefreshToken(tokens.Data.RefreshToken, maxRequestTime);
-
+            AuthenticateSession(tokens.Data.AccessToken, tokens.Data.RefreshToken);
             await SaveTokensInStorage();
         }
         else
         {
             await RemoveTokensFromStorage();
-
-            await _authStateProvider.GetAuthenticationStateAsync();
             _navigationManager.NavigateTo("/auth/login");
         }
     }

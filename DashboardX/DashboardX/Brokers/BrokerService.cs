@@ -15,8 +15,9 @@ public class BrokerService : AuthorizedBaseService, IBrokerService
 
     public BrokerService(HttpClient httpClient, 
                          IAuthorizationService authorizationService, 
+                         IConfiguration configuration,
                          NavigationManager navigationManager, 
-                         ILocalStorageService localStorage) : base(httpClient, authorizationService, navigationManager, localStorage)
+                         ILocalStorageService localStorage) : base(httpClient, authorizationService, configuration, navigationManager, localStorage)
     {
         
     }

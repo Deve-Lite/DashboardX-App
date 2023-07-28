@@ -8,7 +8,10 @@ namespace DashboardX.Auth;
 public class AuthenticationService : BaseService, IAuthenticationService
 {
     private readonly IAuthorizationService _authorizationService;
-    public AuthenticationService(HttpClient httpClient, IAuthorizationService authorizationService) : base(httpClient)
+
+    public AuthenticationService(HttpClient httpClient, 
+                                 IAuthorizationService authorizationService, 
+                                 IConfiguration configuration) : base(httpClient, configuration)
     {
         _authorizationService = authorizationService;
     }
@@ -24,7 +27,7 @@ public class AuthenticationService : BaseService, IAuthenticationService
         var request = new Request
         {
             Method = HttpMethod.Post,
-            Route = "auth/login",
+            Route = "users/login",
             Data = loginDto
         };
 
@@ -60,7 +63,7 @@ public class AuthenticationService : BaseService, IAuthenticationService
         var request = new Request
         {
             Method = HttpMethod.Post, 
-            Route = "auth/register", 
+            Route = "users/register", 
             Data = registerDto
         };
 

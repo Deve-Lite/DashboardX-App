@@ -1,11 +1,7 @@
-﻿using Blazored.LocalStorage;
-using DashboardX.Services.Interfaces;
-using DashboardX.Tokens;
-using Microsoft.AspNetCore.Components;
+﻿using DashboardX.Services.Interfaces;
 using System.Net;
 using System.Text;
 using System.Text.Json;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DashboardX.Services;
 
@@ -13,18 +9,24 @@ public abstract class BaseService : IBaseService
 {
     protected readonly HttpClient _client;
 
-    public BaseService(HttpClient httpClient)//, 
-                                             //NavigationManager navigationManager,
-                                             //ILocalStorageService localStorage)
+    protected readonly string _baseUrl;
+    protected readonly string _apiVersion;
+
+    public BaseService(HttpClient httpClient, IConfiguration configuration)
     {
         _client = httpClient;
-        //_localStorage = localStorage;
-        //_navigationManager = navigationManager;
+
+        _baseUrl = configuration.GetValue<string>("Api:Url")!;
+        _apiVersion = configuration.GetValue<string>("Api:Version")!;
     }
 
     public async Task<Response<T>> SendAsync<T>(Request request, JsonSerializerOptions? options = null) where T : class, new()
     {
         HttpRequestMessage message = CreateMessage(request);
+
+        #if DEBUG
+        await Task.Delay(1000);
+        #endif
 
         return await Run<T>(message);
     }
@@ -33,6 +35,10 @@ public abstract class BaseService : IBaseService
     {
         HttpRequestMessage message = CreateMessage(request);
 
+        #if DEBUG
+        await Task.Delay(1000);
+        #endif
+
         return await Run(message);
     }
 
@@ -40,7 +46,7 @@ public abstract class BaseService : IBaseService
     {
         options ??= new();
 
-        HttpRequestMessage message = new HttpRequestMessage(request.Method, request.Route);
+        HttpRequestMessage message = new HttpRequestMessage(request.Method, CombineResourcePath(request.Route));
 
         var data = JsonSerializer.Serialize(request.Data, options);
         var content = new StringContent(data, Encoding.UTF8, "application/json");
@@ -144,4 +150,6 @@ public abstract class BaseService : IBaseService
             };
         }
     }
+
+    protected string CombineResourcePath(string resourcePath) => $"{_baseUrl}/{_apiVersion}/{resourcePath}";
 }

@@ -7,9 +7,27 @@ namespace DashboardX.Tokens;
 public class AccessToken : Token
 {
     private IEnumerable<Claim> claims;
-
     public IEnumerable<Claim> Claims => claims;
     
+    public Claim Role()
+    {
+        var role = claims.FirstOrDefault(c => c.Type == "isAdmin")?.Value ?? string.Empty;
+
+        if(role == "true")
+            role = "admin";
+        else if(role == "false")
+            role = "user";
+        else
+            role = "norole";
+
+        return new Claim(ClaimTypes.Role, role);
+    }
+
+    public Claim Id()
+    {
+        var id = claims.FirstOrDefault(c => c.Type == "id")?.Value ?? string.Empty;
+        return new Claim(ClaimTypes.NameIdentifier, id);
+    }
 
     public AccessToken() : base()
     {
@@ -37,7 +55,7 @@ public class AccessToken : Token
             else
                 expiration = DateTime.MaxValue;
         }
-        catch
+        catch (Exception)
         {
             expiration = DateTime.MinValue;
             isValid = false;
