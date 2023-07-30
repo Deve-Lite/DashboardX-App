@@ -1,0 +1,67 @@
+﻿@page "/"
+@page "/auth/login"
+
+@using global::Shared.Models.Auth;
+@using global::Shared.Constraints.Authorization;
+
+@inject ILocalStorageService _localStorage
+@inject IAuthenticationService _authenticationService
+@inject NavigationManager _navigationManager
+
+<MudLayout>
+    <div class="background-image-container">
+        <img src="your-background-image.jpg" alt="Background Image" class="background-image" />
+    </div>
+
+    <div class="login-container">
+        <MudContainer>
+            <MudPaper Elevation="3" Padding="32px">
+                <MudTextField @bind-Value="LoginData.Email" Label="Email" />
+                <MudTextField @bind-Value="LoginData.Password" Label="Password" InputType="InputType.Password" />
+
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="Login">Login</MudButton>
+            </MudPaper>
+        </MudContainer>
+    </div>
+</MudLayout>
+
+@code {
+    private LoginData LoginData { get; set; } = new LoginData();
+    private IEnumerable<string> Errors { get; set; } = new List<string>();
+    private bool RememberMe { get; set; } = false;
+
+    private bool IsLoading { get; set; } = false;
+
+    
+
+    protected override async Task OnInitializedAsync()
+    {
+        var rememberMe = await _localStorage.GetItemAsync<bool>(AuthPageConstraint.RememberMeName);
+
+        if (rememberMe == true)
+        {
+
+            
+        }
+    }
+
+    public async Task Login()
+    {
+        var result = await _authenticationService.Login(LoginData);
+
+        if (result.Succeeded)
+        {
+            if (RememberMe)
+            {
+                await _localStorage.SetItemAsync(AuthPageConstraint.RememberMeName, true);
+            }
+
+            _navigationManager.NavigateTo("/brokers");
+        }
+        else
+        {
+            Errors = result.Messages;
+            
+        }
+    }
+}
