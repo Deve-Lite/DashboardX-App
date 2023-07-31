@@ -22,7 +22,7 @@ jobs:
         run: dotnet restore Core/Core.csproj 
 
       - name: Build Core
-        run: dotnet build Core/Core.csproj 
+        run: dotnet build DashboardX/Core/Core.csproj 
 
       - name: Restore Infrastructure NuGet packages
         run: dotnet restore Infrastructure/Infrastructure.csproj 
