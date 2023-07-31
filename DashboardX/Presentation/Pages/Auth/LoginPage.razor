@@ -1,38 +1,82 @@
 ﻿@page "/"
 @page "/auth/login"
 
+@using Blazored.FluentValidation;
+@using FluentValidation;
+@using Infrastructure;
 @using global::Shared.Models.Auth;
 @using global::Shared.Constraints.Authorization;
 
+@inject IStringLocalizer<LoginPage> _localizer
 @inject ILocalStorageService _localStorage
 @inject IAuthenticationService _authenticationService
-@inject NavigationManager _navigationManager
+@inject AuthenticationStateProvider _authenticationStateProvider; 
 
-<MudLayout>
-    <div class="background-image-container">
-        <img src="your-background-image.jpg" alt="Background Image" class="background-image" />
-    </div>
+<MudCard Class="card p-5" style="border-radius: 1rem;">
+    <EditForm Model="@LoginData" OnValidSubmit="LoginAsync">
+        <FluentValidationValidator @ref="_fluentValidationValidator" />
+        <MudGrid>
+            <DataAnnotationsValidator />
+            <MudItem xs="12">
+                <div class="d-flex justify-center">
+                    <MudText Typo="Typo.h4">@_localizer["Sign In"]</MudText>
+                </div>
+            </MudItem>
 
-    <div class="login-container">
-        <MudContainer>
-            <MudPaper Elevation="3" Padding="32px">
-                <MudTextField @bind-Value="LoginData.Email" Label="Email" />
-                <MudTextField @bind-Value="LoginData.Password" Label="Password" InputType="InputType.Password" />
+            <MudItem xs="12">
+                <div class="d-flex justify-center">
+                    <MudText>@_localizer["Don't have an account?"] <MudLink Href="/auth/register">@_localizer["Register"]</MudLink></MudText>
+                </div>
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField T="string"
+                              Label="@_localizer["Email"]"
+                              Immediate="true"
+                              Variant="Variant.Outlined"
+                              @bind-Value="LoginData.Email"
+                              For="@(() => LoginData.Email)" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField Label="@_localizer["Password"]"
+                              Variant="Variant.Outlined"
+                              @bind-Value="LoginData.Password"
+                              For="@(() => LoginData.Password)"
+                              InputType="@_passwordInput"
+                              Immediate="true"
+                              Adornment="Adornment.End"
+                              AdornmentIcon="@_passwordInputIcon"
+                              OnAdornmentClick="TogglePasswordVisibility" />
+            </MudItem>
+            <MudItem xs="12" Class="d-flex justify-space-between align-center">
+                <MudCheckBox T="bool"
+                @bind-Value="RememberMe"
+                             Label="@_localizer["Remember Me"]"
+                             Color="Color.Primary"
+                             Class="ml-n1"></MudCheckBox>
+                <MudLink Href="/account/forgot-password">@_localizer["Forgot password?"]</MudLink>
+            </MudItem>
+            <MudItem xs="12" Class="d-flex justify-center">
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Disabled="@(!Validated)" Color="Color.Primary" Size="Size.Large" Style="width: 100%;">@_localizer["Sign In"]</MudButton>
+            </MudItem>
 
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="Login">Login</MudButton>
-            </MudPaper>
-        </MudContainer>
-    </div>
-</MudLayout>
+            <MudItem xs="12">
+                <MudButton OnClick="FillAdministratorCredentials">@_localizer["Fill Administrator Credentials"]</MudButton>
+            </MudItem>
+            <MudItem xs="12">
+                <MudButton OnClick="FillBasicUserCredentials">@_localizer["Login with user Credentials."]</MudButton>
+            </MudItem>
+        </MudGrid>
+    </EditForm>
+</MudCard>
 
-@code {
-    private LoginData LoginData { get; set; } = new LoginData();
-    private IEnumerable<string> Errors { get; set; } = new List<string>();
+
+@code 
+{
+
+    private LoginRequest LoginData { get; set; } = new LoginRequest();
     private bool RememberMe { get; set; } = false;
-
-    private bool IsLoading { get; set; } = false;
-
-    
+    private FluentValidationValidator? _fluentValidationValidator;
+    private bool Validated => _fluentValidationValidator!.Validate(options => { options.IncludeAllRuleSets(); });
 
     protected override async Task OnInitializedAsync()
     {
@@ -40,28 +84,66 @@
 
         if (rememberMe == true)
         {
+            var accessToken = await _localStorage.GetItemAsync<string>(AuthStorageConstraints.AccessToken);
+            var refreshToken = await _localStorage.GetItemAsync<string>(AuthStorageConstraints.RefreshToken);
 
-            
+            //todo: check if token is valid
+            if (true)
+            {
+                await (_authenticationStateProvider as ApplicationStateProvider)!.Login(accessToken, refreshToken);
+                _snackbar.Add("Hello there!", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
+                _navigationManager.NavigateTo("/brokers");
+            }
         }
     }
-
-    public async Task Login()
+    private async Task LoginAsync()
     {
         var result = await _authenticationService.Login(LoginData);
 
         if (result.Succeeded)
         {
             if (RememberMe)
-            {
                 await _localStorage.SetItemAsync(AuthPageConstraint.RememberMeName, true);
-            }
-
+            
+            _snackbar.Add("Hello there!", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
             _navigationManager.NavigateTo("/brokers");
         }
         else
         {
-            Errors = result.Messages;
-            
+            foreach(var error in result.Messages)
+                _snackbar.Add(error, MudBlazor.Severity.Error, config => { config.ShowCloseIcon = false; });
         }
+    }
+
+    private bool _passwordVisibility;
+    private InputType _passwordInput = InputType.Password;
+    private string _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
+
+    void TogglePasswordVisibility()
+    {
+        if (_passwordVisibility)
+        {
+            _passwordVisibility = false;
+            _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
+            _passwordInput = InputType.Password;
+        }
+        else
+        {
+            _passwordVisibility = true;
+            _passwordInputIcon = Icons.Material.Filled.Visibility;
+            _passwordInput = InputType.Text;
+        }
+    }
+
+    private void FillAdministratorCredentials()
+    {
+        LoginData.Email = "psp515@wp.pl";
+        LoginData.Password = "Admin123!";
+    }
+
+    private void FillBasicUserCredentials()
+    {
+        LoginData.Email = "dred@gmail.pl";
+        LoginData.Password = "User123!";
     }
 }

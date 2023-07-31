@@ -16,16 +16,16 @@ public class AuthenticationService : BaseService, IAuthenticationService
         _applicationStateProvider = (ApplicationStateProvider?)authenticationStateProvider!;
     }
 
-    public async Task<Result> Login(LoginData data)
+    public async Task<Result> Login(LoginRequest data)
     {
-        var request = new Request<LoginData>
+        var request = new Request<LoginRequest>
         {
             Method = HttpMethod.Post,
-            Route = "users/login",
+            Route = "api/v1/users/login",
             Data = data
         };
 
-        var result = await SendAsync<Tokens>(request);
+        var result = await SendAsync<Tokens, LoginRequest>(request);
 
         if (result.Succeeded)
         {
@@ -38,12 +38,12 @@ public class AuthenticationService : BaseService, IAuthenticationService
         return result;
     }
 
-    public async Task<Result> Register(RegisterData data)
+    public async Task<Result> Register(RegisterRequest data)
     {
-        var request = new Request<RegisterData>
+        var request = new Request<RegisterRequest>
         {
             Method = HttpMethod.Post, 
-            Route = "users/register", 
+            Route = "api/v1/users/register", 
             Data = data
         };
 

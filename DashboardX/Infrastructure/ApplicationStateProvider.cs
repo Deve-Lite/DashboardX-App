@@ -36,16 +36,12 @@ public class ApplicationStateProvider : AuthenticationStateProvider
 
     public async Task Login(string accessToken, string refreshToken)
     {
-        AccessToken = accessToken;
-        RefreshToken = refreshToken;
-        await _localStorage.SetItemAsync(AuthStorageConstraints.AccessToken, accessToken);
-        await _localStorage.SetItemAsync(AuthStorageConstraints.RefreshToken, refreshToken);
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-        currentState = AuthState(accessToken);
+        await SetAuthState(accessToken, refreshToken);
 
         NotifyAuthenticationStateChanged(Task.FromResult(currentState));
     }
+
+    public async Task ExtendSession(string accessToken, string refreshToken) => await SetAuthState(accessToken, refreshToken);
 
     public async Task Logout()
     {
@@ -58,6 +54,16 @@ public class ApplicationStateProvider : AuthenticationStateProvider
     }
 
     #region State
+    private async Task SetAuthState(string accessToken, string refreshToken)
+    {
+        AccessToken = accessToken;
+        RefreshToken = refreshToken;
+        await _localStorage.SetItemAsync(AuthStorageConstraints.AccessToken, accessToken);
+        await _localStorage.SetItemAsync(AuthStorageConstraints.RefreshToken, refreshToken);
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+        currentState = AuthState(accessToken);
+    }
     private static AuthenticationState NoAuthState() => new(new ClaimsPrincipal(new ClaimsIdentity()));
     private static AuthenticationState AuthState(string token)
     {

@@ -1,4 +1,6 @@
 ﻿using Core;
+using System;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 
@@ -17,7 +19,6 @@ public abstract class BaseService
     {
         var message = CreateMessage(request);
         var results = await Run<T>(message);
-
         return results;
     }
 
@@ -25,7 +26,13 @@ public abstract class BaseService
     {
         var message = CreateMessage(request);
         var results = await Run(message);
+        return results;
+    }
 
+    protected virtual async Task<Result<T>> SendAsync<T, T1>(Request<T1> request, JsonSerializerOptions? options = null) where T1 : class, new() where T : class
+    {
+        var message = CreateMessage(request);
+        var results = await Run<T>(message);
         return results;
     }
 
@@ -45,8 +52,8 @@ public abstract class BaseService
 
             if (!string.IsNullOrEmpty(payload))
             {
-                var errors = JsonSerializer.Deserialize<List<string>>(payload)!;
-                return Result<T>.Fail(response.StatusCode, errors);
+                var errorResponse = JsonSerializer.Deserialize<ErrorMessage>(payload)!;
+                return Result<T>.Fail(response.StatusCode, errorResponse.Message);
             }
 
             return Result<T>.Fail(response.StatusCode);
@@ -54,6 +61,10 @@ public abstract class BaseService
         catch (TaskCanceledException)
         {
             return Result<T>.Timeout("Operation timed out.");
+        }
+        catch
+        {
+            return Result<T>.Fail("Unknown error occured.");
         }
     }
 
@@ -79,6 +90,10 @@ public abstract class BaseService
         catch (TaskCanceledException)
         {
             return Result.Timeout("Operation timed out.");
+        }
+        catch
+        {
+            return Result.Fail("Unknown error occured. ");
         }
     }
 

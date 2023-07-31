@@ -2,7 +2,7 @@
 
 public interface IAuthenticationService
 {
-    Task<Result> Login(LoginData loginData);
-    Task<Result> Register(RegisterData registerData);
+    Task<Result> Login(LoginRequest loginData);
+    Task<Result> Register(RegisterRequest registerData);
 }
 

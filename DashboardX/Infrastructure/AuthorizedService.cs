@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Shared.Models.Auth;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace Infrastructure;
@@ -56,7 +57,7 @@ public abstract class AuthorizedService : BaseService
         return results;
     }
 
-    protected virtual async Task<Result<T>> SendAsync<T, T1>(Request<T1> request, JsonSerializerOptions? options = null) where T1 : class, new() where T : class
+    protected override async Task<Result<T>> SendAsync<T, T1>(Request<T1> request, JsonSerializerOptions? options = null) where T1 : class where T : class
     {
         var message = CreateMessage(request);
         var results = await Run<T>(message);
@@ -74,30 +75,27 @@ public abstract class AuthorizedService : BaseService
 
     private async Task<bool> RefreshTokens()
     {
-        var tokens = new Tokens
-        {
-            AccessToken = _applicationStateProvider.AccessToken,
-            RefreshToken = _applicationStateProvider.RefreshToken
-        };
-
-        var request = new Request<Tokens>
+        var request = new Request
         {
             Method = HttpMethod.Delete,
-            Route = "users/me",
-            Data = tokens
+            Route = "users/me"
         };
 
-        var response = await SendAsync<Tokens, Tokens>(request);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _applicationStateProvider.RefreshToken);
+
+        var response = await SendAsync<Tokens>(request);
 
         if(response.Succeeded)
         {
-
-            //var accessToken = response.Data!.AccessToken;
-            //var refreshToken = response.Data!.RefreshToken;
-            //await _applicationStateProvider.Login(accessToken, refreshToken);
+            var accessToken = response.Data!.AccessToken;
+            var refreshToken = response.Data!.RefreshToken;
+            await _applicationStateProvider.ExtendSession(accessToken, refreshToken);
 
             return true;
         }
+
+        //TODO: Handle this better, mayby with special page describing error.
+        _navigationManager.NavigateTo("/");
 
         return false;
     }

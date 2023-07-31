@@ -1,19 +1,43 @@
 ﻿@inherits LayoutComponentBase
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
-<MudThemeProvider />
+<MudLayout>
+    <MudThemeProvider />
+    <MudSnackbarProvider />
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+    <AuthorizeView Roles="user, admin">
+        <Authorized>
+            <MudAppBar Elevation="1" Dense="@true">
+                <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
+                <MudSpacer />
+            </MudAppBar>
+            <MudDrawer @bind-Open="@open" ClipMode="DrawerClipMode.Docked" Elevation="1" Variant="@DrawerVariant.Responsive">
+                <MudDrawerHeader>
+                    <MudText Typo="Typo.h6">My App</MudText>
+                </MudDrawerHeader>
+                <MudNavMenu>
+                    <MudNavLink Match="NavLinkMatch.All">Store</MudNavLink>
+                    <MudNavLink Match="NavLinkMatch.All">Library</MudNavLink>
+                    <MudNavLink Match="NavLinkMatch.All">Community</MudNavLink>
+                </MudNavMenu>
+            </MudDrawer>
+            <MudMainContent>
+                @Body
+            </MudMainContent>
+        </Authorized>
+        <NotAuthorized>
+            <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-center" Style="height: 100vh;">
+                @Body
+            </MudContainer>
+        </NotAuthorized>
+    </AuthorizeView>
+</MudLayout>
+@code {
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-        </div>
+    bool open = false;
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+    void ToggleDrawer()
+    {
+        open = !open;
+    }
+}

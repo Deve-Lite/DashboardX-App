@@ -1,6 +1,6 @@
 {
-  "name": "Presentation",
-  "short_name": "Presentation",
+  "name": "Dashboard X",
+  "short_name": "Dash X",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",

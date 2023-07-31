@@ -1,6 +1,6 @@
 ﻿namespace Shared.Models.Auth;
 
-public class RegisterData
+public class RegisterRequest
 {
     [Required, MinLength(3), MaxLength(30)]
     public string Username { get; set; } = string.Empty;
