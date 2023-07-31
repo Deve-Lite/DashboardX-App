@@ -54,6 +54,8 @@
     {
         var result = await _authenticationService.Register(RegisterData);
 
+        //TODO: loading dialog
+
         if (result.Succeeded)
         {
             _snackbar.Add("Registered successfully", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });

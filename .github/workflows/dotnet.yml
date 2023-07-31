@@ -16,14 +16,32 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '7.x' 
+          dotnet-version: '6.x' 
 
-      - name: Restore NuGet packages
-        run: dotnet restore DashboardX.csproj DashboardXModels.csproj
+      - name: Restore Core NuGet packages
+        run: dotnet restore Core.csproj 
 
-      - name: Build the project
-        run: dotnet build --configuration Release DashboardX.csproj DashboardXModels.csproj
+      - name: Build Core
+        run: dotnet build Core.csproj 
 
-      - name: Run tests (if you have tests)
+      - name: Restore Infrastructure NuGet packages
+        run: dotnet restore Infrastructure.csproj 
+
+      - name: Build Infrastructure
+        run: dotnet build Infrastructure.csproj 
+
+      - name: Restore Shared NuGet packages
+        run: dotnet restore Shared.csproj 
+
+      - name: Build Shared
+        run: dotnet build Shared.csproj 
+
+      - name: Restore Presentation NuGet packages
+        run: dotnet restore Presentation.csproj 
+
+      - name: Build Presentation
+        run: dotnet build Presentation.csproj 
+
+      - name: Run tests
         run: dotnet test --configuration Release --no-restore --verbosity normal
 

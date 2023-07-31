@@ -87,7 +87,7 @@
             var accessToken = await _localStorage.GetItemAsync<string>(AuthStorageConstraints.AccessToken);
             var refreshToken = await _localStorage.GetItemAsync<string>(AuthStorageConstraints.RefreshToken);
 
-            //todo: check if token is valid
+            //todo: Refresh token
             if (true)
             {
                 await (_authenticationStateProvider as ApplicationStateProvider)!.Login(accessToken, refreshToken);
@@ -99,6 +99,8 @@
     private async Task LoginAsync()
     {
         var result = await _authenticationService.Login(LoginData);
+
+        //TODO: loading dialog
 
         if (result.Succeeded)
         {
