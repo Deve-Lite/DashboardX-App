@@ -37,10 +37,10 @@ jobs:
         run: dotnet build DashboardX/Shared/Shared.csproj 
 
       - name: Restore Presentation NuGet packages
-        run: dotnet DashboardX/restore Presentation/Presentation.csproj 
+        run: dotnet restore DashboardX/Presentation/Presentation.csproj 
 
       - name: Build Presentation
-        run: dotnet DashboardX/build Presentation/Presentation.csproj 
+        run: dotnet build DashboardX/Presentation/Presentation.csproj 
 
       - name: Run tests
         run: dotnet test --configuration Release --no-restore --verbosity normal
