@@ -25,22 +25,22 @@ jobs:
         run: dotnet build DashboardX/Core/Core.csproj 
 
       - name: Restore Infrastructure NuGet packages
-        run: dotnet restore Infrastructure/Infrastructure.csproj 
+        run: dotnet restore DashboardX/Infrastructure/Infrastructure.csproj 
 
       - name: Build Infrastructure
-        run: dotnet build Infrastructure/Infrastructure.csproj 
+        run: dotnet build DashboardX/Infrastructure/Infrastructure.csproj 
 
       - name: Restore Shared NuGet packages
-        run: dotnet restore Shared/Shared.csproj 
+        run: dotnet restore DashboardX/Shared/Shared.csproj 
 
       - name: Build Shared
-        run: dotnet build Shared/Shared.csproj 
+        run: dotnet build DashboardX/Shared/Shared.csproj 
 
       - name: Restore Presentation NuGet packages
-        run: dotnet restore Presentation/Presentation.csproj 
+        run: dotnet DashboardX/restore Presentation/Presentation.csproj 
 
       - name: Build Presentation
-        run: dotnet build Presentation/Presentation.csproj 
+        run: dotnet DashboardX/build Presentation/Presentation.csproj 
 
       - name: Run tests
         run: dotnet test --configuration Release --no-restore --verbosity normal
