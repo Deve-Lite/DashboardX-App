@@ -19,7 +19,7 @@ jobs:
           dotnet-version: '6.x' 
 
       - name: Restore Core NuGet packages
-        run: dotnet restore Core/Core.csproj 
+        run: dotnet restore DashboardX/Core/Core.csproj 
 
       - name: Build Core
         run: dotnet build DashboardX/Core/Core.csproj 
