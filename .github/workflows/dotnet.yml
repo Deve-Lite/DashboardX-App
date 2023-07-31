@@ -19,28 +19,28 @@ jobs:
           dotnet-version: '6.x' 
 
       - name: Restore Core NuGet packages
-        run: dotnet restore Core.csproj 
+        run: dotnet restore Core/Core.csproj 
 
       - name: Build Core
-        run: dotnet build Core.csproj 
+        run: dotnet build Core/Core.csproj 
 
       - name: Restore Infrastructure NuGet packages
-        run: dotnet restore Infrastructure.csproj 
+        run: dotnet restore Infrastructure/Infrastructure.csproj 
 
       - name: Build Infrastructure
-        run: dotnet build Infrastructure.csproj 
+        run: dotnet build Infrastructure/Infrastructure.csproj 
 
       - name: Restore Shared NuGet packages
-        run: dotnet restore Shared.csproj 
+        run: dotnet restore Shared/Shared.csproj 
 
       - name: Build Shared
-        run: dotnet build Shared.csproj 
+        run: dotnet build Shared/Shared.csproj 
 
       - name: Restore Presentation NuGet packages
-        run: dotnet restore Presentation.csproj 
+        run: dotnet restore Presentation/Presentation.csproj 
 
       - name: Build Presentation
-        run: dotnet build Presentation.csproj 
+        run: dotnet build Presentation/Presentation.csproj 
 
       - name: Run tests
         run: dotnet test --configuration Release --no-restore --verbosity normal
