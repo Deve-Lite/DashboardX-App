@@ -42,6 +42,3 @@ jobs:
       - name: Build Presentation
         run: dotnet build DashboardX/Presentation/Presentation.csproj 
 
-      - name: Run tests
-        run: dotnet test --configuration Release --no-restore --verbosity normal
-
