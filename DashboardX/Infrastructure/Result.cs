@@ -1,9 +1,10 @@
 ﻿
+using Core;
 using System.Net;
 
-namespace Core;
+namespace Infrastructure;
 
-public class Result
+public class Result : IResult
 {
     public HttpStatusCode StatusCode { get; set; }
     public bool Succeeded { get; set; }
@@ -19,11 +20,14 @@ public class Result
 }
 
 
-public class Result<T> : Result
+public class Result<T> : Result, IResult<T>  
 {
-    public T? Data { get; set; }
+    public T Data { get; set; }
 
-    public Result() { }
+    public Result() 
+    {
+        Data = default!;
+    }
 
     public static Result<T> Success(HttpStatusCode statusCode, T data) => new() { Succeeded = true, Data = data, StatusCode = statusCode };
     public static Result<T> Fail(HttpStatusCode statusCode, string messages) => new() { Succeeded = false, Messages = new List<string> { messages }, StatusCode = statusCode };

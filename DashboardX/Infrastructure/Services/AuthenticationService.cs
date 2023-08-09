@@ -4,7 +4,7 @@ using Infrastructure;
 using Microsoft.AspNetCore.Components.Authorization;
 using Shared.Models.Auth;
 
-namespace Infrastructe.Services;
+namespace Infrastructure.Services;
 
 public class AuthenticationService : BaseService, IAuthenticationService
 {
@@ -16,7 +16,7 @@ public class AuthenticationService : BaseService, IAuthenticationService
         _applicationStateProvider = (ApplicationStateProvider?)authenticationStateProvider!;
     }
 
-    public async Task<Result> Login(LoginRequest data)
+    public async Task<IResult> Login(LoginRequest data)
     {
         var request = new Request<LoginRequest>
         {
@@ -38,7 +38,7 @@ public class AuthenticationService : BaseService, IAuthenticationService
         return result;
     }
 
-    public async Task<Result> Register(RegisterRequest data)
+    public async Task<IResult> Register(RegisterRequest data)
     {
         var request = new Request<RegisterRequest>
         {
