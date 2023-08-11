@@ -1,0 +1,116 @@
+﻿@page "/user/settings"
+@using Blazored.FluentValidation;
+@using global::Shared.Models.Users;
+
+@inject IStringLocalizer<SettingsPage> _localizer;
+
+<MudGrid>
+    <MudItem xs="12" sm="4" md="3">
+        <MudCard Elevation="25">
+            <MudCardContent>
+                <div class="d-flex justify-center mb-4">
+                    @if (!string.IsNullOrEmpty(@ImageDataUrl))
+                    {
+                        <MudAvatar Image="@ImageDataUrl" Style="height:250px; width:250px;"> </MudAvatar>
+                    }
+                    else
+                    {
+                        <MudAvatar Color="Color.Secondary" Style="height:250px; width:250px;">@_firstLetterOfName</MudAvatar>
+                    }
+                </div>
+                <MudText Typo="Typo.h6" Align="Align.Center"> Last name first name</MudText>
+                <MudText Align="Align.Center"> settings </MudText>
+            </MudCardContent>
+            <MudCardActions Class="d-flex justify-center">
+                <InputFile id="fileInput" OnChange="UploadFiles" hidden />
+                <MudButton HtmlTag="label"
+                           Variant="Variant.Text"
+                           Color="Color.Primary"
+                           Size="Size.Small"
+                           for="fileInput">
+                    @_localizer["Upload Image"]
+                </MudButton>
+                @if (!string.IsNullOrEmpty(@ImageDataUrl))
+                {
+                    <MudButton Variant="Variant.Text"
+                               Color="Color.Error"
+                               Size="Size.Small"
+                               OnClick="DeleteAsync">
+                        @_localizer["Delete Image"]
+                    </MudButton>
+                }
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+    <MudItem xs="12" sm="8" md="9">
+        <EditForm Model="@SettingsModel" OnValidSubmit="UpdateProfileAsync">
+            <FluentValidationValidator @ref="_fluentValidationValidator" />
+            <MudCard Elevation="25">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText>@_localizer["Profile Details"]</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudGrid>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="SettingsModel.Language" Label="@_localizer["First Name"]" Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="SettingsModel.Language"  Label="@_localizer["Last Name"]" Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="SettingsModel.Language" Label="@_localizer["Phone Number"]" Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="SettingsModel.Language" Label="@_localizer["Email"]" Variant="Variant.Outlined" InputType="InputType.Email" Disabled=true />
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+                <MudCardActions Class="pb-4 pl-4">
+                    <MudButton Variant="Variant.Filled" Disabled="@(!Validated)" Color="Color.Primary" Class="ml-auto" ButtonType="ButtonType.Submit">@_localizer["Save Changes"]</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </EditForm>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private FluentValidationValidator _fluentValidationValidator;
+    private bool Validated => _fluentValidationValidator.Validate(options => { options.IncludeAllRuleSets(); });
+    private char _firstLetterOfName;
+
+    private readonly SettingsModel SettingsModel = new();
+
+    public string UserId { get; set; }
+
+    private async Task UpdateProfileAsync()
+    {
+       
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+       
+    }
+
+    private IBrowserFile _file;
+
+    [Parameter]
+    public string ImageDataUrl { get; set; }
+
+    private async Task UploadFiles(InputFileChangeEventArgs e)
+    {
+       
+    }
+
+    private async Task DeleteAsync()
+    {
+        
+    }
+}

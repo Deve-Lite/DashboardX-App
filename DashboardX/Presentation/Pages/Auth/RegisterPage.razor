@@ -1,6 +1,6 @@
 ﻿@page "/auth/register"
 @using Blazored.FluentValidation;
-@using Infrastructe.Services;
+@using Infrastructure.Services;
 @using global::Shared.Models.Auth;
 
 @inject IAuthenticationService _authenticationService
@@ -71,7 +71,7 @@
 </MudCard>
 
 @code {
-    private RegisterRequest RegisterData { get; set; } = new();
+    private RegisterModel RegisterData { get; set; } = new();
     private FluentValidationValidator? _fluentValidationValidator = new();
     private bool Validated => _fluentValidationValidator!.Validate(options => { options.IncludeAllRuleSets(); });
 

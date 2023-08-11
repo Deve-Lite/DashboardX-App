@@ -1,7 +1,7 @@
 ﻿
 namespace Shared.Models.Auth;
 
-public class LoginRequest
+public class LoginModel
 {
     [JsonPropertyName("email"), Required, MinLength(6), MaxLength(256), EmailAddress]
     public string Email { get; set; } = string.Empty;

@@ -80,7 +80,7 @@
 @code
 {
 
-    private LoginRequest LoginData { get; set; } = new LoginRequest();
+    private LoginModel LoginData { get; set; } = new LoginModel();
     private bool RememberMe { get; set; } = false;
     private FluentValidationValidator? _fluentValidationValidator = new();
     private bool Validated => _fluentValidationValidator!.Validate(options => { options.IncludeAllRuleSets(); });

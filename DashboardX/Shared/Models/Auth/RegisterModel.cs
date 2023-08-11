@@ -1,6 +1,6 @@
 ﻿namespace Shared.Models.Auth;
 
-public class RegisterRequest
+public class RegisterModel
 {
     [JsonPropertyName("username"), Required, MinLength(3), MaxLength(30)]
     public string Username { get; set; } = string.Empty;

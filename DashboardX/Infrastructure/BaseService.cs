@@ -62,7 +62,7 @@ public abstract class BaseService
         {
             return Result<T>.Timeout("Operation timed out.");
         }
-        catch
+        catch (Exception e)
         {
             return Result<T>.Fail("Unknown error occured.");
         }
@@ -91,7 +91,7 @@ public abstract class BaseService
         {
             return Result.Timeout("Operation timed out.");
         }
-        catch
+        catch (Exception e)
         {
             return Result.Fail("Unknown error occured. ");
         }
