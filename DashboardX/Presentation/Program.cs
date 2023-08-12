@@ -38,6 +38,7 @@ builder.Services.AddScoped<AuthenticationStateProvider, ApplicationStateProvider
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IToastService, ToastService>();
+builder.Services.AddSingleton<LoadingService>();
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
 

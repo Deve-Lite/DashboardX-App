@@ -1,17 +1,22 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-<MudLayout>
+<MudLayout Class="p-0 m-0">
     <MudThemeProvider />
     <MudSnackbarProvider />
 
-    <AuthorizeView Roles="user, admin">
-        <Authorized>
+        @if (IsLoading)
+        {
+            <MudProgressLinear Color="Color.Primary" Indeterminate="@IsLoading" Class="loading position-absolute" />
+        }
+
+        <AuthorizeView Roles="user, admin">
+            <Authorized>
             <MudAppBar Elevation="1" Dense="@true">
                 <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
                 <MudSpacer />
             </MudAppBar>
-            <MudDrawer @bind-Open="@open" ClipMode="DrawerClipMode.Docked" Elevation="1" Variant="@DrawerVariant.Responsive">
+            <MudDrawer @bind-Open="@Open" ClipMode="DrawerClipMode.Docked" Elevation="1" Variant="@DrawerVariant.Responsive">
                 <MudDrawerHeader>
                     <MudText Typo="Typo.h6">My App</MudText>
                 </MudDrawerHeader>
@@ -21,23 +26,38 @@
                     <MudNavLink Match="NavLinkMatch.All">Community</MudNavLink>
                 </MudNavMenu>
             </MudDrawer>
-            <MudMainContent>
+
+            <MudMainContent Style="height: 100vh;">
                 @Body
             </MudMainContent>
         </Authorized>
-        <NotAuthorized>
-            <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-center" Style="height: 100vh;">
+            <NotAuthorized>
+                <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-items-center" Style="height: 100vh;">
                 @Body
-            </MudContainer>
-        </NotAuthorized>
-    </AuthorizeView>
+                </MudContainer>
+            </NotAuthorized>
+        </AuthorizeView>
 </MudLayout>
+
 @code {
+    private bool Open { get; set; } = false;
+    private bool IsLoading { get; set; } = false;
 
-    bool open = false;
-
-    void ToggleDrawer()
+    protected override void OnInitialized()
     {
-        open = !open;
+        base.OnInitialized();
+        _loadingService.OnLoadingChanged = RefreshProgressBar;
+    }
+
+    private Task RefreshProgressBar(bool isLoading)
+    {
+        IsLoading = isLoading;
+        StateHasChanged();
+        return Task.CompletedTask;
+    } 
+
+    private void ToggleDrawer()
+    {
+        Open = !Open;
     }
 }

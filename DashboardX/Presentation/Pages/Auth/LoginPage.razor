@@ -1,4 +1,4 @@
-﻿@page "/"
+@page "/"
 @page "/auth/login"
 
 @using Blazored.FluentValidation;
@@ -7,12 +7,13 @@
 @using global::Shared.Models.Auth;
 @using global::Shared.Constraints.Authorization;
 
+@attribute [AllowAnonymous]
 @inject IStringLocalizer<LoginPage> _localizer
 @inject ILocalStorageService _localStorage
 @inject IAuthenticationService _authenticationService
 @inject AuthenticationStateProvider _authenticationStateProvider;
 
-<MudCard Class="card p-5" style="border-radius: 1rem;">
+<MudCard Class="container d-flex container-fit-content p-5" style="border-radius: 1rem; max-width 25rem; height 100vh;">
     <EditForm Model="@LoginData" OnValidSubmit="LoginAsync">
         <FluentValidationValidator @ref="_fluentValidationValidator" />
         <MudGrid>
@@ -80,6 +81,10 @@
 @code
 {
 
+    [Parameter] 
+    public bool IsLoading { get; set; }
+
+
     private LoginModel LoginData { get; set; } = new LoginModel();
     private bool RememberMe { get; set; } = false;
     private FluentValidationValidator? _fluentValidationValidator = new();
@@ -87,27 +92,33 @@
 
     protected override async Task OnInitializedAsync()
     {
+        IsLoading = true;
+
         var rememberMe = await _localStorage.GetItemAsync<bool>(AuthPageConstraint.RememberMeName);
 
         if (rememberMe == true)
         {
-            var accessToken = await _localStorage.GetItemAsync<string>(AuthStorageConstraints.AccessToken);
             var refreshToken = await _localStorage.GetItemAsync<string>(AuthStorageConstraints.RefreshToken);
 
-            //todo: Refresh token
-            if (true)
+            var successfullLoign = await _authenticationService.AuthenticateOnRememberMe(refreshToken);
+
+            if (successfullLoign)
             {
-                await (_authenticationStateProvider as ApplicationStateProvider)!.Login(accessToken, refreshToken);
                 _snackbar.Add("Hello there!", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
                 _navigationManager.NavigateTo("/brokers");
             }
         }
+
+        IsLoading = false;
     }
     private async Task LoginAsync()
     {
-        var result = await _authenticationService.Login(LoginData);
+        if(_loadingService.IsLoading)
+            return;
 
-        //TODO: loading dialog
+        _loadingService.ShowLoading();
+
+        var result = await _authenticationService.Login(LoginData);
 
         if (result.Succeeded)
         {
@@ -122,6 +133,8 @@
             foreach (var error in result.Messages)
                 _snackbar.Add(error, MudBlazor.Severity.Error, config => { config.ShowCloseIcon = false; });
         }
+
+        _loadingService.HideLoading();
     }
 
     private bool _passwordVisibility;

@@ -1,13 +1,11 @@
-﻿using Core;
-using System;
-using System.Net;
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
 
 namespace Infrastructure;
 
 public abstract class BaseService
 {
+    protected const int RequestDebugDelay = 3000;
     protected readonly HttpClient _client;
 
     public BaseService(HttpClient httpClient)
@@ -40,6 +38,11 @@ public abstract class BaseService
     {
         try
         {
+
+#if DEBUG
+            await Task.Delay(RequestDebugDelay);
+#endif
+
             var response = await _client.SendAsync(message);
 
             var payload = await response.Content.ReadAsStringAsync();
@@ -72,6 +75,10 @@ public abstract class BaseService
     {
         try
         {
+#if DEBUG
+            await Task.Delay(RequestDebugDelay);
+#endif
+
             var response = await _client.SendAsync(message);
 
             var payload = await response.Content.ReadAsStringAsync();

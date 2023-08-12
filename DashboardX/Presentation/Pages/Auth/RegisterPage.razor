@@ -2,7 +2,7 @@
 @using Blazored.FluentValidation;
 @using Infrastructure.Services;
 @using global::Shared.Models.Auth;
-
+@attribute [AllowAnonymous]
 @inject IAuthenticationService _authenticationService
 @inject IStringLocalizer<RegisterPage> _localizer
 

@@ -1,8 +1,10 @@
 ﻿using Core;
 using Core.Interfaces;
 using Infrastructure;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Shared.Models.Auth;
+using System.Net.Http.Headers;
 
 namespace Infrastructure.Services;
 
@@ -48,5 +50,29 @@ public class AuthenticationService : BaseService, IAuthenticationService
         };
 
         return await SendAsync(request);
+    }
+
+    public async Task<bool> AuthenticateOnRememberMe(string currentRefreshToken)
+    {
+        var request = new Request
+        {
+            Method = HttpMethod.Post,
+            Route = "api/v1/users/refresh"
+        };
+
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", currentRefreshToken);
+
+        var response = await SendAsync<Tokens>(request);
+
+        if (response.Succeeded)
+        {
+            var accessToken = response.Data!.AccessToken;
+            var refreshToken = response.Data!.RefreshToken;
+            await _applicationStateProvider.Login(accessToken, refreshToken);
+
+            return true;
+        }
+
+        return false;
     }
 }
