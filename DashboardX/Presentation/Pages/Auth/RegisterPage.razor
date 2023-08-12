@@ -77,9 +77,12 @@
 
     private async Task RegisterAsync()
     {
-        var result = await _authenticationService.Register(RegisterData);
+        if (_loadingService.IsLoading)
+            return;
 
-        //TODO: loading dialog
+        _loadingService.ShowLoading();
+
+        var result = await _authenticationService.Register(RegisterData);
 
         if (result.Succeeded)
         {
@@ -91,6 +94,8 @@
             foreach (var error in result.Messages)
                 _snackbar.Add(error, MudBlazor.Severity.Error, config => { config.ShowCloseIcon = false; });
         }
+
+        _loadingService.HideLoading();
     }
 
     private bool _passwordVisibility;

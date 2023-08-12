@@ -1,3 +1,4 @@
+@using global::Shared.Constraints.Authorization;
 @inherits LayoutComponentBase
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
@@ -5,13 +6,10 @@
     <MudThemeProvider />
     <MudSnackbarProvider />
 
-        @if (IsLoading)
-        {
-            <MudProgressLinear Color="Color.Primary" Indeterminate="@IsLoading" Class="loading position-absolute" />
-        }
 
-        <AuthorizeView Roles="user, admin">
-            <Authorized>
+
+    <AuthorizeView Roles="@Roles">
+        <Authorized>
             <MudAppBar Elevation="1" Dense="@true">
                 <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
                 <MudSpacer />
@@ -27,21 +25,31 @@
                 </MudNavMenu>
             </MudDrawer>
 
+            @if (IsLoading)
+            {
+                <MudProgressLinear Color="Color.Primary" Indeterminate="@IsLoading" Class="loading position-absolute" />
+            }
+
             <MudMainContent Style="height: 100vh;">
                 @Body
             </MudMainContent>
         </Authorized>
-            <NotAuthorized>
-                <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-items-center" Style="height: 100vh;">
+        <NotAuthorized>
+            @if (IsLoading)
+            {
+                <MudProgressLinear Color="Color.Primary" Indeterminate="@IsLoading" Class="loading position-absolute" />
+            }
+            <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-items-center" Style="height: 100vh;">
                 @Body
-                </MudContainer>
-            </NotAuthorized>
-        </AuthorizeView>
+            </MudContainer>
+        </NotAuthorized>
+    </AuthorizeView>
 </MudLayout>
 
 @code {
     private bool Open { get; set; } = false;
     private bool IsLoading { get; set; } = false;
+    private string Roles { get; set; } = $"{RolesConstraints.Admin}, {RolesConstraints.User}";
 
     protected override void OnInitialized()
     {
@@ -54,7 +62,7 @@
         IsLoading = isLoading;
         StateHasChanged();
         return Task.CompletedTask;
-    } 
+    }
 
     private void ToggleDrawer()
     {
