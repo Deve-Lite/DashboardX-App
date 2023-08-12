@@ -1,8 +1,10 @@
-﻿namespace Presentation.Services;
+﻿using Presentation.Services.Interfaces;
 
-public class LoadingService
+namespace Presentation.Services;
+
+public class LoadingService : ILoadingService
 {
-    public Func<bool, Task> OnLoadingChanged;
+    public Func<bool, Task> OnLoadingChanged { get; set; }
 
     private bool isLoading = false;
 

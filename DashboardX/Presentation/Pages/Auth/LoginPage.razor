@@ -4,6 +4,7 @@
 @using Blazored.FluentValidation;
 @using FluentValidation;
 @using Infrastructure;
+@using System.Diagnostics;
 @using global::Shared.Models.Auth;
 @using global::Shared.Constraints.Authorization;
 
@@ -80,19 +81,21 @@
 
 @code
 {
-
     [Parameter] 
     public bool IsLoading { get; set; }
-
-
+ 
     private LoginModel LoginData { get; set; } = new LoginModel();
     private bool RememberMe { get; set; } = false;
     private FluentValidationValidator? _fluentValidationValidator = new();
     private bool Validated => _fluentValidationValidator!.Validate(options => { options.IncludeAllRuleSets(); });
 
+    
     protected override async Task OnInitializedAsync()
     {
-        IsLoading = true;
+        if (_loadingService.IsLoading)
+            return;
+
+        _loadingService.ShowLoading();
 
         var rememberMe = await _localStorage.GetItemAsync<bool>(AuthPageConstraint.RememberMeName);
 
@@ -109,8 +112,9 @@
             }
         }
 
-        IsLoading = false;
+        _loadingService.HideLoading();
     }
+
     private async Task LoginAsync()
     {
         if(_loadingService.IsLoading)
