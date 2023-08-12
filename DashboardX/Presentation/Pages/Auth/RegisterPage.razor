@@ -1,8 +1,8 @@
 ﻿@page "/auth/register"
 @using Blazored.FluentValidation;
-@using Infrastructe.Services;
+@using Infrastructure.Services;
 @using global::Shared.Models.Auth;
-
+@attribute [AllowAnonymous]
 @inject IAuthenticationService _authenticationService
 @inject IStringLocalizer<RegisterPage> _localizer
 
@@ -10,6 +10,9 @@
     <EditForm Model="@RegisterData" OnValidSubmit="RegisterAsync">
         <FluentValidationValidator @ref="_fluentValidationValidator" />
         <MudGrid>
+            
+            <DataAnnotationsValidator />
+
             <MudItem xs="12">
                 <div class="d-flex justify-center">
                     <MudText Typo="Typo.h4">@_localizer["Register"]</MudText>
@@ -17,44 +20,69 @@
             </MudItem>
             <MudItem xs="12">
                 <div class="d-flex justify-center">
-                    <MudText>@_localizer["Already have an account?"] <MudLink Href="/login">@_localizer["Sign In"]</MudLink></MudText>
+                    <MudText>@_localizer["Already have an account?"] <MudLink Href="/auth/login">@_localizer["Sign In"]</MudLink></MudText>
                 </div>
             </MudItem>
             <MudItem xs="12">
-                <MudTextField For="@(() => RegisterData.Username)" @bind-Value="RegisterData.Username" Label="@_localizer["Username"]" />
+                <MudTextField T="string"
+                              For="@(() => RegisterData.Username)"
+                              Variant="Variant.Outlined"
+                @bind-Value="RegisterData.Username"
+                              Label="@_localizer["Username"]" />
             </MudItem>
             <MudItem xs="12">
-                <MudTextField For="@(() => RegisterData.Email)" @bind-Value="RegisterData.Email" Label="@_localizer["Email"]" />
+                <MudTextField T="string"
+                              For="@(() => RegisterData.Email)"
+                              Variant="Variant.Outlined"
+                @bind-Value="RegisterData.Email"
+                              Label="@_localizer["Email"]" />
             </MudItem>
-            <MudItem xs="12" sm="6" md="6">
-                <MudTextField For="@(() => RegisterData.Password)"
+            <MudItem xs="12">
+                <MudTextField T="string"
+                              For="@(() => RegisterData.Password)"
                               InputType="@_passwordInput"
+                              Variant="Variant.Outlined"
                               Adornment="Adornment.End"
                               AdornmentIcon="@_passwordInputIcon"
                               OnAdornmentClick="TogglePasswordVisibility"
                 @bind-Value="RegisterData.Password"
                               Label="@_localizer["Password"]" />
             </MudItem>
-            <MudItem xs="12" sm="6" md="6">
-                <MudTextField For="@(() => RegisterData.ConfirmPassword)" InputType="InputType.Password" @bind-Value="RegisterData.ConfirmPassword" Label="@_localizer["Confirm Password"]" />
+            <MudItem xs="12">
+                <MudTextField T="string"
+                              For="@(() => RegisterData.ConfirmPassword)"
+                              Variant="Variant.Outlined"
+                              InputType="InputType.Password"
+                @bind-Value="RegisterData.ConfirmPassword"
+                              Label="@_localizer["Confirm Password"]" />
             </MudItem>
             <MudItem xs="12" Class="d-flex justify-center">
-                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Disabled="@(!Validated)" Color="Color.Primary" Size="Size.Large" Style="width: 100%;">@_localizer["Register"]</MudButton>
+                <MudButton ButtonType="ButtonType.Submit"
+                           Variant="Variant.Filled"
+                           Disabled="@(!Validated)"
+                           Color="Color.Primary"
+                           Size="Size.Large"
+                           Style="width: 100%;">
+                    @_localizer["Register"]
+                </MudButton>
             </MudItem>
         </MudGrid>
     </EditForm>
 </MudCard>
 
 @code {
-    private RegisterRequest RegisterData { get; set; } = new RegisterRequest();
-    private FluentValidationValidator? _fluentValidationValidator;
+    private RegisterModel RegisterData { get; set; } = new();
+    private FluentValidationValidator? _fluentValidationValidator = new();
     private bool Validated => _fluentValidationValidator!.Validate(options => { options.IncludeAllRuleSets(); });
 
     private async Task RegisterAsync()
     {
-        var result = await _authenticationService.Register(RegisterData);
+        if (_loadingService.IsLoading)
+            return;
 
-        //TODO: loading dialog
+        _loadingService.ShowLoading();
+
+        var result = await _authenticationService.Register(RegisterData);
 
         if (result.Succeeded)
         {
@@ -66,6 +94,8 @@
             foreach (var error in result.Messages)
                 _snackbar.Add(error, MudBlazor.Severity.Error, config => { config.ShowCloseIcon = false; });
         }
+
+        _loadingService.HideLoading();
     }
 
     private bool _passwordVisibility;

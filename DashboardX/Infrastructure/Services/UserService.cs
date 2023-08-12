@@ -19,7 +19,7 @@ public class UserService : AuthorizedService, IUserService
     {
     }
 
-    public async Task<Result> DeleteUser()
+    public async Task<IResult> DeleteUser()
     {
         //TODO - Add password as a confirmation
 
@@ -34,7 +34,7 @@ public class UserService : AuthorizedService, IUserService
         return response;
     }
 
-    public async Task<Result<User>> GetUser()
+    public async Task<IResult<User>> GetUser()
     {
         var request = new Request
         {
@@ -53,7 +53,7 @@ public class UserService : AuthorizedService, IUserService
         return response;
     }
 
-    public async Task<Result> UpdateUser(User user)
+    public async Task<IResult> UpdateUser(User user)
     {
         var request = new Request<User>
         {

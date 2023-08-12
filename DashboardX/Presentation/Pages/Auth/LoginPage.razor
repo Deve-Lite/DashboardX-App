@@ -1,120 +1,166 @@
-﻿@page "/"
+@page "/"
 @page "/auth/login"
 
 @using Blazored.FluentValidation;
 @using FluentValidation;
 @using Infrastructure;
+@using System.Diagnostics;
 @using global::Shared.Models.Auth;
 @using global::Shared.Constraints.Authorization;
 
+@attribute [AllowAnonymous]
 @inject IStringLocalizer<LoginPage> _localizer
 @inject ILocalStorageService _localStorage
 @inject IAuthenticationService _authenticationService
-@inject AuthenticationStateProvider _authenticationStateProvider; 
+@inject AuthenticationStateProvider _authenticationStateProvider;
 
-<MudCard Class="card p-5" style="border-radius: 1rem;">
-    <EditForm Model="@LoginData" OnValidSubmit="LoginAsync">
-        <FluentValidationValidator @ref="_fluentValidationValidator" />
-        <MudGrid>
-            <DataAnnotationsValidator />
-            <MudItem xs="12">
-                <div class="d-flex justify-center">
-                    <MudText Typo="Typo.h4">@_localizer["Sign In"]</MudText>
-                </div>
-            </MudItem>
-
-            <MudItem xs="12">
-                <div class="d-flex justify-center">
-                    <MudText>@_localizer["Don't have an account?"] <MudLink Href="/auth/register">@_localizer["Register"]</MudLink></MudText>
-                </div>
-            </MudItem>
-            <MudItem xs="12">
-                <MudTextField T="string"
-                              Label="@_localizer["Email"]"
-                              Immediate="true"
-                              Variant="Variant.Outlined"
-                              @bind-Value="LoginData.Email"
-                              For="@(() => LoginData.Email)" />
-            </MudItem>
-            <MudItem xs="12">
-                <MudTextField Label="@_localizer["Password"]"
-                              Variant="Variant.Outlined"
-                              @bind-Value="LoginData.Password"
-                              For="@(() => LoginData.Password)"
-                              InputType="@_passwordInput"
-                              Immediate="true"
-                              Adornment="Adornment.End"
-                              AdornmentIcon="@_passwordInputIcon"
-                              OnAdornmentClick="TogglePasswordVisibility" />
-            </MudItem>
-            <MudItem xs="12" Class="d-flex justify-space-between align-center">
-                <MudCheckBox T="bool"
-                @bind-Value="RememberMe"
-                             Label="@_localizer["Remember Me"]"
-                             Color="Color.Primary"
-                             Class="ml-n1"></MudCheckBox>
-                <MudLink Href="/account/forgot-password">@_localizer["Forgot password?"]</MudLink>
-            </MudItem>
-            <MudItem xs="12" Class="d-flex justify-center">
-                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Disabled="@(!Validated)" Color="Color.Primary" Size="Size.Large" Style="width: 100%;">@_localizer["Sign In"]</MudButton>
-            </MudItem>
-
-            <MudItem xs="12">
-                <MudButton OnClick="FillAdministratorCredentials">@_localizer["Fill Administrator Credentials"]</MudButton>
-            </MudItem>
-            <MudItem xs="12">
-                <MudButton OnClick="FillBasicUserCredentials">@_localizer["Login with user Credentials."]</MudButton>
-            </MudItem>
-        </MudGrid>
-    </EditForm>
-</MudCard>
-
-
-@code 
+@if (!Initializing)
 {
+    <MudCard Class="container d-flex container-fit-content p-5" style="border-radius: 1rem; max-width 25rem; height 100vh;">
+        <EditForm Model="@LoginData" OnValidSubmit="LoginAsync">
+            <FluentValidationValidator @ref="_fluentValidationValidator" />
+            <MudGrid>
 
-    private LoginRequest LoginData { get; set; } = new LoginRequest();
-    private bool RememberMe { get; set; } = false;
-    private FluentValidationValidator? _fluentValidationValidator;
+                <DataAnnotationsValidator />
+
+                <MudItem xs="12">
+                    <div class="d-flex justify-center">
+                        <MudText Typo="Typo.h4">@_localizer["Sign In"]</MudText>
+                    </div>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <div class="d-flex justify-center">
+                        <MudText>@_localizer["Don't have an account?"] <MudLink Href="/auth/register">@_localizer["Register"]</MudLink></MudText>
+                    </div>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField T="string"
+                                  Label="@_localizer["Email"]"
+                                  Variant="Variant.Outlined"
+                    @bind-Value="LoginData.Email"
+                                  For="@(() => LoginData.Email)" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField Label="@_localizer["Password"]"
+                                  Variant="Variant.Outlined"
+                    @bind-Value="LoginData.Password"
+                                  For="@(() => LoginData.Password)"
+                                  InputType="@_passwordInput"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@_passwordInputIcon"
+                                  OnAdornmentClick="TogglePasswordVisibility" />
+                </MudItem>
+                <MudItem xs="12" Class="d-flex justify-space-between align-center">
+                    <MudCheckBox T="bool"
+                    @bind-Checked="RememberMe"
+                                 Label="@_localizer["Remember Me"]"
+                                 Color="Color.Primary"
+                                 Class="ml-n1"></MudCheckBox>
+                    <MudLink Href="/account/forgot-password">@_localizer["Forgot password?"]</MudLink>
+                </MudItem>
+                <MudItem xs="12" Class="d-flex justify-center">
+                    <MudButton ButtonType="ButtonType.Submit"
+                               Variant="Variant.Filled"
+                               Disabled="@(!Validated)"
+                               Color="Color.Primary"
+                               Size="Size.Large"
+                               Style="width: 100%;">
+                        @_localizer["Sign In"]
+                    </MudButton>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudButton OnClick="FillAdministratorCredentials">@_localizer["Fill Administrator Credentials"]</MudButton>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudButton OnClick="FillBasicUserCredentials">@_localizer["Login with user Credentials."]</MudButton>
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+    </MudCard>
+}
+
+
+@code
+{
+    [Parameter] 
+    public bool IsLoading { get; set; }
+    public bool Initializing { get; set; }
+
+    private LoginModel LoginData { get; set; } = new LoginModel();
+    private bool RememberMe { get; set; }
+    private FluentValidationValidator? _fluentValidationValidator = new();
     private bool Validated => _fluentValidationValidator!.Validate(options => { options.IncludeAllRuleSets(); });
+
 
     protected override async Task OnInitializedAsync()
     {
-        var rememberMe = await _localStorage.GetItemAsync<bool>(AuthPageConstraint.RememberMeName);
+        var appState = (_authenticationStateProvider as ApplicationStateProvider);
 
-        if (rememberMe == true)
+        if (!string.IsNullOrEmpty(appState!.RefreshToken))
         {
-            var accessToken = await _localStorage.GetItemAsync<string>(AuthStorageConstraints.AccessToken);
-            var refreshToken = await _localStorage.GetItemAsync<string>(AuthStorageConstraints.RefreshToken);
+            _navigationManager.NavigateTo("/brokers");
+            return;
+        }
 
-            //todo: Refresh token
-            if (true)
+        var refreshToken = await _localStorage.GetItemAsync<string>(AuthStorageConstraints.RefreshToken);
+
+        if(string.IsNullOrEmpty(refreshToken))
+            return;
+
+        if (_loadingService.IsLoading)
+            return;
+
+        Initializing = true;
+
+        appState.RemoveLoginState();
+
+        _loadingService.ShowLoading();
+
+        RememberMe = await _localStorage.GetItemAsync<bool>(AuthPageConstraint.RememberMeName);
+
+        if (RememberMe)
+        {
+            var successfullLoign = await _authenticationService.AuthenticateOnRememberMe(refreshToken);
+
+            if (successfullLoign)
             {
-                await (_authenticationStateProvider as ApplicationStateProvider)!.Login(accessToken, refreshToken);
                 _snackbar.Add("Hello there!", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
                 _navigationManager.NavigateTo("/brokers");
             }
         }
+
+        Initializing = false;
+
+        _loadingService.HideLoading();
     }
+
     private async Task LoginAsync()
     {
-        var result = await _authenticationService.Login(LoginData);
+        if(_loadingService.IsLoading)
+            return;
 
-        //TODO: loading dialog
+        _loadingService.ShowLoading();
+
+        await _localStorage.SetItemAsync(AuthPageConstraint.RememberMeName, RememberMe);
+
+        var result = await _authenticationService.Login(LoginData);
 
         if (result.Succeeded)
         {
-            if (RememberMe)
-                await _localStorage.SetItemAsync(AuthPageConstraint.RememberMeName, true);
-            
+
+ 
             _snackbar.Add("Hello there!", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
             _navigationManager.NavigateTo("/brokers");
         }
         else
         {
-            foreach(var error in result.Messages)
+            foreach (var error in result.Messages)
                 _snackbar.Add(error, MudBlazor.Severity.Error, config => { config.ShowCloseIcon = false; });
         }
+
+        _loadingService.HideLoading();
     }
 
     private bool _passwordVisibility;

@@ -1,10 +1,12 @@
 ﻿using Core;
 using Core.Interfaces;
 using Infrastructure;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Shared.Models.Auth;
+using System.Net.Http.Headers;
 
-namespace Infrastructe.Services;
+namespace Infrastructure.Services;
 
 public class AuthenticationService : BaseService, IAuthenticationService
 {
@@ -16,16 +18,16 @@ public class AuthenticationService : BaseService, IAuthenticationService
         _applicationStateProvider = (ApplicationStateProvider?)authenticationStateProvider!;
     }
 
-    public async Task<Result> Login(LoginRequest data)
+    public async Task<IResult> Login(LoginModel data)
     {
-        var request = new Request<LoginRequest>
+        var request = new Request<LoginModel>
         {
             Method = HttpMethod.Post,
             Route = "api/v1/users/login",
             Data = data
         };
 
-        var result = await SendAsync<Tokens, LoginRequest>(request);
+        var result = await SendAsync<Tokens, LoginModel>(request);
 
         if (result.Succeeded)
         {
@@ -38,9 +40,9 @@ public class AuthenticationService : BaseService, IAuthenticationService
         return result;
     }
 
-    public async Task<Result> Register(RegisterRequest data)
+    public async Task<IResult> Register(RegisterModel data)
     {
-        var request = new Request<RegisterRequest>
+        var request = new Request<RegisterModel>
         {
             Method = HttpMethod.Post, 
             Route = "api/v1/users/register", 
@@ -48,5 +50,29 @@ public class AuthenticationService : BaseService, IAuthenticationService
         };
 
         return await SendAsync(request);
+    }
+
+    public async Task<bool> AuthenticateOnRememberMe(string currentRefreshToken)
+    {
+        var request = new Request
+        {
+            Method = HttpMethod.Post,
+            Route = "api/v1/users/refresh"
+        };
+
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", currentRefreshToken);
+
+        var response = await SendAsync<Tokens>(request);
+
+        if (response.Succeeded)
+        {
+            var accessToken = response.Data!.AccessToken;
+            var refreshToken = response.Data!.RefreshToken;
+            await _applicationStateProvider.Login(accessToken, refreshToken);
+
+            return true;
+        }
+
+        return false;
     }
 }

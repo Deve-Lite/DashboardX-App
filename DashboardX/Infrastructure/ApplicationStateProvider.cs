@@ -53,13 +53,28 @@ public class ApplicationStateProvider : AuthenticationStateProvider
         NotifyAuthenticationStateChanged(Task.FromResult(currentState));
     }
 
+    public async Task RemoveLoginState()
+    {
+        currentState = NoAuthState();
+
+        NotifyAuthenticationStateChanged(Task.FromResult(currentState));
+    }
+
     #region State
     private async Task SetAuthState(string accessToken, string refreshToken)
     {
         AccessToken = accessToken;
         RefreshToken = refreshToken;
-        await _localStorage.SetItemAsync(AuthStorageConstraints.AccessToken, accessToken);
-        await _localStorage.SetItemAsync(AuthStorageConstraints.RefreshToken, refreshToken);
+
+        var isSession = await _localStorage.GetItemAsync<bool>(AuthPageConstraint.RememberMeName);
+
+        //TODO: Proposal save session in session storage / add another servicee for tokens management
+        if (!isSession)
+        {
+            await _localStorage.SetItemAsync(AuthStorageConstraints.AccessToken, accessToken);
+            await _localStorage.SetItemAsync(AuthStorageConstraints.RefreshToken, refreshToken);
+        }
+
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
         currentState = AuthState(accessToken);

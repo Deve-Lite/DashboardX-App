@@ -2,7 +2,8 @@
 
 public interface IAuthenticationService
 {
-    Task<Result> Login(LoginRequest loginData);
-    Task<Result> Register(RegisterRequest registerData);
+    Task<IResult> Login(LoginModel loginData);
+    Task<IResult> Register(RegisterModel registerData);
+    Task<bool> AuthenticateOnRememberMe(string currentRefreshToken);
 }
 

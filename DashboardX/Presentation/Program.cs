@@ -1,6 +1,5 @@
 using Blazored.LocalStorage;
 using Core.Interfaces;
-using Infrastructe.Services;
 using Infrastructure;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -28,6 +27,7 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.PreventDuplicates = false;
     config.SnackbarConfiguration.NewestOnTop = false;
     config.SnackbarConfiguration.ShowCloseIcon = true;
+    config.PopoverOptions.ThrowOnDuplicateProvider = false;
     config.SnackbarConfiguration.VisibleStateDuration = 2000;
     config.SnackbarConfiguration.HideTransitionDuration = 500;
     config.SnackbarConfiguration.ShowTransitionDuration = 500;
@@ -39,6 +39,7 @@ builder.Services.AddScoped<AuthenticationStateProvider, ApplicationStateProvider
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IToastService, ToastService>();
+builder.Services.AddSingleton<ILoadingService, LoadingService>();
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
 
