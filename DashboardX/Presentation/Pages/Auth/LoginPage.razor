@@ -126,6 +126,8 @@
 
             if (successfullLoign)
             {
+                //TODO: Download user data -> settings / profile / etc
+
                 _snackbar.Add("Hello there!", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
                 _navigationManager.NavigateTo("/brokers");
             }

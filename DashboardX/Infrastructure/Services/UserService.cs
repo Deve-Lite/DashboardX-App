@@ -21,7 +21,7 @@ public class UserService : AuthorizedService, IUserService
 
     public async Task<IResult> DeleteUser()
     {
-        //TODO - Add password as a confirmation
+        //TODO - Add password as a confirmation? 
 
         var request = new Request<User>
         {

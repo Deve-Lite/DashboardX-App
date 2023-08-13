@@ -2,6 +2,8 @@
 @inherits LayoutComponentBase
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
+@inject IStringLocalizer<MainLayout> _localizer 
+
 <MudLayout Class="p-0 m-0">
     <MudThemeProvider />
     <MudSnackbarProvider />
@@ -16,12 +18,11 @@
             </MudAppBar>
             <MudDrawer @bind-Open="@Open" ClipMode="DrawerClipMode.Docked" Elevation="1" Variant="@DrawerVariant.Responsive">
                 <MudDrawerHeader>
-                    <MudText Typo="Typo.h6">My App</MudText>
+                    <!-- TODO: Add icon here -->
                 </MudDrawerHeader>
                 <MudNavMenu>
-                    <MudNavLink Match="NavLinkMatch.All">Store</MudNavLink>
-                    <MudNavLink Match="NavLinkMatch.All">Library</MudNavLink>
-                    <MudNavLink Match="NavLinkMatch.All">Community</MudNavLink>
+                    <MudNavLink Match="NavLinkMatch.All" Href="/brokers">  @_localizer["Brokers"]  </MudNavLink>
+                    <MudNavLink Match="NavLinkMatch.All" Href="/settings"> @_localizer["Settings"] </MudNavLink>
                 </MudNavMenu>
             </MudDrawer>
 
