@@ -35,11 +35,18 @@ builder.Services.AddMudServices(config =>
 });
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddAuthorizationCore();
+
 builder.Services.AddScoped<AuthenticationStateProvider, ApplicationStateProvider>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IToastService, ToastService>();
+builder.Services.AddScoped<IBrokerService, BrokerService>();
+builder.Services.AddScoped<IClientService, ClientService>();
+
 builder.Services.AddSingleton<ILoadingService, LoadingService>();
+builder.Services.AddSingleton<ITopicService, TopicService>();
+
+
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
 
