@@ -4,27 +4,29 @@ namespace Shared.Models.Brokers;
 
 public class Broker : BaseModel
 {
-    public string UserId { get; set; } = string.Empty;
-
+    [JsonPropertyName("icon")]
     public string Icon { get; set; } = string.Empty;
 
-    [Required, StringLength(30, MinimumLength = 3)]
+    [JsonPropertyName("name"), Required, StringLength(30, MinimumLength = 3)]
     public string Name { get; set; } = string.Empty;
-    [Required]
+    [JsonPropertyName("port"), Required]
     public int Port { get; set; }
-    [Required]
+    [JsonPropertyName("server"), Required]
     public string Server { get; set; } = string.Empty;
 
+    [JsonPropertyName("isSsl")]
     public bool IsSSL { get; set; }
+    [JsonPropertyName("sslUsername")]
     public string Username { get; set; } = string.Empty;
+    [JsonPropertyName("sslPassword")]
     public string Password { get; set; } = string.Empty;
 
-    [Required]
+    [JsonPropertyName("clientId"), Required]
     public string ClientId { get; set; } = string.Empty;
+    [JsonPropertyName("keepAlive")]
     public int KeepAlive { get; set; } = 90;
 
+    [JsonPropertyName("updatedAt")]
     public DateTime EditedAt { get; set; }
 
-    //TODO: Uncoment when devices will be implemented
-    //public IEnumerable<Device> Devices { get; set; } = new List<Device>();
 }

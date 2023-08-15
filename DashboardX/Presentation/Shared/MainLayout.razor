@@ -1,4 +1,4 @@
-@    using global::Shared.Constraints.Authorization;
+@using global::Shared.Constraints;
 @inherits LayoutComponentBase
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
@@ -12,7 +12,7 @@
 
     <AuthorizeView Roles="@Roles">
         <Authorized>
-            <MudAppBar Elevation="1" Dense="@true">
+            <MudAppBar Elevation="1" Style="height:60px" Dense="@true">
                 <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
                 <MudSpacer />
             </MudAppBar>
@@ -22,13 +22,13 @@
                 </MudDrawerHeader>
                 <MudNavMenu>
                     <MudNavLink Match="NavLinkMatch.All" Href="/brokers">  @_localizer["Brokers"]  </MudNavLink>
-                    <MudNavLink Match="NavLinkMatch.All" Href="/settings"> @_localizer["Settings"] </MudNavLink>
+                    <MudNavLink Match="NavLinkMatch.All" Href="/user/settings"> @_localizer["Settings"] </MudNavLink>
                 </MudNavMenu>
             </MudDrawer>
 
             @if (IsLoading)
             {
-                <MudProgressLinear Color="Color.Primary" Indeterminate="@IsLoading" Class="loading position-absolute" />
+                <MudProgressLinear Color="Color.Primary" Indeterminate="@IsLoading" Class="loading position-absolute" Style="margin-top: 60px" />
             }
 
             <MudMainContent Style="height: 100vh;">
@@ -50,6 +50,7 @@
 @code {
     private bool Open { get; set; } = false;
     private bool IsLoading { get; set; } = false;
+
     private string Roles { get; set; } = $"{RolesConstraints.Admin}, {RolesConstraints.User}";
 
     protected override void OnInitialized()

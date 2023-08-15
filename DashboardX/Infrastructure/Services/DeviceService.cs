@@ -27,7 +27,7 @@ public class DeviceService : AuthorizedService, IDeviceService
         var request = new Request
         {
             Method = HttpMethod.Get,
-            Route = $"devices/{id}"
+            Route = $"api/v1/devices/{id}"
         };
 
         var response = await SendAsync<Device>(request);
@@ -51,7 +51,7 @@ public class DeviceService : AuthorizedService, IDeviceService
         var request = new Request
         {
             Method = HttpMethod.Get,
-            Route = "devices"
+            Route = "api/v1/devices"
         };
 
         var response = await SendAsync<List<Device>>(request);
@@ -65,12 +65,12 @@ public class DeviceService : AuthorizedService, IDeviceService
         return response;
     }
 
-    public async Task<IResult<Device>> CreateDevices(Device device)
+    public async Task<IResult> CreateDevices(Device device)
     {
         var request = new Request<Device>
         {
             Method = HttpMethod.Post,
-            Route = $"devices",
+            Route = $"api/v1/devices",
             Data = device
         };
 
@@ -93,7 +93,7 @@ public class DeviceService : AuthorizedService, IDeviceService
         var request = new Request
         {
             Method = HttpMethod.Delete,
-            Route = $"brokers/{deviceId}"
+            Route = $"api/v1/brokers/{deviceId}"
         };
 
         var response = await SendAsync(request);
@@ -104,12 +104,12 @@ public class DeviceService : AuthorizedService, IDeviceService
         return response;
     }
 
-    public async Task<IResult<Device>> UpdateDevice(Device broker)
+    public async Task<IResult> UpdateDevice(Device broker)
     {
         var request = new Request<Device>
         {
             Method = HttpMethod.Put,
-            Route = $"brokers{broker.BrokerId}",
+            Route = $"api/v1/brokers{broker.BrokerId}",
             Data = broker
         };
 
@@ -118,12 +118,10 @@ public class DeviceService : AuthorizedService, IDeviceService
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-        var response = await SendAsync<Device, Device>(request, options);
+        var response = await SendAsync<Device>(request, options);
 
         if (response.Succeeded)
-        {
-            await _localStorage.UpsertItemToList(DeviceConstants.DevicesListName, response.Data);
-        }
+            await _localStorage.UpsertItemToList(DeviceConstants.DevicesListName, broker);
 
         return response!;
     }

@@ -1,7 +1,5 @@
 ﻿using Core;
 using Core.Interfaces;
-using Infrastructure;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Shared.Models.Auth;
 using System.Net.Http.Headers;

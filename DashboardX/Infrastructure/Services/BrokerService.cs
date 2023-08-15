@@ -1,6 +1,4 @@
-﻿
-using Blazored.LocalStorage;
-using Microsoft.AspNetCore.Authorization;
+﻿using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
 using Shared.Models.Brokers;
 using System.Net;
@@ -30,7 +28,7 @@ public class BrokerService : AuthorizedService, IBrokerService
         var request = new Request
         {
             Method = HttpMethod.Get,
-            Route = $"brokers/{brokerId}/devices"
+            Route = $"api/v1/brokers/{brokerId}/devices"
         };
 
         var response = await SendAsync<List<Device>>(request);
@@ -55,7 +53,6 @@ public class BrokerService : AuthorizedService, IBrokerService
         if (response.StatusCode == HttpStatusCode.NotModified)
         {
             var list = await _localStorage.GetItemAsync<List<Device>>(BrokerConstraints.DevicesListName);
-
             response.Data = list.Where(x => x.BrokerId == brokerId).ToList();
         }
 
@@ -66,8 +63,8 @@ public class BrokerService : AuthorizedService, IBrokerService
     {
         var request = new Request
         {
-            Method = HttpMethod.Post,
-            Route = "brokers"
+            Method = HttpMethod.Get,
+            Route = "api/v1/brokers"
         };
 
         var response = await SendAsync<List<Broker>>(request);
@@ -83,17 +80,13 @@ public class BrokerService : AuthorizedService, IBrokerService
 
     public async Task<IResult<Broker>> GetBroker(string id)
     {
-        var request = new Request<Broker>
+        var request = new Request
         {
             Method = HttpMethod.Get,
-            Route = $"brokers/{id}",
-            Data = new Broker
-            {
-                Id = id
-            }
+            Route = $"api/v1/brokers/{id}"
         };
 
-        var response = await SendAsync<Broker, Broker>(request);
+        var response = await SendAsync<Broker>(request);
 
         if (response.StatusCode == HttpStatusCode.OK)
             await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, response.Data);
@@ -108,12 +101,12 @@ public class BrokerService : AuthorizedService, IBrokerService
     }
 
 
-    public async Task<IResult<Broker>> CreateBroker(Broker broker)
+    public async Task<IResult> CreateBroker(Broker broker)
     {
         var request = new Request<Broker>
         {
             Method = HttpMethod.Post,
-            Route = "brokers",
+            Route = "api/v1/brokers",
             Data = broker
         };
 
@@ -128,12 +121,12 @@ public class BrokerService : AuthorizedService, IBrokerService
         return response;
     }
 
-    public async Task<IResult> DeleteBroker(string id)
+    public async Task<IResult> RemoveBroker(string id)
     {
         var request = new Request
         {
             Method = HttpMethod.Delete,
-            Route = $"brokers/{id}"
+            Route = $"api/v1/brokers/{id}"
         };
 
         var response = await SendAsync(request);
@@ -144,12 +137,12 @@ public class BrokerService : AuthorizedService, IBrokerService
         return response;
     }
 
-    public async Task<IResult<Broker>> UpdateBroker(Broker broker)
+    public async Task<IResult> UpdateBroker(Broker broker)
     {
         var request = new Request<Broker>
         {
             Method = HttpMethod.Put,
-            Route = $"brokers{broker.Id}",
+            Route = $"api/v1/brokers{broker.Id}",
             Data = broker
         };
 
@@ -158,10 +151,10 @@ public class BrokerService : AuthorizedService, IBrokerService
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-        var response = await SendAsync<Broker, Broker>(request, options);
+        var response = await SendAsync<Broker>(request, options);
 
         if (response.Succeeded)
-            await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, response.Data);
+            await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, broker);
         
         return response!;
     }

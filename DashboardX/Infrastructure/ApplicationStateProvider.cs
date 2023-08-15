@@ -69,11 +69,10 @@ public class ApplicationStateProvider : AuthenticationStateProvider
         var isSession = await _localStorage.GetItemAsync<bool>(AuthConstraints.RememberMeName);
 
         //TODO: Proposal save session in session storage / add another servicee for tokens management
-        if (!isSession)
-        {
+      
             await _localStorage.SetItemAsync(AuthConstraints.AccessToken, accessToken);
             await _localStorage.SetItemAsync(AuthConstraints.RefreshToken, refreshToken);
-        }
+        
 
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 

@@ -1,12 +1,12 @@
 @page "/"
 @page "/auth/login"
 
-@    using Blazored.FluentValidation;
-@    using FluentValidation;
-@    using Infrastructure;
-@    using System.Diagnostics;
-@    using global::Shared.Models.Auth;
-@    using global::Shared.Constraints.Authorization;
+@using Blazored.FluentValidation;
+@using FluentValidation;
+@using Infrastructure;
+@using System.Diagnostics;
+@using global::Shared.Models.Auth;
+@using global::Shared.Constraints;
 
 @attribute [AllowAnonymous]
 @inject IStringLocalizer<LoginPage> _localizer
@@ -96,10 +96,14 @@
 
     protected override async Task OnInitializedAsync()
     {
+        //TODO : fix tokens are null after refresh
+
         var appState = (_authenticationStateProvider as ApplicationStateProvider);
+
 
         if (!string.IsNullOrEmpty(appState!.RefreshToken))
         {
+            //TODO: save actual page and redirect to it if authorized state
             _navigationManager.NavigateTo("/brokers");
             return;
         }
@@ -114,7 +118,7 @@
 
         Initializing = true;
 
-        appState.RemoveLoginState();
+        await appState.RemoveLoginState();
 
         _loadingService.ShowLoading();
 
@@ -151,8 +155,6 @@
 
         if (result.Succeeded)
         {
-
- 
             _snackbar.Add("Hello there!", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
             _navigationManager.NavigateTo("/brokers");
         }
