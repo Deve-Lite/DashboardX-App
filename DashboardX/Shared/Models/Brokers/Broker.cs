@@ -2,13 +2,10 @@
 
 namespace Shared.Models.Brokers;
 
-public class Broker
+public class Broker : BaseModel
 {
-    [Key]
-    public string BrokerId { get; set; } = string.Empty;
     public string UserId { get; set; } = string.Empty;
 
-    //TODO: Tell kamil about new field icon posibility
     public string Icon { get; set; } = string.Empty;
 
     [Required, StringLength(30, MinimumLength = 3)]

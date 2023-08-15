@@ -13,6 +13,7 @@
     <PackageReference Include="FluentValidation" Version="11.6.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.16" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.16" PrivateAssets="all" />
+    <PackageReference Include="MQTTnet" Version="4.2.1.781" />
     <PackageReference Include="MudBlazor" Version="6.7.0" />
   </ItemGroup>
 

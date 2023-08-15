@@ -1,10 +1,14 @@
-﻿
-using Blazored.LocalStorage;
+﻿using Blazored.LocalStorage;
 using Core;
 using Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Shared.Constraints;
 using Shared.Models.Devices;
+using System.Net;
+using System.Text.Json.Serialization;
+using System.Text.Json;
+using Infrastructure.Extensions;
 
 namespace Infrastructure.Services;
 
@@ -18,33 +22,109 @@ public class DeviceService : AuthorizedService, IDeviceService
     {
     }
 
-    public Task<IResult<Device>> CreateDevices(Device broker)
+    public async Task<IResult<Device>> GetDevice(string id)
     {
-        throw new NotImplementedException();
+        var request = new Request
+        {
+            Method = HttpMethod.Get,
+            Route = $"devices/{id}"
+        };
+
+        var response = await SendAsync<Device>(request);
+
+        if (response.StatusCode == HttpStatusCode.OK)
+        {
+            await _localStorage.UpsertItemToList(DeviceConstants.DevicesListName, response.Data);
+        }
+
+        if (response.StatusCode == HttpStatusCode.NotModified)
+        {
+            var list = await _localStorage.GetItemAsync<List<Device>>(DeviceConstants.DevicesListName);
+            response.Data = list.SingleOrDefault(b => b.BrokerId == id)!;
+        }
+
+        return response;
     }
 
-    public Task<IResult> DeleteDevice(string deviceId)
+    public async Task<IResult<List<Device>>> GetDevices()
     {
-        throw new NotImplementedException();
+        var request = new Request
+        {
+            Method = HttpMethod.Get,
+            Route = "devices"
+        };
+
+        var response = await SendAsync<List<Device>>(request);
+
+        if (response.StatusCode == HttpStatusCode.OK)
+            await _localStorage.SetItemAsync(DeviceConstants.DevicesListName, response.Data);
+
+        if (response.StatusCode == HttpStatusCode.NotModified)
+            response.Data = await _localStorage.GetItemAsync<List<Device>>(DeviceConstants.DevicesListName);
+
+        return response;
     }
 
-    public Task<IResult<Device>> GetDevice(string id)
+    public async Task<IResult<Device>> CreateDevices(Device device)
     {
-        throw new NotImplementedException();
+        var request = new Request<Device>
+        {
+            Method = HttpMethod.Post,
+            Route = $"devices",
+            Data = device
+        };
+
+        var response = await SendAsync<Device, Device>(request);
+
+        if (response.Succeeded)
+        {
+            device.BrokerId = response.Data.Id;
+
+            await _localStorage.UpsertItemToList(DeviceConstants.DevicesListName, response.Data);
+
+            response.Data = device;
+        }
+
+        return response;
     }
 
-    public Task<IResult<List<Device>>> GetDevices(string brokerId)
+    public async Task<IResult> DeleteDevice(string deviceId)
     {
-        throw new NotImplementedException();
+        var request = new Request
+        {
+            Method = HttpMethod.Delete,
+            Route = $"brokers/{deviceId}"
+        };
+
+        var response = await SendAsync(request);
+
+        if (response.Succeeded)
+            await _localStorage.RemoveItemFromList<Device>(DeviceConstants.DevicesListName, deviceId);
+        
+        return response;
     }
 
-    public Task<IResult<List<Device>>> GetDevices()
+    public async Task<IResult<Device>> UpdateDevice(Device broker)
     {
-        throw new NotImplementedException();
-    }
+        var request = new Request<Device>
+        {
+            Method = HttpMethod.Put,
+            Route = $"brokers{broker.BrokerId}",
+            Data = broker
+        };
 
-    public Task<IResult<Device>> UpdateDevices(Device broker)
-    {
-        throw new NotImplementedException();
+        var options = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+
+        var response = await SendAsync<Device, Device>(request, options);
+
+        if (response.Succeeded)
+        {
+            await _localStorage.UpsertItemToList(DeviceConstants.DevicesListName, response.Data);
+        }
+
+        return response!;
     }
 }

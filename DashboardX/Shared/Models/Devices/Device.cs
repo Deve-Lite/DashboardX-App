@@ -1,11 +1,8 @@
 ﻿
 namespace Shared.Models.Devices;
 
-public class Device
+public class Device : BaseModel
 {
-    [Key]
-    public string DeviceId { get; set; } = string.Empty;
-
     public string Name { get; set; } = string.Empty;
     public string Placing { get; set; } = string.Empty;
 

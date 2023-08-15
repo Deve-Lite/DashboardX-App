@@ -1,12 +1,12 @@
 @page "/"
 @page "/auth/login"
 
-@using Blazored.FluentValidation;
-@using FluentValidation;
-@using Infrastructure;
-@using System.Diagnostics;
-@using global::Shared.Models.Auth;
-@using global::Shared.Constraints.Authorization;
+@    using Blazored.FluentValidation;
+@    using FluentValidation;
+@    using Infrastructure;
+@    using System.Diagnostics;
+@    using global::Shared.Models.Auth;
+@    using global::Shared.Constraints.Authorization;
 
 @attribute [AllowAnonymous]
 @inject IStringLocalizer<LoginPage> _localizer
@@ -104,7 +104,7 @@
             return;
         }
 
-        var refreshToken = await _localStorage.GetItemAsync<string>(AuthStorageConstraints.RefreshToken);
+        var refreshToken = await _localStorage.GetItemAsync<string>(AuthConstraints.RefreshToken);
 
         if(string.IsNullOrEmpty(refreshToken))
             return;
@@ -118,7 +118,7 @@
 
         _loadingService.ShowLoading();
 
-        RememberMe = await _localStorage.GetItemAsync<bool>(AuthPageConstraint.RememberMeName);
+        RememberMe = await _localStorage.GetItemAsync<bool>(AuthConstraints.RememberMeName);
 
         if (RememberMe)
         {
@@ -145,7 +145,7 @@
 
         _loadingService.ShowLoading();
 
-        await _localStorage.SetItemAsync(AuthPageConstraint.RememberMeName, RememberMe);
+        await _localStorage.SetItemAsync(AuthConstraints.RememberMeName, RememberMe);
 
         var result = await _authenticationService.Login(LoginData);
 

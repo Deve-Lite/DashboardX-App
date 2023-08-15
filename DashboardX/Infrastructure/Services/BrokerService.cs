@@ -9,7 +9,9 @@ using System.Text.Json;
 using Core.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
 using Core;
-using Shared.Constraints.Brokers;
+using Shared.Models.Devices;
+using Shared.Constraints;
+using Infrastructure.Extensions;
 
 namespace Infrastructure.Services;
 
@@ -23,6 +25,43 @@ public class BrokerService : AuthorizedService, IBrokerService
     {
     }
 
+    public async Task<IResult<List<Device>>> GetBrokerDevices(string brokerId)
+    {
+        var request = new Request
+        {
+            Method = HttpMethod.Get,
+            Route = $"brokers/{brokerId}/devices"
+        };
+
+        var response = await SendAsync<List<Device>>(request);
+
+        if (response.StatusCode == HttpStatusCode.OK)
+        {
+            var list = await _localStorage.GetItemAsync<List<Device>>(BrokerConstraints.DevicesListName);
+
+            foreach(var device in response.Data)
+            {
+                int index = list.FindIndex(x => x.BrokerId == device.BrokerId);
+
+                if (index != -1)
+                    list[index] = device;
+                else
+                    list.Add(device);
+            }
+
+            await _localStorage.SetItemAsync(BrokerConstraints.DevicesListName, response.Data);
+        }
+
+        if (response.StatusCode == HttpStatusCode.NotModified)
+        {
+            var list = await _localStorage.GetItemAsync<List<Device>>(BrokerConstraints.DevicesListName);
+
+            response.Data = list.Where(x => x.BrokerId == brokerId).ToList();
+        }
+
+        return response;
+    }
+
     public async Task<IResult<List<Broker>>> GetBrokers()
     {
         var request = new Request
@@ -34,10 +73,10 @@ public class BrokerService : AuthorizedService, IBrokerService
         var response = await SendAsync<List<Broker>>(request);
 
         if (response.StatusCode == HttpStatusCode.OK)
-            await _localStorage.SetItemAsync(BrokerServiceConstraints.BrokerListName, response.Data);
+            await _localStorage.SetItemAsync(BrokerConstraints.BrokerListName, response.Data);
 
         if (response.StatusCode == HttpStatusCode.NotModified)
-            response.Data = await _localStorage.GetItemAsync<List<Broker>>(BrokerServiceConstraints.BrokerListName);
+            response.Data = await _localStorage.GetItemAsync<List<Broker>>(BrokerConstraints.BrokerListName);
 
         return response;
     }
@@ -50,28 +89,19 @@ public class BrokerService : AuthorizedService, IBrokerService
             Route = $"brokers/{id}",
             Data = new Broker
             {
-                BrokerId = id
+                Id = id
             }
         };
 
         var response = await SendAsync<Broker, Broker>(request);
 
         if (response.StatusCode == HttpStatusCode.OK)
-        {
-            var list = await _localStorage.GetItemAsync<List<Broker>>(BrokerServiceConstraints.BrokerListName);
-
-            int index = list.FindIndex(broker => broker.BrokerId == id);
-
-            if (index != -1)
-                list[index] = response.Data;
-
-            await _localStorage.SetItemAsync(BrokerServiceConstraints.BrokerListName, response.Data);
-        }
+            await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, response.Data);
 
         if (response.StatusCode == HttpStatusCode.NotModified)
         {
-            var list = await _localStorage.GetItemAsync<List<Broker>>(BrokerServiceConstraints.BrokerListName);
-            response.Data = list.SingleOrDefault(b => b.BrokerId == id)!;
+            var list = await _localStorage.GetItemAsync<List<Broker>>(BrokerConstraints.BrokerListName);
+            response.Data = list.SingleOrDefault(b => b.Id == id)!;
         }
 
         return response;
@@ -91,12 +121,8 @@ public class BrokerService : AuthorizedService, IBrokerService
 
         if (response.Succeeded)
         {
-            broker.BrokerId = response.Data.BrokerId;
-
-            var list = await _localStorage.GetItemAsync<List<Broker>>(BrokerServiceConstraints.BrokerListName);
-            list.Add(broker);
-            await _localStorage.SetItemAsync(BrokerServiceConstraints.BrokerListName, list);
-            response.Data = broker;
+            broker.Id = response.Data.Id;
+            await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, response.Data);
         }
 
         return response;
@@ -104,24 +130,16 @@ public class BrokerService : AuthorizedService, IBrokerService
 
     public async Task<IResult> DeleteBroker(string id)
     {
-        var request = new Request<Broker>
+        var request = new Request
         {
             Method = HttpMethod.Delete,
-            Route = $"brokers/{id}",
-            Data = new Broker
-            {
-                BrokerId = id
-            }
+            Route = $"brokers/{id}"
         };
 
         var response = await SendAsync(request);
 
         if (response.Succeeded)
-        {
-            var list = await _localStorage.GetItemAsync<List<Broker>>(BrokerServiceConstraints.BrokerListName);
-            list.RemoveAll(broker => broker.BrokerId == id);
-            await _localStorage.SetItemAsync(BrokerServiceConstraints.BrokerListName, list);
-        }
+            await _localStorage.RemoveItemFromList<Broker>(BrokerConstraints.BrokerListName, id);
 
         return response;
     }
@@ -131,7 +149,7 @@ public class BrokerService : AuthorizedService, IBrokerService
         var request = new Request<Broker>
         {
             Method = HttpMethod.Put,
-            Route = $"brokers{broker.BrokerId}",
+            Route = $"brokers{broker.Id}",
             Data = broker
         };
 
@@ -143,14 +161,8 @@ public class BrokerService : AuthorizedService, IBrokerService
         var response = await SendAsync<Broker, Broker>(request, options);
 
         if (response.Succeeded)
-        {
-            var list = await _localStorage.GetItemAsync<List<Broker>>(BrokerServiceConstraints.BrokerListName);
-            int index = list.FindIndex(b => b.BrokerId == broker.BrokerId);
-            list[index] = broker;
-            await _localStorage.SetItemAsync(BrokerServiceConstraints.BrokerListName, list);
-        }
-
+            await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, response.Data);
+        
         return response!;
     }
-
 }
