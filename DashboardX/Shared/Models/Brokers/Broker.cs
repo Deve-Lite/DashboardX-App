@@ -7,23 +7,23 @@ public class Broker : BaseModel
     [JsonPropertyName("icon")]
     public string Icon { get; set; } = string.Empty;
 
-    [JsonPropertyName("name"), Required, StringLength(30, MinimumLength = 3)]
+    [JsonPropertyName("name"), Required, MinLength(2), MaxLength(64)]
     public string Name { get; set; } = string.Empty;
     [JsonPropertyName("port"), Required]
     public int Port { get; set; }
-    [JsonPropertyName("server"), Required]
+    [JsonPropertyName("server"), Required, MinLength(2), MaxLength(256)]
     public string Server { get; set; } = string.Empty;
 
     [JsonPropertyName("isSsl")]
     public bool IsSSL { get; set; }
-    [JsonPropertyName("sslUsername")]
+    [JsonPropertyName("sslUsername"), MaxLength(64)]
     public string Username { get; set; } = string.Empty;
-    [JsonPropertyName("sslPassword")]
+    [JsonPropertyName("sslPassword"), MaxLength(64)]
     public string Password { get; set; } = string.Empty;
 
-    [JsonPropertyName("clientId"), Required]
+    [JsonPropertyName("clientId"), Required, MaxLength(64)]
     public string ClientId { get; set; } = string.Empty;
-    [JsonPropertyName("keepAlive")]
+    [JsonPropertyName("keepAlive"), Required]
     public int KeepAlive { get; set; } = 90;
 
     [JsonPropertyName("updatedAt")]

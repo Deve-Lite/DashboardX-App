@@ -7,12 +7,11 @@
 <MudLayout Class="p-0 m-0">
     <MudThemeProvider />
     <MudSnackbarProvider />
-
-
+    <MudDialogProvider />
 
     <AuthorizeView Roles="@Roles">
         <Authorized>
-            <MudAppBar Elevation="1" Style="height:60px" Dense="@true">
+            <MudAppBar Elevation="1" Style="height:50px" Dense="@true">
                 <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
                 <MudSpacer />
             </MudAppBar>
@@ -28,7 +27,7 @@
 
             @if (IsLoading)
             {
-                <MudProgressLinear Color="Color.Primary" Indeterminate="@IsLoading" Class="loading position-absolute" Style="margin-top: 60px" />
+                <MudProgressLinear Color="Color.Primary" Indeterminate="@IsLoading" Class="loading position-absolute" Style="margin-top: 50px" />
             }
 
             <MudMainContent Style="height: 100vh;">

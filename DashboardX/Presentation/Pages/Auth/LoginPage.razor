@@ -5,6 +5,7 @@
 @using FluentValidation;
 @using Infrastructure;
 @using System.Diagnostics;
+@using Presentation.Utils;
 @using global::Shared.Models.Auth;
 @using global::Shared.Constraints;
 
@@ -44,7 +45,7 @@
                 <MudItem xs="12">
                     <MudTextField Label="@_localizer["Password"]"
                                   Variant="Variant.Outlined"
-                    @bind-Value="LoginData.Password"
+                                 @bind-Value="LoginData.Password"
                                   For="@(() => LoginData.Password)"
                                   InputType="@_passwordInput"
                                   Adornment="Adornment.End"
@@ -153,18 +154,17 @@
 
         var result = await _authenticationService.Login(LoginData);
 
-        if (result.Succeeded)
-        {
-            _snackbar.Add("Hello there!", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
-            _navigationManager.NavigateTo("/brokers");
-        }
-        else
-        {
-            foreach (var error in result.Messages)
-                _snackbar.Add(error, MudBlazor.Severity.Error, config => { config.ShowCloseIcon = false; });
-        }
+        await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnLoaded, "Hello there!");
 
         _loadingService.HideLoading();
+    }
+
+    private Task OnLoaded()
+    {
+        _snackbar.Add("Hello there!", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
+        _navigationManager.NavigateTo("/brokers");
+
+        return Task.CompletedTask;
     }
 
     private bool _passwordVisibility;

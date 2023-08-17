@@ -1,5 +1,8 @@
 @page "/brokers"
 @using Presentation.Models;
+@using Presentation.Shared.Brokers;
+@using Presentation.Utils;
+@using global::Shared.Models.Brokers;
 
 @inject IClientService _clientService
 
@@ -14,7 +17,7 @@ else if (!LoadedSuccessfully)
 }
 else
 {
-    <MudGrid>
+    <MudGrid Class="p-5">
         @foreach (var client in BrokerClients)
         {
             <MudItem>
@@ -28,11 +31,17 @@ else
             </MudItem>
         }
 
-         <MudItem >
-                <MudCard Elevation="25" Class="container container-fit-content p-5" style="border-radius: 1rem; ">
-                    <MudText Align="Align.Center"> Add new  </MudText>
-                </MudCard>
-            </MudItem>
+        <MudItem>
+            <MudCard Elevation="25" Class="container container-fit-content p-5" style="border-radius: 1rem;">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Class="container container-fit-content p-5"
+                           Style="border-radius: 1rem; max-width 25rem;"
+                           OnClick="OpenAddDialog">
+                    Add new
+                </MudButton>
+            </MudCard>
+        </MudItem>
 
     </MudGrid>
 }
@@ -58,5 +67,33 @@ else
         }
 
         _loadingService.HideLoading();
+    }
+
+    private async Task OpenAddDialog()
+    {
+        if (_loadingService.IsLoading)
+            return;
+
+        var broker = new Broker();
+        var parameters = new DialogParameters<UpsertBrokerPage> { { x => x.Broker, broker } };
+
+        var dialog = await _dialogService.ShowAsync<UpsertBrokerPage>("Create Broker");
+
+        if(dialog.Result.IsCanceled)
+            return;
+
+        _loadingService.ShowLoading();
+
+        //var result = await _clientService.CreateBroker(broker);
+
+        //await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnAdded);
+
+        _loadingService.HideLoading();
+    }
+
+    private Task OnAdded()
+    {
+        _snackbar.Add("Successfully Added", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
+        return Task.CompletedTask;
     }
 }
