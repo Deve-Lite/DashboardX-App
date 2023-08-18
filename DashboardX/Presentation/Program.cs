@@ -6,6 +6,7 @@ using Infrastructure.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using MQTTnet;
 using MudBlazor;
 using MudBlazor.Services;
 using Presentation;
@@ -43,12 +44,13 @@ builder.Services.AddScoped<IToastService, ToastService>();
 builder.Services.AddScoped<IBrokerService, BrokerService>();
 builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IDeviceService, DeviceService>();
-
 builder.Services.AddScoped<AuthenticationStateProvider, ApplicationStateProvider>();
+
 builder.Services.AddBlazoredLocalStorageAsSingleton();
 builder.Services.AddBlazoredSessionStorageAsSingleton();
 builder.Services.AddSingleton<ILoadingService, LoadingService>();
 builder.Services.AddSingleton<ITopicService, TopicService>();
+builder.Services.AddSingleton<MqttFactory>();
 
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 

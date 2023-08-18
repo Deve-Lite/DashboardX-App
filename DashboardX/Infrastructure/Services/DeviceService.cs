@@ -65,7 +65,7 @@ public class DeviceService : AuthorizedService, IDeviceService
         return response;
     }
 
-    public async Task<IResult> CreateDevices(Device device)
+    public async Task<IResult<Device>> CreateDevices(Device device)
     {
         var request = new Request<Device>
         {
@@ -78,6 +78,7 @@ public class DeviceService : AuthorizedService, IDeviceService
 
         if (response.Succeeded)
         {
+            //TODO: Update device EditedAt
             device.BrokerId = response.Data.Id;
 
             await _localStorage.UpsertItemToList(DeviceConstants.DevicesListName, response.Data);
@@ -88,12 +89,39 @@ public class DeviceService : AuthorizedService, IDeviceService
         return response;
     }
 
-    public async Task<IResult> DeleteDevice(string deviceId)
+    public async Task<IResult<Device>> UpdateDevice(Device device)
+    {
+        var request = new Request<Device>
+        {
+            Method = HttpMethod.Put,
+            Route = $"api/v1/devices/{device.Id}",
+            Data = device
+        };
+
+        var options = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+
+        var response = await SendAsync<Device, Device>(request, options);
+
+        if (response.Succeeded)
+        {
+            //TODO: Update device EditedAt
+
+            await _localStorage.UpsertItemToList(DeviceConstants.DevicesListName, device);          
+            response.Data = device;
+        }
+
+        return response!;
+    }
+
+    public async Task<IResult> RemoveDevice(string deviceId)
     {
         var request = new Request
         {
             Method = HttpMethod.Delete,
-            Route = $"api/v1/brokers/{deviceId}"
+            Route = $"api/v1/devices/{deviceId}"
         };
 
         var response = await SendAsync(request);
@@ -102,27 +130,5 @@ public class DeviceService : AuthorizedService, IDeviceService
             await _localStorage.RemoveItemFromList<Device>(DeviceConstants.DevicesListName, deviceId);
         
         return response;
-    }
-
-    public async Task<IResult> UpdateDevice(Device broker)
-    {
-        var request = new Request<Device>
-        {
-            Method = HttpMethod.Put,
-            Route = $"api/v1/brokers{broker.BrokerId}",
-            Data = broker
-        };
-
-        var options = new JsonSerializerOptions
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
-
-        var response = await SendAsync<Device>(request, options);
-
-        if (response.Succeeded)
-            await _localStorage.UpsertItemToList(DeviceConstants.DevicesListName, broker);
-
-        return response!;
     }
 }
