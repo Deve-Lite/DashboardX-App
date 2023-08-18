@@ -9,7 +9,7 @@ public interface IClientService
     Task<Result<List<BrokerClient>>> GetBrokers();
     Task<Result<BrokerClient>> GetBroker(string brokerId);
     Task<Result> RemoveBroker(string brokerId);
-    Task<Result> CreateBroker(Broker broker);
-    Task<Result> UpdateBroker(Broker broker);
+    Task<Result<BrokerClient>> CreateBroker(Broker broker);
+    Task<Result<BrokerClient>> UpdateBroker(Broker broker);
 }
 

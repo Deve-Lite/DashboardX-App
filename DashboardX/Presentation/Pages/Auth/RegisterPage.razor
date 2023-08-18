@@ -73,7 +73,7 @@
 @code {
     private RegisterModel RegisterData { get; set; } = new();
     private FluentValidationValidator? _fluentValidationValidator = new();
-    private bool Validated => _fluentValidationValidator!.Validate(options => { options.IncludeAllRuleSets(); });
+    private bool Validated => _fluentValidationValidator == null ? false : _fluentValidationValidator.Validate(options => { options.IncludeAllRuleSets(); });
 
     private async Task RegisterAsync()
     {

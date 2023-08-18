@@ -100,8 +100,23 @@ public class BrokerService : AuthorizedService, IBrokerService
         return response;
     }
 
+    public async Task<IResult> RemoveBroker(string id)
+    {
+        var request = new Request
+        {
+            Method = HttpMethod.Delete,
+            Route = $"api/v1/brokers/{id}"
+        };
 
-    public async Task<IResult> CreateBroker(Broker broker)
+        var response = await SendAsync(request);
+
+        if (response.Succeeded)
+            await _localStorage.RemoveItemFromList<Broker>(BrokerConstraints.BrokerListName, id);
+
+        return response;
+    }
+
+    public async Task<IResult<Broker>> CreateBroker(Broker broker)
     {
         var request = new Request<Broker>
         {
@@ -121,23 +136,7 @@ public class BrokerService : AuthorizedService, IBrokerService
         return response;
     }
 
-    public async Task<IResult> RemoveBroker(string id)
-    {
-        var request = new Request
-        {
-            Method = HttpMethod.Delete,
-            Route = $"api/v1/brokers/{id}"
-        };
-
-        var response = await SendAsync(request);
-
-        if (response.Succeeded)
-            await _localStorage.RemoveItemFromList<Broker>(BrokerConstraints.BrokerListName, id);
-
-        return response;
-    }
-
-    public async Task<IResult> UpdateBroker(Broker broker)
+    public async Task<IResult<Broker>> UpdateBroker(Broker broker)
     {
         var request = new Request<Broker>
         {
@@ -151,11 +150,13 @@ public class BrokerService : AuthorizedService, IBrokerService
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-        var response = await SendAsync<Broker>(request, options);
+        var response = await SendAsync<Broker, Broker>(request, options);
 
         if (response.Succeeded)
             await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, broker);
         
         return response!;
     }
+
+    //TODO On Update / Add operations requires edited at and id
 }

@@ -66,31 +66,37 @@ public class ClientService : IClientService
         return Result.Fail(result.StatusCode, result.Messages);
     }
 
-    public async Task<Result> CreateBroker(Broker broker)
+    public async Task<Result<BrokerClient>> CreateBroker(Broker broker)
     {
         var result = await _brokerService.CreateBroker(broker);
 
         if(result.Succeeded)
         {
-            //INITIALIZE ?? 
+            var data = new BrokerClient 
+            {
+                Broker = result.Data 
+            };
 
-            return Result.Success(result.StatusCode);
+            return Result<BrokerClient>.Success(result.StatusCode, data);
         }
 
-        return Result.Fail(result.StatusCode, result.Messages);
+        return Result<BrokerClient>.Fail(result.StatusCode, result.Messages);
     }
 
-    public async Task<Result> UpdateBroker(Broker broker)
+    public async Task<Result<BrokerClient>> UpdateBroker(Broker broker)
     {
         var result = await _brokerService.CreateBroker(broker);
 
         if (result.Succeeded)
         {
-            // TODO: Update
+            var data = new BrokerClient
+            {
+                Broker = result.Data
+            };
 
-            return Result.Success(result.StatusCode);
+            return Result<BrokerClient>.Success(result.StatusCode, data);
         }
 
-        return Result.Fail(result.StatusCode, result.Messages);
+        return Result<BrokerClient>.Fail(result.StatusCode, result.Messages);
     }
 }

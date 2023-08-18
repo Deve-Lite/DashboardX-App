@@ -1,4 +1,5 @@
 @page "/brokers"
+@using Infrastructure;
 @using Presentation.Models;
 @using Presentation.Shared.Brokers;
 @using Presentation.Utils;
@@ -74,21 +75,28 @@ else
         if (_loadingService.IsLoading)
             return;
 
-        var broker = new Broker();
+        var broker = new Broker()
+        {
+            Name="Default",
+            Server="defaultserver",
+            Port=8884,
+            ClientId="defaultclient"
+        };
         var parameters = new DialogParameters<UpsertBrokerPage> { { x => x.Broker, broker } };
 
-        var dialog = await _dialogService.ShowAsync<UpsertBrokerPage>("Create Broker");
+        var dialog = await _dialogService.ShowAsync<UpsertBrokerPage>("Create Broker", parameters);
+        var result = await dialog.Result;
 
-        if(dialog.Result.IsCanceled)
+        if (result.Canceled)
             return;
 
-        _loadingService.ShowLoading();
+        var x = result.Data as Result<BrokerClient> ?? Result<BrokerClient>.Fail("Couldn't parse response.");
 
-        //var result = await _clientService.CreateBroker(broker);
-
-        //await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnAdded);
-
-        _loadingService.HideLoading();
+        if(x.Succeeded)
+        {
+            BrokerClients.Add(x.Data);
+            StateHasChanged();
+        }
     }
 
     private Task OnAdded()

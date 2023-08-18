@@ -1,7 +1,9 @@
 ﻿@using Blazored.FluentValidation;
+@using Presentation.Utils;
 @using global::Shared.Models.Brokers;
 
 @inject IStringLocalizer<UpsertBrokerPage> _localizer;
+@inject IClientService _clientService
 
 <MudDialog>
     <DialogContent>
@@ -88,28 +90,16 @@
                         </div>
                     </MudItem>
                 }
-
-                <MudItem xs="12" Class="d-flex justify-content-end">
-                    <MudButton ButtonType="ButtonType.Submit"
-                               Variant="Variant.Filled"
-                               Disabled="@(!Validated)"
-                               Color="Color.Primary"
-                               Size="Size.Large"
-                               Style="width: 100%;">
-                        @_localizer["Sign In"]
-                    </MudButton>
-                </MudItem>
-
             </MudGrid>
         </EditForm>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">@_localizer["Cancel"]</MudButton>
         <MudButton form="upsertBrokerForm"
-            OnClick="SubmitAsync" 
-            ButtonType="ButtonType.Submit" 
-            Variant="Variant.Filled"
-            Disabled="@(!Validated)"
+                   OnClick="SubmitAsync" 
+                   ButtonType="ButtonType.Submit" 
+                   Variant="Variant.Filled"
+                   Disabled="@(!Validated)"
                    Color="Color.Primary">@_localizer["Submit"] </MudButton>
     </DialogActions>
 </MudDialog>
@@ -127,6 +117,15 @@
     private bool Validated => _fluentValidationValidator == null ? false : _fluentValidationValidator.Validate(options => { options.IncludeAllRuleSets(); });
 
     private bool ShowAuthorizationFields { get; set; } = false;
+
+    // If broker passed activates submit button if valid data is entered
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Validated && firstRender)
+            StateHasChanged();
+            
+        return base.OnAfterRenderAsync(firstRender);
+    }
 
     private bool _passwordVisibility;
     private InputType _passwordInput = InputType.Password;
@@ -149,6 +148,23 @@
     }
 
     private void Cancel() => MudDialog!.Cancel();
-    private void SubmitAsync() => MudDialog!.Close();
+    private async Task SubmitAsync() 
+    {
+        _loadingService.ShowLoading();
+
+        var result = await _clientService.CreateBroker(Broker);
+
+        await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnAdded);
+
+        _loadingService.HideLoading();
+
+         MudDialog!.Close(DialogResult.Ok(result));
+    }
+
+    private Task OnAdded()
+    {
+        _snackbar.Add("Successfully Added", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
+        return Task.CompletedTask;
+    }
 
 }
