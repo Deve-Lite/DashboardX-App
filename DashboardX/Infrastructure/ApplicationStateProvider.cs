@@ -53,11 +53,11 @@ public class ApplicationStateProvider : AuthenticationStateProvider
         NotifyAuthenticationStateChanged(Task.FromResult(currentState));
     }
 
-    public async Task RemoveLoginState()
+    public Task RemoveLoginState()
     {
         currentState = NoAuthState();
-
         NotifyAuthenticationStateChanged(Task.FromResult(currentState));
+        return Task.CompletedTask;
     }
 
     #region State

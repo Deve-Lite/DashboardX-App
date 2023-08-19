@@ -2,7 +2,7 @@
 @using Presentation.Utils;
 @using global::Shared.Models.Brokers;
 
-@inject IStringLocalizer<UpsertBrokerPage> _localizer;
+@inject IStringLocalizer<UpsertBrokerDialog> _localizer;
 @inject IClientService _clientService
 
 <MudDialog>
@@ -108,7 +108,7 @@
 @code
 {
     [CascadingParameter]
-    MudDialogInstance? MudDialog { get; set; }
+    private MudDialogInstance? Dialog { get; set; }
 
     [Parameter]
     public Broker Broker { get; set; } = new();
@@ -147,7 +147,7 @@
         }
     }
 
-    private void Cancel() => MudDialog!.Cancel();
+    private void Cancel() => Dialog!.Cancel();
     private async Task SubmitAsync() 
     {
         _loadingService.ShowLoading();
@@ -158,7 +158,7 @@
 
         _loadingService.HideLoading();
 
-         MudDialog!.Close(DialogResult.Ok(result));
+         Dialog!.Close(DialogResult.Ok(result));
     }
 
     private Task OnAdded()

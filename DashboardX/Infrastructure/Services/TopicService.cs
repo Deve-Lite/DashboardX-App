@@ -11,10 +11,13 @@ public class TopicService : ITopicService
     private readonly ILocalStorageService _localStorage;
     private readonly IDictionary<string, string> topics;
 
+    public Func<Task> OnMessageReceived { get; set; }
+
     public TopicService(ILocalStorageService localStorage)
     {
         topics = new Dictionary<string, string>();
         _localStorage = localStorage;
+        OnMessageReceived = default!;
     }
 
     public async Task RemoveTopic(string brokerId, Device device, Control control)
@@ -43,6 +46,8 @@ public class TopicService : ITopicService
         topics[identifier] = topic;
 
         await _localStorage.SetItemAsync(identifier, message);
+
+        OnMessageReceived?.Invoke();
     }
 
     public async Task<string> LastMessageOnTopic(string brokerId, Device device, Control control)

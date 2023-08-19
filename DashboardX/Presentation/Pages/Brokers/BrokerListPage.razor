@@ -22,7 +22,7 @@ else
         @foreach (var client in BrokerClients)
         {
             <MudItem>
-                <MudCard Elevation="25" Class="container container-fit-content p-5" style="border-radius: 1rem; max-width 25rem;">
+                <MudCard Elevation="25" Class="container container-fit-content p-2" style="border-radius: 1rem; max-width: 25rem;">
                     <MudText Align="Align.Center"> @client.Broker.Name </MudText>
                     <MudText>Server: @client.Broker.Server </MudText>
                     <MudText>Port: @client.Broker.Port </MudText>
@@ -82,9 +82,9 @@ else
             Port=8884,
             ClientId="defaultclient"
         };
-        var parameters = new DialogParameters<UpsertBrokerPage> { { x => x.Broker, broker } };
+        var parameters = new DialogParameters<UpsertBrokerDialog> { { x => x.Broker, broker } };
 
-        var dialog = await _dialogService.ShowAsync<UpsertBrokerPage>("Create Broker", parameters);
+        var dialog = await _dialogService.ShowAsync<UpsertBrokerDialog>("Create Broker", parameters);
         var result = await dialog.Result;
 
         if (result.Canceled)

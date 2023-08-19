@@ -17,7 +17,6 @@ public class ClientService : IClientService
     private readonly MqttFactory _factory;
 
     private List<BrokerClient> _brokers = new();
-    private List<DeviceClient> _devices = new();
 
     public ClientService(ITopicService topicService, IBrokerService brokerService, IDeviceService deviceService, MqttFactory factory)
     {
@@ -155,18 +154,13 @@ public class ClientService : IClientService
 
             _topicService.UpdateMessageOnTopic(broker.Id, topic, message);
 
-            //TODO: on message received
-            OnMessageReceived.Invoke();
-
             return Task.CompletedTask;
         };
         client.DisconnectedAsync += Disconnect;
     }
-
     private Task Disconnect(MqttClientDisconnectedEventArgs e)
     {
         return Task.CompletedTask;
     }
-
     #endregion
 }
