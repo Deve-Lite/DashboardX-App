@@ -1,8 +1,6 @@
-﻿
-using Blazored.LocalStorage;
+﻿using Blazored.LocalStorage;
 using Shared.Constraints;
 using Shared.Models;
-using Shared.Models.Devices;
 
 namespace Infrastructure.Extensions;
 
@@ -24,8 +22,16 @@ public static class CachingExtensions
 
     public static async Task RemoveItemFromList<T>(this ILocalStorageService _storage, string listName, string idToRemove) where T : IIdentifiedEntity
     {
-        var list = await _storage.GetItemAsync<List<T>>(DeviceConstants.DevicesListName);
-        list.RemoveAll(broker => broker.Id == idToRemove);
-        await _storage.SetItemAsync(BrokerConstraints.BrokerListName, list);
+        try
+        {
+            var list = await _storage.GetItemAsync<List<T>>(listName);
+            list.RemoveAll(broker => broker.Id == idToRemove);
+            await _storage.SetItemAsync(BrokerConstraints.BrokerListName, list);
+        }
+        catch (Exception e)
+        {
+            //TODO: Observed weird exception here when removing broker
+            Console.WriteLine(e);   
+        }
     }
 }

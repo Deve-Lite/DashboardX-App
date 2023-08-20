@@ -6,10 +6,10 @@ namespace Presentation.Services.Interfaces;
 
 public interface IClientService
 {
-    Task<Result<List<BrokerClient>>> GetBrokers();
-    Task<Result<BrokerClient>> GetBroker(string brokerId);
-    Task<Result> RemoveBroker(string brokerId);
-    Task<Result<BrokerClient>> CreateBroker(Broker broker);
-    Task<Result<BrokerClient>> UpdateBroker(Broker broker);
+    Task<Result<List<Client>>> GetClients();
+    Task<Result<Client>> GetClient(string brokerId);
+    Task<Result> RemoveClient(string brokerId);
+    Task<Result<Client>> CreateClient(Broker broker);
+    Task<Result<Client>> UpdateClient(Broker broker);
 }
 

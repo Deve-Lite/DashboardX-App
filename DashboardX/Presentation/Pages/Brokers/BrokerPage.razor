@@ -1,0 +1,91 @@
+﻿@page "/brokers/{BrokerId}"
+@using MQTTnet.Client;
+@using Presentation.Models;
+
+@inject IClientService _clientService
+@inject IStringLocalizer<BrokerPage> _localizer
+
+@if (_loadingService.IsLoading)
+{
+    
+}
+else
+{
+    <MudGrid>
+        <MudItem xs="8" Class="fit-content p-5">
+            <MudPaper>
+                <MudGrid>
+                    <MudItem xs="8">
+                        <MudText Typo="Typo.h6" Class="text-center"> @Client.Broker.Name</MudText>
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudText Class="text-center">@_localizer["Server"]: @Client.Broker.Server</MudText>
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudText Class="text-center">@_localizer["Port"]: @Client.Broker.Port</MudText>
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudText Class="text-center">@_localizer["Client Id"]: @Client.Broker.ClientId</MudText>
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudText Class="text-center">@_localizer["Keep Alive"]: @Client.Broker.KeepAlive</MudText>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        </MudItem>
+
+        <MudGrid>
+
+            @foreach (var device in Client.Devices)
+            {
+                <MudCard Elevation="25" 
+                         Class="container container-fit-content p-2" 
+                         style="border-radius: 1rem; max-width: 25rem;">
+                    <MudPaper>
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.h4" Class="text-center">@device.Name</MudText>
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.h4" Class="text-center">@device.Placing</MudText>
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.h4" Class="text-center">@device.EditedAt</MudText>
+                        </MudItem>
+                    </MudPaper>
+                </MudCard>
+            }
+        </MudGrid>
+    </MudGrid>
+}
+
+
+@code
+{
+    [Parameter] public string BrokerId { get; set; } = string.Empty;
+
+    private Client Client { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (_loadingService.IsLoading)
+            return;
+
+        _loadingService.ShowLoading();
+
+        var result = await _clientService.GetClient(BrokerId);
+
+        if (result.Succeeded)
+        {
+            Client = result.Data;
+        }
+        else
+        {
+            // TODO: error
+        }
+
+        _loadingService.HideLoading();
+        await base.OnInitializedAsync();
+    }
+}

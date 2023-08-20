@@ -148,22 +148,26 @@
     }
 
     private void Cancel() => Dialog!.Cancel();
+
     private async Task SubmitAsync() 
     {
+        if (_loadingService.IsLoading)
+            return;
+
         _loadingService.ShowLoading();
 
-        var result = await _clientService.CreateBroker(Broker);
+        var result = await _clientService.CreateClient(Broker);
 
         await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnAdded);
 
         _loadingService.HideLoading();
 
-         Dialog!.Close(DialogResult.Ok(result));
+        Dialog!.Close(DialogResult.Ok(result));
     }
 
     private Task OnAdded()
     {
-        _snackbar.Add("Successfully Added", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
+        _snackbar.Add("Success", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
         return Task.CompletedTask;
     }
 

@@ -1,10 +1,13 @@
-﻿using Core.Interfaces;
+﻿using Core;
+using Core.Interfaces;
 using Infrastructure;
 using MQTTnet;
 using MQTTnet.Client;
 using Presentation.Models;
 using Presentation.Services.Interfaces;
 using Shared.Models.Brokers;
+using System;
+using System.Net;
 using System.Text;
 
 namespace Presentation.Services;
@@ -16,7 +19,7 @@ public class ClientService : IClientService
     private readonly IDeviceService _deviceService;
     private readonly MqttFactory _factory;
 
-    private List<BrokerClient> _brokers = new();
+    private List<Client> _clients = new();
 
     public ClientService(ITopicService topicService, IBrokerService brokerService, IDeviceService deviceService, MqttFactory factory)
     {
@@ -26,43 +29,112 @@ public class ClientService : IClientService
         _factory = factory;
     }
 
-    public async Task<Result<List<BrokerClient>>> GetBrokers()
+    public async Task<Result<List<Client>>> GetClientsWithDevices()
+    {
+        throw new NotImplementedException();
+    }
+
+
+    public async Task<Result<List<Client>>> GetClients()
     {
         var result = await _brokerService.GetBrokers();
 
-        if(!result.Succeeded)
-            return Result<List<BrokerClient>>.Fail(result.StatusCode, result.Messages);
-
-        //TODO: UPDATE Brokers list 
-        _brokers = result.Data.Select(x => new BrokerClient { Broker = x}).ToList();
-
-        return Result<List<BrokerClient>>.Success(result.StatusCode, _brokers);
-    }
-
-    public async Task<Result<BrokerClient>> GetBroker(string brokerId)
-    {
-        var result = await _brokerService.GetBroker(brokerId);
-
         if (!result.Succeeded)
-            return Result<BrokerClient>.Fail(result.StatusCode, result.Messages);
+            return Result<List<Client>>.Fail(result.StatusCode, result.Messages);
 
-        //TODO: UPDATE Brokers list 
-        var data = new BrokerClient { Broker = result.Data };
+        if (result.StatusCode == HttpStatusCode.NotModified)
+            return Result<List<Client>>.Success(result.StatusCode, _clients);
 
-        return Result<BrokerClient>.Success(result.StatusCode, data);
+        var brokers = result.Data;
+
+        var usedClients = new HashSet<string>();
+
+        foreach (var broker in brokers)
+        {
+            var client = _clients.FirstOrDefault(x => x.Id == broker.Id);
+            if(client is null)
+            {
+                var newClient = new Client(broker, _topicService, _factory);
+                _clients.Add(newClient);
+            }
+            else if(client.Broker.EditedAt != broker.EditedAt)
+            {
+                await UpdateClientBroker(client, broker);
+            }
+
+            usedClients.Add(broker.Id); 
+        }
+
+        foreach (var client in _clients)
+        {
+            if (!usedClients.Contains(client.Id))
+            {
+                await client.DisposeAsync();
+                _clients.Remove(client);
+            }
+        }
+
+        return Result<List<Client>>.Success(result.StatusCode, _clients);
     }
 
-    public async Task<Result> RemoveBroker(string brokerId)
+    public async Task<Result<Client>> GetClient(string brokerId)
+    {
+        var brokerResult = await _brokerService.GetBroker(brokerId);
+        var deviceResult = await _brokerService.GetBrokerDevices(brokerId);
+
+        if (!brokerResult.Succeeded)
+            return Result<Client>.Fail(brokerResult.StatusCode, brokerResult.Messages);
+
+        if (!deviceResult.Succeeded)
+            return Result<Client>.Fail(deviceResult.StatusCode, deviceResult.Messages);
+
+        var client = _clients.FirstOrDefault(x => x.Id == brokerId);
+
+        if (client is null)
+        {
+            var newClient = new Client(brokerResult.Data, _topicService, _factory);
+
+            //TODO: initalize devices
+
+            _clients.Add(newClient);
+
+            return Result<Client>.Success(brokerResult.StatusCode, newClient);
+        }
+        else if (client.Broker.EditedAt != brokerResult.Data.EditedAt)
+        {
+            await UpdateClientBroker(client, brokerResult.Data);
+        }
+
+        //TODO: Update devices
+
+        return Result<Client>.Success(brokerResult.StatusCode, client);
+    }
+
+    public async Task<Result<Client>> UpdateClient(Broker broker)
+    {
+        var result = await _brokerService.CreateBroker(broker);
+
+        if (result.Succeeded)
+        {
+            var client = _clients.FirstOrDefault(x => x.Id == broker.Id)!;
+
+            await UpdateClientBroker(client, result.Data);
+
+            return Result<Client>.Success(result.StatusCode, client);
+        }
+
+        return Result<Client>.Fail(result.StatusCode, result.Messages);
+    }
+
+    public async Task<Result> RemoveClient(string brokerId)
     {
         var result = await _brokerService.RemoveBroker(brokerId);
 
         if(result.Succeeded)
         {
-            //TODO: disconnect
-            var index = _brokers.FindIndex(x => x.Broker.Id == brokerId);
-
-            if(index != -1)
-                _brokers.RemoveAt(index);
+            var client = _clients.First(x => x.Broker.Id == brokerId);
+            await client.DisposeAsync();
+            _clients.Remove(client);
 
             return Result.Success(result.StatusCode);
         }
@@ -70,97 +142,35 @@ public class ClientService : IClientService
         return Result.Fail(result.StatusCode, result.Messages);
     }
 
-    public async Task<Result<BrokerClient>> CreateBroker(Broker broker)
+    public async Task<Result<Client>> CreateClient(Broker broker)
     {
         var result = await _brokerService.CreateBroker(broker);
 
         if(result.Succeeded)
         {
-            var data = new BrokerClient 
-            {
-                Broker = result.Data 
-            };
+            var client = new Client(result.Data, _topicService, _factory);
+            _clients.Add(client);
 
-            return Result<BrokerClient>.Success(result.StatusCode, data);
+            return Result<Client>.Success(result.StatusCode, client);
         }
 
-        return Result<BrokerClient>.Fail(result.StatusCode, result.Messages);
-    }
-
-    public async Task<Result<BrokerClient>> UpdateBroker(Broker broker)
-    {
-        var result = await _brokerService.CreateBroker(broker);
-
-        if (result.Succeeded)
-        {
-            var data = new BrokerClient
-            {
-                Broker = result.Data
-            };
-
-            return Result<BrokerClient>.Success(result.StatusCode, data);
-        }
-
-        return Result<BrokerClient>.Fail(result.StatusCode, result.Messages);
+        return Result<Client>.Fail(result.StatusCode, result.Messages);
     }
 
     #region Privates
 
-    private async Task CreateBrokerClient(Broker broker)
+    private async Task UpdateClientBroker(Client client, Broker broker)
     {
-        var service = _factory.CreateMqttClient();
+        var connected = client.IsConnected;
 
-        var options = _factory.CreateClientOptionsBuilder()
-            .WithClientId(broker.ClientId)
-            .WithWebSocketServer($"wss://{broker.Server}:{broker.Port}")
-            .WithCredentials(broker.Username, broker.Password)
-            .Build();
+        if (connected)
+            await client.DisconnectAsync();
 
-        await service.ConnectAsync(options);
+        client.Broker = broker;
 
-        InitializeCallbacks(service, broker);
-
-        var client = new BrokerClient
-        {
-            Broker = broker,
-            MqttService = service
-        };
-
-        _brokers.Add(client);
+        if (connected)
+            await client.ConnectAsync();
     }
-    private async Task<IMqttClient> ConnectMqttClient(Broker broker)
-    {
-        var client = _factory.CreateMqttClient();
 
-        var options = _factory.CreateClientOptionsBuilder()
-            .WithClientId(broker.ClientId)
-            .WithWebSocketServer($"wss://{broker.Server}:{broker.Port}")
-            .WithCredentials(broker.Username, broker.Password)
-            .Build();
-
-        await client.ConnectAsync(options);
-
-        InitializeCallbacks(client, broker);
-
-        return client;
-    }
-    private void InitializeCallbacks(IMqttClient client, Broker broker)
-    {
-        client.ApplicationMessageReceivedAsync += (e) =>
-        {
-            var topic = e.ApplicationMessage.Topic;
-
-            var message = Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment);
-
-            _topicService.UpdateMessageOnTopic(broker.Id, topic, message);
-
-            return Task.CompletedTask;
-        };
-        client.DisconnectedAsync += Disconnect;
-    }
-    private Task Disconnect(MqttClientDisconnectedEventArgs e)
-    {
-        return Task.CompletedTask;
-    }
     #endregion
 }
