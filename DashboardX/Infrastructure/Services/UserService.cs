@@ -3,7 +3,7 @@ using Core;
 using Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Shared.Constraints.Users;
+using Shared.Constraints;
 using Shared.Models.Users;
 using System.Net;
 
@@ -21,7 +21,7 @@ public class UserService : AuthorizedService, IUserService
 
     public async Task<IResult> DeleteUser()
     {
-        //TODO - Add password as a confirmation
+        //TODO - Add password as a confirmation? 
 
         var request = new Request<User>
         {

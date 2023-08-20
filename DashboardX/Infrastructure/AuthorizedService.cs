@@ -25,6 +25,24 @@ public abstract class AuthorizedService : BaseService
         _applicationStateProvider = (ApplicationStateProvider)authenticationState;
     }
 
+    //TODO: Try to optimize SendAsync methods
+
+    protected virtual async Task<Result> SendAsync(Request request, JsonSerializerOptions? options = null)
+    {
+        var message = CreateMessage(request);
+        var results = await Run(message);
+
+        if (results.StatusCode == HttpStatusCode.Unauthorized)
+        {
+            if (!await RefreshTokens())
+                return Result.Fail(results.StatusCode);
+
+            results = await Run(message);
+        }
+
+        return results;
+    }
+
     protected override async Task<Result<T>> SendAsync<T>(Request request, JsonSerializerOptions? options = null) where T : class
     {
         var message = CreateMessage(request);

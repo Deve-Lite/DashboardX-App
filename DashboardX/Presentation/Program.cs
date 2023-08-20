@@ -1,10 +1,12 @@
 using Blazored.LocalStorage;
+using Blazored.SessionStorage;
 using Core.Interfaces;
 using Infrastructure;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using MQTTnet;
 using MudBlazor;
 using MudBlazor.Services;
 using Presentation;
@@ -15,7 +17,7 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddScoped(sp => new HttpClient
+builder.Services.AddSingleton(sp => new HttpClient
 {
     Timeout = TimeSpan.FromSeconds(Convert.ToDouble(builder.Configuration.GetValue<string>("Api:MaxRequestTimeSeconds")!)),
     BaseAddress = new Uri(builder.Configuration.GetValue<string>("Api:Url"))
@@ -33,15 +35,23 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.ShowTransitionDuration = 500;
     config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
 });
-builder.Services.AddBlazoredLocalStorage();
+
 builder.Services.AddAuthorizationCore();
-builder.Services.AddScoped<AuthenticationStateProvider, ApplicationStateProvider>();
+
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IToastService, ToastService>();
+builder.Services.AddScoped<IBrokerService, BrokerService>();
+builder.Services.AddScoped<IClientService, ClientService>();
+builder.Services.AddScoped<IDeviceService, DeviceService>();
+builder.Services.AddScoped<AuthenticationStateProvider, ApplicationStateProvider>();
+
+builder.Services.AddBlazoredLocalStorageAsSingleton();
+builder.Services.AddBlazoredSessionStorageAsSingleton();
 builder.Services.AddSingleton<ILoadingService, LoadingService>();
+builder.Services.AddSingleton<ITopicService, TopicService>();
+builder.Services.AddSingleton<MqttFactory>();
+
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
-
-
 
 await builder.Build().RunAsync();

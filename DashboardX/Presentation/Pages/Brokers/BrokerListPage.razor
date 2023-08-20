@@ -1,7 +1,143 @@
-﻿@page "/brokers"
+@page "/brokers"
+@using Infrastructure;
+@using Presentation.Models;
+@using Presentation.Shared.Brokers;
+@using Presentation.Utils;
+@using global::Shared.Models.Brokers;
 
-<div>TODO: LIST OF ITEMS </div>
+@inject IClientService _clientService
+
+
+@if (_loadingService.IsLoading)
+{
+
+}
+else if (!LoadedSuccessfully)
+{
+    <div>Loading Failed...</div>
+}
+else
+{
+    <MudGrid Class="p-5">
+        @foreach (var client in BrokerClients)
+        {
+
+            <MudItem>
+                <MudCard Elevation="25" Class="container container-fit-content p-2" style="border-radius: 1rem; max-width: 25rem;">
+                    <NavLink href="@($"brokers/{client.Broker.Id}")">
+                        <MudText Align="Align.Center"> @client.Broker.Name </MudText>
+                        <MudText >Server: @client.Broker.Server </MudText>
+                        <MudText>Port: @client.Broker.Port </MudText>
+                        <MudText>Keep Alive: @client.Broker.KeepAlive </MudText>
+                        <MudText Align="Align.End">Edited At: @client.Broker.EditedAt </MudText>
+                    </NavLink>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Style="z-index: 10;"
+                               OnClick="(() => RemoveBroker(client))">
+                        Remove
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Style="z-index: 10;"
+                               OnClick="(() => UpdateBroker(client))">
+                        Update
+                    </MudButton>
+
+                </MudCard>
+            </MudItem>
+        }
+
+        <MudItem>
+            <MudCard Elevation="25" Class="container container-fit-content p-5" style="border-radius: 1rem;">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Class="container container-fit-content p-5"
+                           Style="border-radius: 1rem; max-width 25rem;"
+                           OnClick="AddBroker">
+                    Add new
+                </MudButton>
+            </MudCard>
+        </MudItem>
+
+    </MudGrid>
+}
+
 
 @code {
 
+    public bool LoadedSuccessfully { get; set; } = true;
+    private List<Client> BrokerClients { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (_loadingService.IsLoading)
+            return;
+
+        _loadingService.ShowLoading();
+
+        var result = await _clientService.GetClients();
+        LoadedSuccessfully = result.Succeeded;
+        if (result.Succeeded)
+        {
+            BrokerClients = result.Data;
+        }
+
+        _loadingService.HideLoading();
+    }
+
+    private async Task UpdateBroker(Client client)
+    {
+        var parameters = new DialogParameters<UpsertBrokerDialog> { { x => x.Broker, client.Broker } };
+
+        var dialog = await _dialogService.ShowAsync<UpsertBrokerDialog>("Edit Broker", parameters);
+        var result = await dialog.Result;
+
+        if (result.Canceled)
+            return;
+
+        var x = result.Data as Result<Client> ?? Result<Client>.Fail("Couldn't parse response.");
+
+        if (x.Succeeded)
+        {
+            BrokerClients.Add(x.Data);
+            StateHasChanged();
+        }
+    }
+
+    private async Task AddBroker()
+    {
+        var dialog = await _dialogService.ShowAsync<UpsertBrokerDialog>("Create Broker");
+        var result = await dialog.Result;
+
+        if (result.Canceled)
+            return;
+
+        var x = result.Data as Result<Client> ?? Result<Client>.Fail("Couldn't parse response.");
+
+        if (x.Succeeded)
+        {
+            BrokerClients.Add(x.Data);
+            StateHasChanged();
+        }
+    }
+
+    private async Task RemoveBroker(Client client)
+    {
+        var parameters = new DialogParameters<RemoveBrokerDialog> { { x => x.Broker, client.Broker } };
+
+        var dialog = await _dialogService.ShowAsync<RemoveBrokerDialog>("Remove Broker", parameters);
+        var result = await dialog.Result;
+
+        if (result.Canceled)
+            return;
+
+        var x = result.Data as Result ?? Result.Fail("Couldn't parse response.");
+
+        if (x.Succeeded)
+        {
+            BrokerClients.Remove(client);
+            StateHasChanged();
+        }
+    }
 }

@@ -1,6 +1,6 @@
 ﻿using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
-using Shared.Constraints.Authorization;
+using Shared.Constraints;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -45,19 +45,19 @@ public class ApplicationStateProvider : AuthenticationStateProvider
 
     public async Task Logout()
     {
-        await _localStorage.RemoveItemAsync(AuthStorageConstraints.AccessToken);
-        await _localStorage.RemoveItemAsync(AuthStorageConstraints.RefreshToken);
+        await _localStorage.RemoveItemAsync(AuthConstraints.AccessToken);
+        await _localStorage.RemoveItemAsync(AuthConstraints.RefreshToken);
 
         currentState = NoAuthState();
 
         NotifyAuthenticationStateChanged(Task.FromResult(currentState));
     }
 
-    public async Task RemoveLoginState()
+    public Task RemoveLoginState()
     {
         currentState = NoAuthState();
-
         NotifyAuthenticationStateChanged(Task.FromResult(currentState));
+        return Task.CompletedTask;
     }
 
     #region State
@@ -66,14 +66,13 @@ public class ApplicationStateProvider : AuthenticationStateProvider
         AccessToken = accessToken;
         RefreshToken = refreshToken;
 
-        var isSession = await _localStorage.GetItemAsync<bool>(AuthPageConstraint.RememberMeName);
+        var isSession = await _localStorage.GetItemAsync<bool>(AuthConstraints.RememberMeName);
 
         //TODO: Proposal save session in session storage / add another servicee for tokens management
-        if (!isSession)
-        {
-            await _localStorage.SetItemAsync(AuthStorageConstraints.AccessToken, accessToken);
-            await _localStorage.SetItemAsync(AuthStorageConstraints.RefreshToken, refreshToken);
-        }
+      
+            await _localStorage.SetItemAsync(AuthConstraints.AccessToken, accessToken);
+            await _localStorage.SetItemAsync(AuthConstraints.RefreshToken, refreshToken);
+        
 
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 

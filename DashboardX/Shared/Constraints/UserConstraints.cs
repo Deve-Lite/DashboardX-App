@@ -1,5 +1,4 @@
-﻿
-namespace Shared.Constraints.Users;
+﻿namespace Shared.Constraints;
 
 public static class UserConstraints
 {

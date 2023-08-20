@@ -6,7 +6,7 @@ namespace Infrastructure;
 
 public abstract class BaseService
 {
-    protected const int RequestDebugDelay = 3000;
+    protected const int RequestDebugDelay = 1000;
     protected readonly HttpClient _client;
 
     public BaseService(HttpClient httpClient)
@@ -68,7 +68,7 @@ public abstract class BaseService
         }
         catch (Exception e)
         {
-            return Result<T>.Fail("Unknown error occured.");
+            return Result<T>.Fail($"Unknown error occured. {e.Message}");
         }
     }
 
@@ -101,7 +101,7 @@ public abstract class BaseService
         }
         catch (Exception e)
         {
-            return Result.Fail("Unknown error occured. ");
+            return Result.Fail($"Unknown error occured. {e.Message}");
         }
     }
 
