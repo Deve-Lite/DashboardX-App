@@ -101,7 +101,7 @@ public class ClientService : IClientService
             await UpdateClientBroker(client, brokerResult.Data);
         }
 
-        //TODO: Update devices
+        await UpdateClientDevices(client, deviceResult.Data);
 
         return Result<Client>.Success(brokerResult.StatusCode, client);
     }
@@ -190,6 +190,11 @@ public class ClientService : IClientService
 
     #region Privates
 
+    private Task UpdateDeviceControls()
+    {
+        throw new NotImplementedException();
+    }
+
     private Task UpdateClientDevices(Client client, List<Device> devices)
     {
         HashSet<string> usedDevices = new();
@@ -206,6 +211,7 @@ public class ClientService : IClientService
             {
                 //TODO: Update device
             }
+
             usedDevices.Add(device.Id);
         }
 

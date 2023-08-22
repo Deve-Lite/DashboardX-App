@@ -52,10 +52,12 @@ else
 
 @code {
 
-    public bool LoadedSuccessfully { get; set; } = true;
-
+    [Parameter]
     public string DeviceId { get; set; } = string.Empty;
+    [Parameter]
     public string ClientId { get; set; } = string.Empty;
+
+    public bool LoadedSuccessfully { get; set; } = true;
 
     public Client Client { get; set; } = new();
     public Device Device { get; set; } = new();
