@@ -24,7 +24,8 @@ public class Client : IAsyncDisposable
     {
         Devices = new List<Device>();
         Broker = new Broker();
-        Service = new MqttFactory().CreateMqttClient();
+        _factory = null;
+        Service = null;
     }
 
     public Client(Broker broker, ITopicService topicService, MqttFactory factory)

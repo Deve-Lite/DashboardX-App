@@ -1,0 +1,120 @@
+﻿@page "/devices/{DeviceId}/{ClientId}"
+@using Infrastructure;
+@using Presentation.Shared.Devices;
+@using global::Shared.Models.Devices;
+
+@inject IClientService _clientService
+
+@if (_loadingService.IsLoading)
+{
+
+}
+else if (!LoadedSuccessfully)
+{
+    <div>Loading Failed...</div>
+}
+else
+{
+    <MudGrid Class="p-5">
+
+        <MudItem>
+            <MudCard Elevation="25" Class="container container-fit-content p-2" style="border-radius: 1rem; max-width: 25rem;">
+
+                <MudText Align="Align.Center"> @Device.Name </MudText>
+                <MudText>Placing: @Device.Placing </MudText>
+                <MudText>Path: @Device.BaseDevicePath </MudText>
+                <MudText Align="Align.End">Edited At: @Device.EditedAt </MudText>
+
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Style="z-index: 10;"
+                           OnClick="RemoveDevice">
+                    Remove
+                </MudButton>
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Style="z-index: 10;"
+                           OnClick="UpdateDevice">
+                    Update
+                </MudButton>
+
+            </MudCard>
+        </MudItem>
+        
+        <div>
+            List of controls will be here
+        </div>
+
+    </MudGrid>
+}
+
+
+
+@code {
+
+    public bool LoadedSuccessfully { get; set; } = true;
+
+    public string DeviceId { get; set; } = string.Empty;
+    public string ClientId { get; set; } = string.Empty;
+
+    public Client Client { get; set; } = new();
+    public Device Device { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (_loadingService.IsLoading)
+            return;
+
+        _loadingService.ShowLoading();
+
+        var result = await _clientService.GetClient(ClientId);
+
+        if (result.Succeeded)
+        {
+            Client = result.Data;
+            Device = Client.Devices.FirstOrDefault(x => x.Id == DeviceId)!;
+        }
+
+        _loadingService.HideLoading();
+
+        await base.OnInitializedAsync();
+    }
+
+    private async Task UpdateDevice()
+    {
+        var parameters = new DialogParameters<UpsertDeviceDialog> { { x => x.Device, Device }, { x => x.ClientId, Client.Id } };
+
+        var dialog = await _dialogService.ShowAsync<UpsertDeviceDialog>("Edit Device", parameters);
+        var result = await dialog.Result;
+
+        if (result.Canceled)
+            return;
+
+        var x = result.Data as Result<Client> ?? Result<Client>.Fail("Couldn't parse response.");
+
+        if (x.Succeeded)
+        {
+            //TODO: Device should be update because it will be replaced
+            StateHasChanged();
+        }
+    }
+
+    private async Task RemoveDevice()
+    {
+        var parameters = new DialogParameters<UpsertDeviceDialog> { { x => x.Device, Device }, { x => x.ClientId, Client.Id } };
+
+        var dialog = await _dialogService.ShowAsync<RemoveDeviceDialog>("Remove Device", parameters);
+        var result = await dialog.Result;
+
+        if (result.Canceled)
+            return;
+
+        var x = result.Data as Result ?? Result.Fail("Couldn't parse response.");
+
+        if (x.Succeeded)
+        {
+            // TODO: navigate to valid page
+            StateHasChanged();
+        }
+    }
+}

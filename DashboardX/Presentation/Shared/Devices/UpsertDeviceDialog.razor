@@ -1,0 +1,133 @@
+﻿@using Blazored.FluentValidation;
+@using Presentation.Utils;
+@using global::Shared.Models.Brokers;
+@using global::Shared.Models.Devices;
+
+@inject IStringLocalizer<UpsertDeviceDialog> _localizer;
+@inject IClientService _clientService
+
+<MudDialog>
+    <DialogContent>
+        <EditForm id="upsertBrokerForm" Model="@Device" OnValidSubmit="SubmitAsync">
+            <FluentValidationValidator @ref="_fluentValidationValidator" />
+            <MudGrid>
+                <DataAnnotationsValidator />
+
+                <MudItem xs="12">
+                    <div class="d-flex justify-center">
+                        <MudTextField T="string"
+                                      Label="@_localizer["Name"]"
+                                      Variant="Variant.Outlined"
+                        @bind-Value="Device.Name"
+                                      For="@(() => Device.Name)" />
+                    </div>
+                </MudItem>
+                <MudItem xs="12">
+                    <div class="d-flex justify-center">
+                        <MudTextField T="string"
+                                      Label="@_localizer["Placing"]"
+                                      Variant="Variant.Outlined"
+                        @bind-Value="Device.Placing"
+                                      For="@(() => Device.Placing)" />
+                    </div>
+                </MudItem>
+                <MudItem xs="12">
+                    <div class="d-flex justify-center">
+                        <MudTextField T="string"
+                                      Label="@_localizer["Base device path"]"
+                                      Variant="Variant.Outlined"
+                        @bind-Value="Device.BaseDevicePath"
+                                      For="@(() => Device.BaseDevicePath)" />
+                    </div>
+                </MudItem>
+                <MudItem xs="12">
+                    <div class="d-flex justify-center">
+                        <MudTextField T="string"
+                                      Label="@_localizer["Icon"]"
+                                      Variant="Variant.Outlined"
+                        @bind-Value="Device.Icon"
+                                      For="@(() => Device.Icon)" />
+                    </div>
+                </MudItem>
+                <MudItem xs="12">
+                    <div class="d-flex justify-center">
+                        <MudTextField T="string"
+                                      Label="@_localizer["Icon Background Color"]"
+                                      Variant="Variant.Outlined"
+                        @bind-Value="Device.IconBackgroundColor"
+                                      For="@(() => Device.IconBackgroundColor)" />
+                    </div>
+                </MudItem>
+                <MudItem xs="12">
+                    <div class="d-flex justify-start">
+                        <MudSwitch Label="Is password secured"
+                                   Color="Color.Primary"
+                        @bind-Checked="ShowAuthorizationFields" />
+                    </div>
+                </MudItem>
+
+               
+            </MudGrid>
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">@_localizer["Cancel"]</MudButton>
+        <MudButton form="upsertBrokerForm"
+                   OnClick="SubmitAsync"
+                   ButtonType="ButtonType.Submit"
+                   Variant="Variant.Filled"
+                   Disabled="@(!Validated)"
+                   Color="Color.Primary">@_localizer["Submit"] </MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code
+{
+    [CascadingParameter]
+    private MudDialogInstance? Dialog { get; set; }
+
+    [Parameter]
+    public Device Device { get; set; } = new();
+
+    [Parameter]
+    public string ClientId { get; set; } = string.Empty;
+
+    private FluentValidationValidator? _fluentValidationValidator;
+    private bool Validated => _fluentValidationValidator == null ? false : _fluentValidationValidator.Validate(options => { options.IncludeAllRuleSets(); });
+
+    private bool ShowAuthorizationFields { get; set; } = false;
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Validated && firstRender)
+            StateHasChanged();
+
+        return base.OnAfterRenderAsync(firstRender);
+    }
+
+    private void Cancel() => Dialog!.Cancel();
+
+    private async Task SubmitAsync()
+    {
+        if (_loadingService.IsLoading)
+            return;
+
+        _loadingService.ShowLoading();
+
+        var result = await _clientService.CreateDeviceForClient(ClientId, Device);
+
+        await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnAdded);
+
+        _loadingService.HideLoading();
+
+        Dialog!.Close(DialogResult.Ok(result));
+    }
+
+    private Task OnAdded()
+    {
+        _snackbar.Add("Success", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
+        return Task.CompletedTask;
+    }
+
+}

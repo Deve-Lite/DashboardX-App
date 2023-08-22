@@ -1,0 +1,143 @@
+﻿@page "/devices"
+@using Infrastructure;
+@using Presentation.Models;
+@using Presentation.Shared.Devices;
+@using global::Shared.Models.Devices;
+
+@inject IClientService _clientService
+@inject IStringLocalizer<DeviceListPage> _localizer
+
+@if (_loadingService.IsLoading)
+{
+
+}
+else if (!LoadedSuccessfully)
+{
+    <div>Loading Failed...</div>
+}
+else
+{
+    <MudGrid Class="p-5">
+        @foreach (var client in BrokerClients)
+            foreach(var device in client.Devices)
+            {
+                <MudItem>
+                    <MudCard Elevation="25" Class="container container-fit-content p-2" style="border-radius: 1rem; max-width: 25rem;">
+                        <NavLink href="@($"devices/{device.Id}/{client.Id}")">
+                            <MudText Align="Align.Center"> @device.Name </MudText>
+                            <MudText>Placing: @device.Placing </MudText>
+                            <MudText>Path: @device.BaseDevicePath </MudText>
+                            <MudText Align="Align.End">Edited At: @device.EditedAt </MudText>
+                        </NavLink>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   Style="z-index: 10;"
+                                   OnClick="(() => RemoveDevice(client, device))">
+                            Remove
+                        </MudButton>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   Style="z-index: 10;"
+                                   OnClick="(() => UpdateDevice(client, device))">
+                            Update
+                        </MudButton>
+
+                    </MudCard>
+                </MudItem>
+            }
+
+        <MudItem>
+            <MudCard Elevation="25" Class="container container-fit-content p-5" style="border-radius: 1rem;">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Class="container container-fit-content p-5"
+                           Style="border-radius: 1rem; max-width 25rem;"
+                           OnClick="AddDevice">
+                    Add new
+                </MudButton>
+            </MudCard>
+        </MudItem>
+
+    </MudGrid>
+}
+
+
+@code
+{
+
+    public bool LoadedSuccessfully { get; set; } = true;
+    private List<Client> BrokerClients { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (_loadingService.IsLoading)
+            return;
+
+        _loadingService.ShowLoading();
+
+        var result = await _clientService.GetClients();
+        LoadedSuccessfully = result.Succeeded;
+        if (result.Succeeded)
+        {
+            BrokerClients = result.Data;
+        }
+
+        _loadingService.HideLoading();
+    }
+
+    private async Task UpdateDevice(Client client, Device device)
+    {
+        var parameters = new DialogParameters<UpsertDeviceDialog> { { x => x.Device, device }, { x => x.ClientId, client.Id } };
+
+        var dialog = await _dialogService.ShowAsync<UpsertDeviceDialog>("Edit Device", parameters);
+        var result = await dialog.Result;
+
+        if (result.Canceled)
+            return;
+
+        var x = result.Data as Result<Client> ?? Result<Client>.Fail("Couldn't parse response.");
+
+        if (x.Succeeded)
+        {
+            BrokerClients.Add(x.Data);
+            StateHasChanged();
+        }
+    }
+
+    private async Task AddDevice()
+    {
+        var dialog = await _dialogService.ShowAsync<UpsertDeviceDialog>("Create Device");
+        var result = await dialog.Result;
+
+        if (result.Canceled)
+            return;
+
+        var x = result.Data as Result<Client> ?? Result<Client>.Fail("Couldn't parse response.");
+
+        if (x.Succeeded)
+        {
+            BrokerClients.Add(x.Data);
+            StateHasChanged();
+        }
+    }
+
+    private async Task RemoveDevice(Client client, Device device)
+    {
+        var parameters = new DialogParameters<UpsertDeviceDialog> { { x => x.Device, device }, { x => x.ClientId, client.Id } };
+
+        var dialog = await _dialogService.ShowAsync<RemoveDeviceDialog>("Remove Device", parameters);
+        var result = await dialog.Result;
+
+        if (result.Canceled)
+            return;
+
+        var x = result.Data as Result ?? Result.Fail("Couldn't parse response.");
+
+        if (x.Succeeded)
+        {
+            BrokerClients.Remove(client);
+            StateHasChanged();
+        }
+    }
+}
+

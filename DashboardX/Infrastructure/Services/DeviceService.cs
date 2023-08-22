@@ -65,7 +65,7 @@ public class DeviceService : AuthorizedService, IDeviceService
         return response;
     }
 
-    public async Task<IResult<Device>> CreateDevices(Device device)
+    public async Task<IResult<Device>> CreateDevice(Device device)
     {
         var request = new Request<Device>
         {

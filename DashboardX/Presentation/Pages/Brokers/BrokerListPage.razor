@@ -6,7 +6,7 @@
 @using global::Shared.Models.Brokers;
 
 @inject IClientService _clientService
-
+@inject IStringLocalizer<BrokerListPage> _localizer
 
 @if (_loadingService.IsLoading)
 {

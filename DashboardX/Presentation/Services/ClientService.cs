@@ -1,14 +1,11 @@
-﻿using Core;
-using Core.Interfaces;
+﻿using Core.Interfaces;
 using Infrastructure;
 using MQTTnet;
-using MQTTnet.Client;
 using Presentation.Models;
 using Presentation.Services.Interfaces;
 using Shared.Models.Brokers;
-using System;
+using Shared.Models.Devices;
 using System.Net;
-using System.Text;
 
 namespace Presentation.Services;
 
@@ -33,7 +30,6 @@ public class ClientService : IClientService
     {
         throw new NotImplementedException();
     }
-
 
     public async Task<Result<List<Client>>> GetClients()
     {
@@ -94,7 +90,7 @@ public class ClientService : IClientService
         {
             var newClient = new Client(brokerResult.Data, _topicService, _factory);
 
-            //TODO: initalize devices
+            await UpdateClientDevices(newClient, deviceResult.Data);
 
             _clients.Add(newClient);
 
@@ -157,7 +153,68 @@ public class ClientService : IClientService
         return Result<Client>.Fail(result.StatusCode, result.Messages);
     }
 
+    #region Device
+
+    public async Task<Result> RemoveDeviceFromClient(string clientId, string deviceId)
+    {
+        var result = await _deviceService.RemoveDevice(clientId);
+
+        if (result.Succeeded)
+        {
+            var client = _clients.First(x => x.Id == clientId);
+            //TODO: Remove topics from client
+            client.Devices.RemoveAll(x=>x.Id == deviceId);
+
+            return Result.Success(result.StatusCode);
+        }
+
+        return Result.Fail(result.StatusCode, result.Messages);
+    }
+
+    public async Task<Result<Device>> CreateDeviceForClient(string clientId, Device device)
+    {
+        var result = await _deviceService.CreateDevice(device);
+
+        if (result.Succeeded)
+        {
+            var client = _clients.First(x => x.Id == clientId);
+            client.Devices.Add(result.Data);
+
+            return (Result<Device>) result;
+        }
+
+        return Result<Device>.Fail(result.StatusCode, result.Messages);
+    }
+
+    #endregion
+
     #region Privates
+
+    private Task UpdateClientDevices(Client client, List<Device> devices)
+    {
+        HashSet<string> usedDevices = new();
+
+        foreach(var device in devices)
+        {
+            var existingDevice = client.Devices.FirstOrDefault(x => x.Id == device.Id);
+            if(existingDevice is null)
+            {
+                client.Devices.Add(device);
+                //TODO: Subscribe to device topics
+            }
+            else if(existingDevice.EditedAt != existingDevice.EditedAt)
+            {
+                //TODO: Update device
+            }
+            usedDevices.Add(device.Id);
+        }
+
+        foreach(var device in client.Devices)
+            if(!usedDevices.Contains(device.Id))
+                client.Devices.Remove(device);    
+
+        return Task.CompletedTask;
+    }
 
     private async Task UpdateClientBroker(Client client, Broker broker)
     {
