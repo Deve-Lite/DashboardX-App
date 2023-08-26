@@ -9,8 +9,8 @@ using System.Net;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using Infrastructure.Extensions;
-using Shared.Models.Brokers;
 using Infrastructure.Models;
+using Shared.Models.Controls;
 
 namespace Infrastructure.Services;
 
@@ -130,4 +130,94 @@ public class DeviceService : AuthorizedService, IDeviceService
         
         return response;
     }
+
+    #region DeviceControls
+
+    public async Task<IResult<List<Control>>> GetDeviceControls(string deviceId)
+    {
+        var request = new Request
+        {
+            Method = HttpMethod.Get,
+            Route = $"api/v1/devices/{deviceId}/controls"
+        };
+
+        var response = await SendAsync<List<Control>>(request);
+
+        if (response.StatusCode == HttpStatusCode.OK)
+            await _localStorage.SetItemAsync(DeviceConstants.DevicesListName, response.Data);
+
+        if (response.StatusCode == HttpStatusCode.NotModified)
+            response.Data = await _localStorage.GetItemAsync<List<Control>>(ControlStoragePath(deviceId));
+
+        return response;
+    }
+
+    public async Task<IResult> RemoveDeviceControls(string deviceId, List<string> controlIds)
+    {
+        var request = new Request
+        {
+            Method = HttpMethod.Delete,
+            Route = $"api/v1/devices/{deviceId}/controls",
+        };
+
+        var response = await SendAsync(request);
+
+        if (response.Succeeded)
+            await _localStorage.RemoveItemsFromList<Device>(ControlStoragePath(deviceId), controlIds);
+
+        return response;
+    }
+
+    public async Task<IResult<Control>> CreateDeviceControl(Control control)
+    {
+        var request = new Request<Control>
+        {
+            Method = HttpMethod.Post,
+            Route = $"api/v1/devices/{control.DeviceId}/controls",
+            Data = control
+        };
+
+        var response = await SendAsync<CreateResponse, Control>(request);
+
+        if (!response.Succeeded)
+            return Result<Control>.Fail(response.StatusCode, response.Messages);
+
+        control.Id = response.Data.Id;
+
+        await _localStorage.UpsertItemToList(ControlStoragePath(control.DeviceId), control);
+
+        return Result<Control>.Success(response.StatusCode, control);
+    }
+
+    public async Task<IResult<Control>> UpdateDeviceControl(Control control)
+    {
+        var request = new Request<Control>
+        {
+            Method = HttpMethod.Patch,
+            Route = $"api/v1/devices/{control.DeviceId}/controls",
+            Data = control
+        };
+
+        var options = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+
+        var response = await SendAsync<Control>(request, options);
+
+        if (!response.Succeeded)
+            return Result<Control>.Fail(response.StatusCode, response.Messages);
+
+        await _localStorage.UpsertItemToList(ControlStoragePath(control.DeviceId), control);
+
+        return Result<Control>.Success(response.StatusCode, control);
+    }
+
+    #endregion
+
+    #region Privates
+
+    public string ControlStoragePath(string deviceId) => $"{deviceId}{DeviceConstants.ControlsListName}";
+
+    #endregion
 }
