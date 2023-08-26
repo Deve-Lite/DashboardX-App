@@ -20,4 +20,16 @@ public class Device : BaseModel
 
     [JsonPropertyName("updatedAt")]
     public DateTime EditedAt { get; set; }
+
+    public Device Copy() => new()
+    {
+        BaseDevicePath = BaseDevicePath,
+        BrokerId = BrokerId,
+        EditedAt = EditedAt,
+        Icon = Icon,
+        IconBackgroundColor = IconBackgroundColor,
+        Id = Id,
+        Name = Name,
+        Placing = Placing
+    };
 }

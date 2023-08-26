@@ -1,5 +1,7 @@
 ﻿@using Blazored.FluentValidation;
+@using Infrastructure;
 @using Presentation.Utils;
+@using System.Net;
 @using global::Shared.Models.Brokers;
 @using global::Shared.Models.Devices;
 
@@ -103,6 +105,9 @@
         if (Validated && firstRender)
             StateHasChanged();
 
+        if(firstRender && !string.IsNullOrEmpty(Device.Id))
+            Device = Device.Copy();
+
         return base.OnAfterRenderAsync(firstRender);
     }
 
@@ -115,7 +120,13 @@
 
         _loadingService.ShowLoading();
 
-        var result = await _clientService.CreateDeviceForClient(ClientId, Device);
+
+        var result = Result<Device>.Fail(HttpStatusCode.BadRequest);
+
+        if (string.IsNullOrEmpty(Device.Id))
+            result = await _clientService.CreateDeviceForClient(ClientId, Device);
+        else
+            result = await _clientService.UpdateDeviceForClient(ClientId, Device);
 
         await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnAdded);
 

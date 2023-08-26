@@ -26,7 +26,7 @@ public class ClientService : IClientService
         _factory = factory;
     }
 
-    public async Task<Result<List<Client>>> GetClientsWithDevices()
+    public Task<Result<List<Client>>> GetClientsWithDevices()
     {
         throw new NotImplementedException();
     }
@@ -108,7 +108,7 @@ public class ClientService : IClientService
 
     public async Task<Result<Client>> UpdateClient(Broker broker)
     {
-        var result = await _brokerService.CreateBroker(broker);
+        var result = await _brokerService.UpdateBroker(broker);
 
         if (result.Succeeded)
         {
@@ -181,6 +181,22 @@ public class ClientService : IClientService
             client.Devices.Add(result.Data);
 
             return (Result<Device>) result;
+        }
+
+        return Result<Device>.Fail(result.StatusCode, result.Messages);
+    }
+
+    public async Task<Result<Device>> UpdateDeviceForClient(string clientId, Device device)
+    {
+        var result = await _deviceService.UpdateDevice(device);
+
+        if (result.Succeeded)
+        {
+            var client = _clients.First(x => x.Id == clientId);
+            client.Devices.RemoveAll(x => x.Id == device.Id);
+            client.Devices.Add(result.Data);
+
+            return (Result<Device>)result;
         }
 
         return Result<Device>.Fail(result.StatusCode, result.Messages);

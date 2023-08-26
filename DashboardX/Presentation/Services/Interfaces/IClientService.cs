@@ -15,5 +15,6 @@ public interface IClientService
 
     Task<Result> RemoveDeviceFromClient(string clientId, string deviceId);
     Task<Result<Device>> CreateDeviceForClient(string clientId, Device device);
+    Task<Result<Device>> UpdateDeviceForClient(string clientId, Device device);
 }
 

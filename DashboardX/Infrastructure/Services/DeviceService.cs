@@ -9,6 +9,8 @@ using System.Net;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using Infrastructure.Extensions;
+using Shared.Models.Brokers;
+using Infrastructure.Models;
 
 namespace Infrastructure.Services;
 
@@ -74,26 +76,24 @@ public class DeviceService : AuthorizedService, IDeviceService
             Data = device
         };
 
-        var response = await SendAsync<Device, Device>(request);
+        var response = await SendAsync<CreateResponse, Device>(request);
 
-        if (response.Succeeded)
-        {
-            //TODO: Update device EditedAt
-            device.BrokerId = response.Data.Id;
+        if (!response.Succeeded)
+            return Result<Device>.Fail(response.StatusCode, response.Messages);
 
-            await _localStorage.UpsertItemToList(DeviceConstants.DevicesListName, response.Data);
+        device.Id = response.Data.Id;
+        device.EditedAt = response.Data.EditedAt;
 
-            response.Data = device;
-        }
+        await _localStorage.UpsertItemToList(DeviceConstants.DevicesListName, device);
 
-        return response;
+        return Result<Device>.Success(response.StatusCode, device);
     }
 
     public async Task<IResult<Device>> UpdateDevice(Device device)
     {
         var request = new Request<Device>
         {
-            Method = HttpMethod.Put,
+            Method = HttpMethod.Patch,
             Route = $"api/v1/devices/{device.Id}",
             Data = device
         };
@@ -103,17 +103,16 @@ public class DeviceService : AuthorizedService, IDeviceService
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-        var response = await SendAsync<Device, Device>(request, options);
+        var response = await SendAsync<UpdateResponse, Device>(request, options);
 
-        if (response.Succeeded)
-        {
-            //TODO: Update device EditedAt
+        if (!response.Succeeded)
+            return Result<Device>.Fail(response.StatusCode, response.Messages);
 
-            await _localStorage.UpsertItemToList(DeviceConstants.DevicesListName, device);          
-            response.Data = device;
-        }
+        device.EditedAt = response.Data.EditedAt;
 
-        return response!;
+        await _localStorage.UpsertItemToList(DeviceConstants.DevicesListName, device);
+
+        return Result<Device>.Success(response.StatusCode, device);
     }
 
     public async Task<IResult> RemoveDevice(string deviceId)

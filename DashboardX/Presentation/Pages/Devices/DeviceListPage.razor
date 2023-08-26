@@ -98,10 +98,7 @@ else
         var x = result.Data as Result<Client> ?? Result<Client>.Fail("Couldn't parse response.");
 
         if (x.Succeeded)
-        {
-            BrokerClients.Add(x.Data);
             StateHasChanged();
-        }
     }
 
     private async Task AddDevice()
@@ -115,10 +112,7 @@ else
         var x = result.Data as Result<Client> ?? Result<Client>.Fail("Couldn't parse response.");
 
         if (x.Succeeded)
-        {
-            BrokerClients.Add(x.Data);
             StateHasChanged();
-        }
     }
 
     private async Task RemoveDevice(Client client, Device device)
@@ -134,10 +128,7 @@ else
         var x = result.Data as Result ?? Result.Fail("Couldn't parse response.");
 
         if (x.Succeeded)
-        {
-            BrokerClients.Remove(client);
             StateHasChanged();
-        }
     }
 }
 

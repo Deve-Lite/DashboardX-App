@@ -1,5 +1,7 @@
 ﻿@using Blazored.FluentValidation;
+@using Infrastructure;
 @using Presentation.Utils;
+@using System.Net;
 @using global::Shared.Models.Brokers;
 
 @inject IStringLocalizer<UpsertBrokerDialog> _localizer;
@@ -123,7 +125,15 @@
     {
         if (Validated && firstRender)
             StateHasChanged();
-            
+
+        if (firstRender && !string.IsNullOrEmpty(Broker.Id))
+        {
+            Broker = Broker.Copy();
+
+            if (!string.IsNullOrEmpty(Broker.Password) || !string.IsNullOrEmpty(Broker.Username ))
+                ShowAuthorizationFields = true;
+        }
+
         return base.OnAfterRenderAsync(firstRender);
     }
 
@@ -156,8 +166,13 @@
 
         _loadingService.ShowLoading();
 
-        var result = await _clientService.CreateClient(Broker);
+        var result = Result<Client>.Fail(HttpStatusCode.BadRequest);
 
+        if (string.IsNullOrEmpty(Broker.Id))
+            result = await _clientService.CreateClient(Broker);
+        else
+            result = await _clientService.UpdateClient(Broker);
+        
         await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnAdded);
 
         _loadingService.HideLoading();

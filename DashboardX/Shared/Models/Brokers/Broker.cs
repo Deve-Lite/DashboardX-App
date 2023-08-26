@@ -29,4 +29,19 @@ public class Broker : BaseModel
     [JsonPropertyName("updatedAt")]
     public DateTime EditedAt { get; set; }
 
+    public Broker Copy() => new()
+    {
+        ClientId = ClientId,
+        EditedAt = EditedAt,
+        Icon = Icon,
+        Id = Id,
+        IsSSL = IsSSL,
+        KeepAlive = KeepAlive,
+        Name = Name,
+        Password = Password,
+        Port = Port,
+        Server = Server,
+        Username = Username
+    };
+
 }
