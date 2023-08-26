@@ -6,7 +6,8 @@ public class Broker : BaseModel
 {
     [JsonPropertyName("icon")]
     public string Icon { get; set; } = string.Empty;
-
+    [JsonPropertyName("iconBackgroundColor")]
+    public string IconBackgroundColor { get; set; } = string.Empty;
     [JsonPropertyName("name"), Required, MinLength(2), MaxLength(64)]
     public string Name { get; set; } = string.Empty;
     [JsonPropertyName("port"), Required]

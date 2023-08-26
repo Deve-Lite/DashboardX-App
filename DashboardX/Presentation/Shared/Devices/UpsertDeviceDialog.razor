@@ -7,6 +7,7 @@
 
 @inject IStringLocalizer<UpsertDeviceDialog> _localizer;
 @inject IClientService _clientService
+@inject IBrokerService _brokerService
 
 <MudDialog>
     <DialogContent>
@@ -17,58 +18,69 @@
 
                 <MudItem xs="12">
                     <div class="d-flex justify-center">
-                        <MudTextField T="string"
+                        <MudTextField @bind-Value="Device.Name"
+                                      T="string"
                                       Label="@_localizer["Name"]"
                                       Variant="Variant.Outlined"
-                        @bind-Value="Device.Name"
                                       For="@(() => Device.Name)" />
                     </div>
                 </MudItem>
+
                 <MudItem xs="12">
                     <div class="d-flex justify-center">
-                        <MudTextField T="string"
+                        <MudTextField @bind-Value="Device.Icon"
+                                      T="string"
+                                      Label="@_localizer["Icon"]"
+                                      Variant="Variant.Outlined"
+                                      For="@(() => Device.Icon)" />
+                    </div>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <div class="d-flex justify-center">
+                        <MudColorPicker @bind-Text="Device.IconBackgroundColor"
+                                        Label="@_localizer["Icon background color"]"
+                                        Variant="Variant.Outlined"
+                                        ColorPickerView="ColorPickerView.Palette" />
+                    </div>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <div class="d-flex justify-center">
+                        <MudTextField @bind-Value="Device.Placing"
+                                      T="string"
                                       Label="@_localizer["Placing"]"
                                       Variant="Variant.Outlined"
-                        @bind-Value="Device.Placing"
                                       For="@(() => Device.Placing)" />
                     </div>
                 </MudItem>
                 <MudItem xs="12">
                     <div class="d-flex justify-center">
-                        <MudTextField T="string"
+                        <MudTextField @bind-Value="Device.BaseDevicePath"
+                                      T="string"
                                       Label="@_localizer["Base device path"]"
                                       Variant="Variant.Outlined"
-                        @bind-Value="Device.BaseDevicePath"
                                       For="@(() => Device.BaseDevicePath)" />
                     </div>
                 </MudItem>
                 <MudItem xs="12">
                     <div class="d-flex justify-center">
-                        <MudTextField T="string"
+                        <MudTextField @bind-Value="Device.Icon"
+                                      T="string"
                                       Label="@_localizer["Icon"]"
                                       Variant="Variant.Outlined"
-                        @bind-Value="Device.Icon"
                                       For="@(() => Device.Icon)" />
                     </div>
                 </MudItem>
                 <MudItem xs="12">
                     <div class="d-flex justify-center">
-                        <MudTextField T="string"
+                        <MudTextField @bind-Value="Device.IconBackgroundColor"
+                                      T="string"
                                       Label="@_localizer["Icon Background Color"]"
                                       Variant="Variant.Outlined"
-                        @bind-Value="Device.IconBackgroundColor"
                                       For="@(() => Device.IconBackgroundColor)" />
                     </div>
                 </MudItem>
-                <MudItem xs="12">
-                    <div class="d-flex justify-start">
-                        <MudSwitch Label="Is password secured"
-                                   Color="Color.Primary"
-                        @bind-Checked="ShowAuthorizationFields" />
-                    </div>
-                </MudItem>
-
-               
             </MudGrid>
         </EditForm>
     </DialogContent>
@@ -100,12 +112,18 @@
 
     private bool ShowAuthorizationFields { get; set; } = false;
 
+    protected override void OnInitialized()
+    {
+
+        base.OnInitialized();
+    }
+
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
         if (Validated && firstRender)
             StateHasChanged();
 
-        if(firstRender && !string.IsNullOrEmpty(Device.Id))
+        if (firstRender && !string.IsNullOrEmpty(Device.Id))
             Device = Device.Copy();
 
         return base.OnAfterRenderAsync(firstRender);

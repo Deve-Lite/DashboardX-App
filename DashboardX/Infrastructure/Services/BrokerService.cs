@@ -137,7 +137,7 @@ public class BrokerService : AuthorizedService, IBrokerService
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-        var response = await SendAsync<UpdateResponse, Broker>(request, options);
+        var response = await SendAsync<UpdateResponse, Broker>(request);
 
         if (!response.Succeeded)
             return Result<Broker>.Fail(response.StatusCode, response.Messages);

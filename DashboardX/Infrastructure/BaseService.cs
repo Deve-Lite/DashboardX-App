@@ -1,4 +1,5 @@
 ﻿
+using System.Net;
 using System.Text;
 using System.Text.Json;
 
@@ -28,14 +29,14 @@ public abstract class BaseService
         return results;
     }
 
-    protected virtual async Task<Result<T>> SendAsync<T, T1>(Request<T1> request, JsonSerializerOptions? options = null) where T1 : class, new() where T : class
+    protected virtual async Task<Result<T>> SendAsync<T, T1>(Request<T1> request, JsonSerializerOptions? options = null) where T1 : class, new() where T : class, new()
     {
         var message = CreateMessage(request);
         var results = await Run<T>(message);
         return results;
     }
 
-    protected async Task<Result<T>> Run<T>(HttpRequestMessage message)
+    protected async Task<Result<T>> Run<T>(HttpRequestMessage message) where T : class, new()
     {
         try
         {
@@ -50,6 +51,9 @@ public abstract class BaseService
 
             if (response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.NoContent)
+                    return Result<T>.Success(response.StatusCode, new());
+
                 var data = JsonSerializer.Deserialize<T>(payload)!;
                 return Result<T>.Success(response.StatusCode, data);
             }
