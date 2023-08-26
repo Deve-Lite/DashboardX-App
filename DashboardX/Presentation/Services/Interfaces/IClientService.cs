@@ -14,7 +14,7 @@ public interface IClientService
     Task<Result<Client>> UpdateClient(Broker broker);
 
     Task<Result> RemoveDeviceFromClient(string clientId, string deviceId);
-    Task<Result<Device>> CreateDeviceForClient(string clientId, Device device);
-    Task<Result<Device>> UpdateDeviceForClient(string clientId, Device device);
+    Task<Result<Device>> CreateDeviceForClient(Device device);
+    Task<Result<Device>> UpdateDeviceForClient(Device device);
 }
 

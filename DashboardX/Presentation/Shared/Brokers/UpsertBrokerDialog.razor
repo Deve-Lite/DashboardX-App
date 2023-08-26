@@ -12,6 +12,7 @@
         <EditForm id="upsertBrokerForm" Model="@Broker" OnValidSubmit="SubmitAsync">
             <FluentValidationValidator @ref="_fluentValidationValidator" />
             <MudGrid>
+
                 <DataAnnotationsValidator />
 
                 <MudItem xs="12">
@@ -36,9 +37,9 @@
 
                 <MudItem xs="12">
                     <div class="d-flex justify-center">
-                        <MudColorPicker @bind-Text="Broker.IconBackgroundColor"
-                                        Label="@_localizer["Icon background color"]"
-                                        ColorPickerView="ColorPickerView.Palette" />
+                            <MudColorPicker @bind-Text="Broker.IconBackgroundColor"
+                                            Label="@_localizer["Icon background color"]"
+                                            ColorPickerView="ColorPickerView.Palette" />
                     </div>
                 </MudItem>
 
@@ -136,7 +137,6 @@
 
     private bool ShowAuthorizationFields { get; set; } = false;
 
-    // If broker passed activates submit button if valid data is entered
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
         if (Validated && firstRender)
@@ -157,7 +157,7 @@
     private InputType _passwordInput = InputType.Password;
     private string _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
 
-    void TogglePasswordVisibility()
+    private void TogglePasswordVisibility()
     {
         if (_passwordVisibility)
         {

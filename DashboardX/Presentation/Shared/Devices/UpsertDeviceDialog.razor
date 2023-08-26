@@ -14,6 +14,7 @@
         <EditForm id="upsertBrokerForm" Model="@Device" OnValidSubmit="SubmitAsync">
             <FluentValidationValidator @ref="_fluentValidationValidator" />
             <MudGrid>
+
                 <DataAnnotationsValidator />
 
                 <MudItem xs="12">
@@ -25,6 +26,19 @@
                                       For="@(() => Device.Name)" />
                     </div>
                 </MudItem>
+
+                <MudSelect @bind-Value="Device.BrokerId"
+                           xs="12"
+                           T ="string"
+                           Label="Broker" 
+                           For="(() => Device.BrokerId)"
+                           Variant="Variant.Outlined" 
+                           AnchorOrigin="Origin.BottomCenter">
+                    @foreach (var data in AvaliableBrokers)
+                    {
+                        <MudSelectItem Value="@data.Id">@data.Name</MudSelectItem>
+                    }
+                </MudSelect>
 
                 <MudItem xs="12">
                     <div class="d-flex justify-center">
@@ -40,8 +54,8 @@
                     <div class="d-flex justify-center">
                         <MudColorPicker @bind-Text="Device.IconBackgroundColor"
                                         Label="@_localizer["Icon background color"]"
-                                        Variant="Variant.Outlined"
                                         ColorPickerView="ColorPickerView.Palette" />
+
                     </div>
                 </MudItem>
 
@@ -54,6 +68,7 @@
                                       For="@(() => Device.Placing)" />
                     </div>
                 </MudItem>
+
                 <MudItem xs="12">
                     <div class="d-flex justify-center">
                         <MudTextField @bind-Value="Device.BaseDevicePath"
@@ -61,24 +76,6 @@
                                       Label="@_localizer["Base device path"]"
                                       Variant="Variant.Outlined"
                                       For="@(() => Device.BaseDevicePath)" />
-                    </div>
-                </MudItem>
-                <MudItem xs="12">
-                    <div class="d-flex justify-center">
-                        <MudTextField @bind-Value="Device.Icon"
-                                      T="string"
-                                      Label="@_localizer["Icon"]"
-                                      Variant="Variant.Outlined"
-                                      For="@(() => Device.Icon)" />
-                    </div>
-                </MudItem>
-                <MudItem xs="12">
-                    <div class="d-flex justify-center">
-                        <MudTextField @bind-Value="Device.IconBackgroundColor"
-                                      T="string"
-                                      Label="@_localizer["Icon Background Color"]"
-                                      Variant="Variant.Outlined"
-                                      For="@(() => Device.IconBackgroundColor)" />
                     </div>
                 </MudItem>
             </MudGrid>
@@ -107,15 +104,21 @@
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
 
+    private List<Broker> AvaliableBrokers = new();
     private FluentValidationValidator? _fluentValidationValidator;
     private bool Validated => _fluentValidationValidator == null ? false : _fluentValidationValidator.Validate(options => { options.IncludeAllRuleSets(); });
-
     private bool ShowAuthorizationFields { get; set; } = false;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        var result = await _brokerService.GetBrokers();
 
-        base.OnInitialized();
+        if (result.Succeeded)
+            AvaliableBrokers = result.Data;
+        else
+            Dialog!.Close(DialogResult.Ok(Result.Fail(result.StatusCode, result.Messages)));
+
+        await base.OnInitializedAsync();
     }
 
     protected override Task OnAfterRenderAsync(bool firstRender)
@@ -138,13 +141,12 @@
 
         _loadingService.ShowLoading();
 
-
         var result = Result<Device>.Fail(HttpStatusCode.BadRequest);
 
         if (string.IsNullOrEmpty(Device.Id))
-            result = await _clientService.CreateDeviceForClient(ClientId, Device);
+            result = await _clientService.CreateDeviceForClient(Device);
         else
-            result = await _clientService.UpdateDeviceForClient(ClientId, Device);
+            result = await _clientService.UpdateDeviceForClient(Device);
 
         await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnAdded);
 

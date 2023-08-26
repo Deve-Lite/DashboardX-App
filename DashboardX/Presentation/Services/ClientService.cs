@@ -171,13 +171,13 @@ public class ClientService : IClientService
         return Result.Fail(result.StatusCode, result.Messages);
     }
 
-    public async Task<Result<Device>> CreateDeviceForClient(string clientId, Device device)
+    public async Task<Result<Device>> CreateDeviceForClient(Device device)
     {
         var result = await _deviceService.CreateDevice(device);
 
         if (result.Succeeded)
         {
-            var client = _clients.First(x => x.Id == clientId);
+            var client = _clients.First(x => x.Id == device.BrokerId);
             client.Devices.Add(result.Data);
 
             return (Result<Device>) result;
@@ -186,13 +186,13 @@ public class ClientService : IClientService
         return Result<Device>.Fail(result.StatusCode, result.Messages);
     }
 
-    public async Task<Result<Device>> UpdateDeviceForClient(string clientId, Device device)
+    public async Task<Result<Device>> UpdateDeviceForClient(Device device)
     {
         var result = await _deviceService.UpdateDevice(device);
 
         if (result.Succeeded)
         {
-            var client = _clients.First(x => x.Id == clientId);
+            var client = _clients.First(x => x.Id == device.BrokerId);
             client.Devices.RemoveAll(x => x.Id == device.Id);
             client.Devices.Add(result.Data);
 
