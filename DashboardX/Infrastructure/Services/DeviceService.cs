@@ -80,18 +80,18 @@ public class DeviceService : AuthorizedService, IDeviceService
         var response = await SendAsync<CreateResponse, Device>(request);
 
         if (!response.Succeeded)
-            return Result<Device>.Fail(response.StatusCode, response.Messages);
+            return Result<Device>.Fail( response.Messages, response.StatusCode);
 
         var itemResponse = await GetDevice(response.Data.Id);
 
         if (!itemResponse.Succeeded)
-            return Result<Device>.Fail(itemResponse.StatusCode, itemResponse.Messages + " Pleace refresh page.");
+            return Result<Device>.Fail(itemResponse.Messages, itemResponse.StatusCode);
 
         device = itemResponse.Data;
 
         await _localStorage.UpsertItemToList(DeviceConstants.DevicesListName, device);
 
-        return Result<Device>.Success(response.StatusCode, device);
+        return Result<Device>.Success(device, response.StatusCode);
     }
 
     public async Task<IResult<Device>> UpdateDevice(Device device)
@@ -111,19 +111,19 @@ public class DeviceService : AuthorizedService, IDeviceService
         var response = await SendAsync<Device>(request, options);
 
         if (!response.Succeeded)
-            return Result<Device>.Fail(response.StatusCode, response.Messages);
+            return Result<Device>.Fail(response.Messages, response.StatusCode);
 
         var itemResponse = await GetDevice(device.Id);
 
         if (!itemResponse.Succeeded)
-            return Result<Device>.Fail(itemResponse.StatusCode, itemResponse.Messages + " Pleace refresh page.");
+            return Result<Device>.Fail(itemResponse.Messages, itemResponse.StatusCode);
 
         device = itemResponse.Data;
 
         await _localStorage.UpsertItemToList(DeviceConstants.DevicesListName, device);
 
 
-        return Result<Device>.Success(response.StatusCode, device);
+        return Result<Device>.Success(device, response.StatusCode);
     }
 
     public async Task<IResult> RemoveDevice(string deviceId)
@@ -191,13 +191,13 @@ public class DeviceService : AuthorizedService, IDeviceService
         var response = await SendAsync<CreateResponse, Control>(request);
 
         if (!response.Succeeded)
-            return Result<Control>.Fail(response.StatusCode, response.Messages);
+            return Result<Control>.Fail(response.Messages, response.StatusCode);
 
         control.Id = response.Data.Id;
 
         await _localStorage.UpsertItemToList(ControlStoragePath(control.DeviceId), control);
 
-        return Result<Control>.Success(response.StatusCode, control);
+        return Result<Control>.Success(control, response.StatusCode);
     }
 
     public async Task<IResult<Control>> UpdateDeviceControl(Control control)
@@ -217,18 +217,18 @@ public class DeviceService : AuthorizedService, IDeviceService
         var response = await SendAsync<Control>(request, options);
 
         if (!response.Succeeded)
-            return Result<Control>.Fail(response.StatusCode, response.Messages);
+            return Result<Control>.Fail(response.Messages, response.StatusCode);
 
         await _localStorage.UpsertItemToList(ControlStoragePath(control.DeviceId), control);
 
-        return Result<Control>.Success(response.StatusCode, control);
+        return Result<Control>.Success(control, response.StatusCode);
     }
 
     #endregion
 
     #region Privates
 
-    public string ControlStoragePath(string deviceId) => $"{deviceId}{DeviceConstants.ControlsListName}";
+    public static string ControlStoragePath(string deviceId) => $"{deviceId}{DeviceConstants.ControlsListName}";
 
     #endregion
 }

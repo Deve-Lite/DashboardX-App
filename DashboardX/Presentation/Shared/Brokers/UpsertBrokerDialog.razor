@@ -198,7 +198,7 @@
 
     private Task OnAdded()
     {
-        _snackbar.Add("Success", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
+        _snackbar.Add("Success", MudBlazor.Severity.Success);
         return Task.CompletedTask;
     }
 

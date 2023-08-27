@@ -52,27 +52,30 @@ public abstract class BaseService
             if (response.IsSuccessStatusCode)
             {
                 if (response.StatusCode == HttpStatusCode.NoContent)
-                    return Result<T>.Success(response.StatusCode, new());
+                {
+                    //todo log warning that no content was returned
+                    return Result<T>.Success(new(), HttpStatusCode.NoContent);
+                }
 
                 var data = JsonSerializer.Deserialize<T>(payload)!;
-                return Result<T>.Success(response.StatusCode, data);
+                return Result<T>.Success(data, response.StatusCode);
             }
 
             if (!string.IsNullOrEmpty(payload))
             {
                 var errorResponse = JsonSerializer.Deserialize<ErrorMessage>(payload)!;
-                return Result<T>.Fail(response.StatusCode, errorResponse.Message);
+                return Result<T>.Fail(statusCode:response.StatusCode, errorResponse.Message);
             }
 
             return Result<T>.Fail(response.StatusCode);
         }
         catch (TaskCanceledException)
         {
-            return Result<T>.Timeout("Operation timed out.");
+            return Result<T>.Timeout("Request timed out.");
         }
         catch (Exception e)
         {
-            return Result<T>.Fail($"Unknown error occured. {e.Message}");
+            return Result<T>.Fail(message:$"Unknown error occured. {e.Message}");
         }
     }
 
@@ -94,7 +97,7 @@ public abstract class BaseService
             if (!string.IsNullOrEmpty(payload))
             {
                 var errors = JsonSerializer.Deserialize<List<string>>(payload)!;
-                return Result.Fail(response.StatusCode, errors);
+                return Result.Fail(errors, response.StatusCode);
             }
 
             return Result.Fail(response.StatusCode);
@@ -105,7 +108,12 @@ public abstract class BaseService
         }
         catch (Exception e)
         {
-            return Result.Fail($"Unknown error occured. {e.Message}");
+            var errors = new List<string>()
+            {
+                $"Unknown error occured. {e.Message}" 
+            };
+
+            return Result.Fail(errors);
         }
     }
 

@@ -17,8 +17,7 @@ public class ClientService : IClientService
     private readonly ITopicService _topicService;
     private readonly IDeviceService _deviceService;
     private readonly MqttFactory _factory;
-
-    private List<Client> _clients = new();
+    private readonly List<Client> _clients = new();
 
     public ClientService(ITopicService topicService, IBrokerService brokerService, IDeviceService deviceService, MqttFactory factory)
     {
@@ -39,10 +38,10 @@ public class ClientService : IClientService
         var devicesResult = devicesTask.Result;
 
         if (!brokersResult.Succeeded)
-            return Result<List<Client>>.Fail(brokersResult.StatusCode, brokersResult.Messages);
+            return Result<List<Client>>.Fail(brokersResult.Messages, brokersResult.StatusCode);
 
         if (!devicesResult.Succeeded)
-            return Result<List<Client>>.Fail(devicesResult.StatusCode, devicesResult.Messages);
+            return Result<List<Client>>.Fail(devicesResult.Messages, devicesResult.StatusCode);
 
         var usedClients = new HashSet<string>();
 
@@ -82,9 +81,9 @@ public class ClientService : IClientService
         }
 
         if (failedConnections == 0)
-            return Result<List<Client>>.Success(brokersResult.StatusCode, _clients);
+            return Result<List<Client>>.Success(_clients, brokersResult.StatusCode);
 
-        return Result<List<Client>>.Fail($"Failed to subsribe {failedConnections} topics.");
+        return Result<List<Client>>.Warning(_clients, message:$"Failed to subscribe {failedConnections} topics.");
     }
 
     public async Task<Result<List<Client>>> GetClients()
@@ -92,7 +91,7 @@ public class ClientService : IClientService
         var result = await _brokerService.GetBrokers();
 
         if (!result.Succeeded)
-            return Result<List<Client>>.Fail(result.StatusCode, result.Messages);
+            return Result<List<Client>>.Fail(result.Messages, result.StatusCode);
 
         var brokers = result.Data;
 
@@ -123,7 +122,7 @@ public class ClientService : IClientService
             }
         }
 
-        return Result<List<Client>>.Success(result.StatusCode, _clients);
+        return Result<List<Client>>.Success(_clients, result.StatusCode);
     }
 
     public async Task<Result<Client>> GetClient(string brokerId)
@@ -137,10 +136,10 @@ public class ClientService : IClientService
         var deviceResult = deviceTask.Result;
 
         if (!brokerResult.Succeeded)
-            return Result<Client>.Fail(brokerResult.StatusCode, brokerResult.Messages);
+            return Result<Client>.Fail(brokerResult.Messages, brokerResult.StatusCode);
 
         if (!deviceResult.Succeeded)
-            return Result<Client>.Fail(deviceResult.StatusCode, deviceResult.Messages);
+            return Result<Client>.Fail(deviceResult.Messages, deviceResult.StatusCode);
 
         var client = _clients.FirstOrDefault(x => x.Id == brokerId);
 
@@ -153,9 +152,9 @@ public class ClientService : IClientService
             _clients.Add(newClient);
 
             if (failedConnections == 0)
-                return (Result<Client>)Result<Client>.Success();
+                return Result<Client>.Success(newClient);
 
-            return Result<Client>.Fail($"Failed to subsribe {failedConnections} topics.");
+            return Result<Client>.Warning(newClient, message: $"Failed to subsribe {failedConnections} topics.");
         }
         else if (client.Broker.EditedAt != brokerResult.Data.EditedAt)
         {
@@ -165,9 +164,9 @@ public class ClientService : IClientService
         var failConnections = await UpdateClientDevices(client, deviceResult.Data);
 
         if (failConnections == 0)
-            return (Result<Client>)Result<Client>.Success();
+            return Result<Client>.Success(client);
 
-        return Result<Client>.Fail($"Failed to subsribe {failConnections} topics.");
+        return Result<Client>.Warning(client, message: $"Failed to subsribe {failConnections} topics.");
     }
 
     public async Task<Result<Client>> UpdateClient(Broker broker)
@@ -180,10 +179,10 @@ public class ClientService : IClientService
 
             await UpdateClientBroker(client, result.Data);
 
-            return Result<Client>.Success(result.StatusCode, client);
+            return Result<Client>.Success(client, result.StatusCode);
         }
 
-        return Result<Client>.Fail(result.StatusCode, result.Messages);
+        return Result<Client>.Fail(result.Messages, result.StatusCode);
     }
 
     public async Task<Result> RemoveClient(string brokerId)
@@ -199,7 +198,7 @@ public class ClientService : IClientService
             return Result.Success(result.StatusCode);
         }
 
-        return Result.Fail(result.StatusCode, result.Messages);
+        return Result.Fail(result.Messages, result.StatusCode);
     }
 
     public async Task<Result<Client>> CreateClient(Broker broker)
@@ -211,10 +210,10 @@ public class ClientService : IClientService
             var client = new Client(result.Data, _topicService, _factory);
             _clients.Add(client);
 
-            return Result<Client>.Success(result.StatusCode, client);
+            return Result<Client>.Success(client, result.StatusCode);
         }
 
-        return Result<Client>.Fail(result.StatusCode, result.Messages);
+        return Result<Client>.Fail(result.Messages, result.StatusCode);
     }
 
     #region Device
@@ -232,7 +231,7 @@ public class ClientService : IClientService
             return Result.Success(result.StatusCode);
         }
 
-        return Result.Fail(result.StatusCode, result.Messages);
+        return Result.Fail(result.Messages, result.StatusCode);
     }
 
     public async Task<Result<Device>> CreateDeviceForClient(Device device)
@@ -247,7 +246,7 @@ public class ClientService : IClientService
             return (Result<Device>) result;
         }
 
-        return Result<Device>.Fail(result.StatusCode, result.Messages);
+        return Result<Device>.Fail(result.Messages, result.StatusCode);
     }
 
     public async Task<Result<Device>> UpdateDeviceForClient(Device device)
@@ -263,10 +262,10 @@ public class ClientService : IClientService
             if (unsuccessfullConnections == 0)
                 return (Result<Device>)Result.Success(result.StatusCode);
 
-            return Result<Device>.Fail($"Failed to subsribe {unsuccessfullConnections} topics.");
+            return Result<Device>.Warning(message: $"Failed to subsribe {unsuccessfullConnections} topics.");
         }
 
-        return Result<Device>.Fail(result.StatusCode, result.Messages);
+        return Result<Device>.Fail(result.Messages, result.StatusCode);
     }
 
     #endregion
@@ -288,7 +287,7 @@ public class ClientService : IClientService
 
                 if (result.Succeeded)
                 {
-                    if(await client.SubscribeAsync(device, result.Data))
+                    if(!await client.SubscribeAsync(device, result.Data))
                         invalidConnectionCount+=1;
                     device.SuccessfullControlsFetch = true;
                 }
@@ -306,7 +305,7 @@ public class ClientService : IClientService
 
                 if (result.Succeeded)
                 {
-                    if (await client.SubscribeAsync(device, result.Data))
+                    if (!await client.SubscribeAsync(device, result.Data))
                         invalidConnectionCount+=1;
                     device.SuccessfullControlsFetch = true;
                 }
@@ -321,7 +320,7 @@ public class ClientService : IClientService
 
                 if (result.Succeeded)
                 {
-                    if (await client.UpdateSubscribtionsAsync(device, result.Data))
+                    if (!await client.UpdateSubscribtionsAsync(device, result.Data))
                         invalidConnectionCount+=1;
 
                     device.SuccessfullControlsFetch = true;
@@ -342,7 +341,7 @@ public class ClientService : IClientService
         return invalidConnectionCount;
     }
 
-    private async Task UpdateClientBroker(Client client, Broker broker)
+    private static async Task UpdateClientBroker(Client client, Broker broker)
     {
         var connected = client.IsConnected;
 

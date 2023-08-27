@@ -113,7 +113,7 @@ public class BrokerService : AuthorizedService, IBrokerService
         var response = await SendAsync<CreateResponse, Broker>(request);
 
         if (!response.Succeeded)
-            return Result<Broker>.Fail(response.StatusCode, response.Messages);
+            return Result<Broker>.Fail(response.Messages, response.StatusCode);
 
         var itemResponse = await GetBroker(response.Data.Id);
 
@@ -124,7 +124,7 @@ public class BrokerService : AuthorizedService, IBrokerService
 
         await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, broker);
 
-        return Result<Broker>.Success(response.StatusCode, broker);
+        return Result<Broker>.Success(broker, response.StatusCode);
     }
 
     public async Task<IResult<Broker>> UpdateBroker(Broker broker)
@@ -144,18 +144,18 @@ public class BrokerService : AuthorizedService, IBrokerService
         var response = await SendAsync<Broker>(request, options);
 
         if (!response.Succeeded)
-            return Result<Broker>.Fail(response.StatusCode, response.Messages);
+            return Result<Broker>.Fail(response.Messages, response.StatusCode);
 
         var itemResponse = await GetBroker(broker.Id);
 
         if (!itemResponse.Succeeded)
-            return Result<Broker>.Fail(itemResponse.StatusCode, itemResponse.Messages + " Pleace refresh page.");
+            return Result<Broker>.Fail(itemResponse.Messages, itemResponse.StatusCode);
 
         broker = itemResponse.Data;
 
         await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, broker);
 
-        return Result<Broker>.Success(response.StatusCode, broker);
+        return Result<Broker>.Success(broker, response.StatusCode);
     }
 
     public async Task<IResult> RemoveBroker(string id)

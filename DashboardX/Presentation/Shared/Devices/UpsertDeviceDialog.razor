@@ -116,7 +116,7 @@
         if (result.Succeeded)
             AvaliableBrokers = result.Data;
         else
-            Dialog!.Close(DialogResult.Ok(Result.Fail(result.StatusCode, result.Messages)));
+            Dialog!.Close(DialogResult.Ok(Result.Fail(result.Messages, result.StatusCode)));
 
         await base.OnInitializedAsync();
     }

@@ -10,16 +10,18 @@
 
 @if (_loadingService.IsLoading)
 {
-
+    <div> Loading... </div>
 }
 else if (!LoadedSuccessfully)
 {
-    <div>Loading Failed...</div>
+    <div>
+        Failed to load... TODO: Refresh button
+    </div>
 }
 else
 {
     <MudGrid Class="p-5">
-        @foreach (var client in BrokerClients)
+        @foreach (var client in Clients)
         {
 
             <MudItem>
@@ -67,7 +69,7 @@ else
 @code {
 
     public bool LoadedSuccessfully { get; set; } = true;
-    private List<Client> BrokerClients { get; set; } = new();
+    private List<Client> Clients { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -77,11 +79,15 @@ else
         _loadingService.ShowLoading();
 
         var result = await _clientService.GetClients();
-        LoadedSuccessfully = result.Succeeded;
         if (result.Succeeded)
         {
-            BrokerClients = result.Data;
+            Clients = result.Data;
+            LoadedSuccessfully = true;
         }
+
+        if (result.ShowToast)
+            foreach (var message in result.Messages)
+                _snackbar.Add(message, result.Severity);
 
         _loadingService.HideLoading();
     }
@@ -96,7 +102,7 @@ else
         if (result.Canceled)
             return;
 
-        var x = result.Data as Result<Client> ?? Result<Client>.Fail("Couldn't parse response.");
+        var x = result.Data as Result<Client> ?? Result<Client>.Fail(message:"Couldn't parse response.");
 
         if (x.Succeeded)
             StateHasChanged();
@@ -110,7 +116,7 @@ else
         if (result.Canceled)
             return;
 
-        var x = result.Data as Result<Client> ?? Result<Client>.Fail("Couldn't parse response.");
+        var x = result.Data as Result<Client> ?? Result<Client>.Fail(message: "Couldn't parse response.");
 
         if (x.Succeeded)
             StateHasChanged();
@@ -126,7 +132,7 @@ else
         if (result.Canceled)
             return;
 
-        var x = result.Data as Result ?? Result.Fail("Couldn't parse response.");
+        var x = result.Data as Result ?? Result.Fail(message: "Couldn't parse response.");
 
         if (x.Succeeded)
             StateHasChanged();
