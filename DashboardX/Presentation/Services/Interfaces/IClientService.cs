@@ -13,7 +13,7 @@ public interface IClientService
     Task<Result<Client>> CreateClient(Broker broker);
     Task<Result<Client>> UpdateClient(Broker broker);
 
-    Task<Result> RemoveDeviceFromClient(string clientId, string deviceId);
+    Task<Result> RemoveDeviceFromClient(string clientId, Device device);
     Task<Result<Device>> CreateDeviceForClient(Device device);
     Task<Result<Device>> UpdateDeviceForClient(Device device);
 }

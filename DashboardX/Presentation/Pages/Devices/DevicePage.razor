@@ -59,7 +59,7 @@ else
 
     public bool LoadedSuccessfully { get; set; } = true;
 
-    public Client Client { get; set; } = new();
+    public Client? Client { get; set; }
     public Device Device { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
@@ -84,7 +84,7 @@ else
 
     private async Task UpdateDevice()
     {
-        var parameters = new DialogParameters<UpsertDeviceDialog> { { x => x.Device, Device }, { x => x.ClientId, Client.Id } };
+        var parameters = new DialogParameters<UpsertDeviceDialog> { { x => x.Device, Device }, { x => x.ClientId, Client!.Id } };
 
         var dialog = await _dialogService.ShowAsync<UpsertDeviceDialog>("Edit Device", parameters);
         var result = await dialog.Result;
@@ -103,7 +103,7 @@ else
 
     private async Task RemoveDevice()
     {
-        var parameters = new DialogParameters<UpsertDeviceDialog> { { x => x.Device, Device }, { x => x.ClientId, Client.Id } };
+        var parameters = new DialogParameters<UpsertDeviceDialog> { { x => x.Device, Device }, { x => x.ClientId, Client!.Id } };
 
         var dialog = await _dialogService.ShowAsync<RemoveDeviceDialog>("Remove Device", parameters);
         var result = await dialog.Result;

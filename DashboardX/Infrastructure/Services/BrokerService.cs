@@ -115,8 +115,12 @@ public class BrokerService : AuthorizedService, IBrokerService
         if (!response.Succeeded)
             return Result<Broker>.Fail(response.StatusCode, response.Messages);
 
-        broker.Id = response.Data.Id;
-        broker.EditedAt = response.Data.EditedAt;
+        var itemResponse = await GetBroker(response.Data.Id);
+
+        if (!itemResponse.Succeeded)
+            return Result<Broker>.Fail(itemResponse.StatusCode, itemResponse.Messages + " Pleace refresh page.");
+
+        broker = itemResponse.Data;
 
         await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, broker);
 
@@ -137,12 +141,18 @@ public class BrokerService : AuthorizedService, IBrokerService
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-        var response = await SendAsync<UpdateResponse, Broker>(request);
+        var response = await SendAsync<Broker>(request, options);
 
         if (!response.Succeeded)
             return Result<Broker>.Fail(response.StatusCode, response.Messages);
 
-        broker.EditedAt = response.Data.EditedAt;
+        var itemResponse = await GetBroker(broker.Id);
+
+        if (!itemResponse.Succeeded)
+            return Result<Broker>.Fail(itemResponse.StatusCode, itemResponse.Messages + " Pleace refresh page.");
+
+        broker = itemResponse.Data;
+
         await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, broker);
 
         return Result<Broker>.Success(response.StatusCode, broker);

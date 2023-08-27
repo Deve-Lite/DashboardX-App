@@ -11,6 +11,7 @@ using System.Text.Json;
 using Infrastructure.Extensions;
 using Infrastructure.Models;
 using Shared.Models.Controls;
+using Shared.Models.Brokers;
 
 namespace Infrastructure.Services;
 
@@ -81,8 +82,12 @@ public class DeviceService : AuthorizedService, IDeviceService
         if (!response.Succeeded)
             return Result<Device>.Fail(response.StatusCode, response.Messages);
 
-        device.Id = response.Data.Id;
-        device.EditedAt = response.Data.EditedAt;
+        var itemResponse = await GetDevice(response.Data.Id);
+
+        if (!itemResponse.Succeeded)
+            return Result<Device>.Fail(itemResponse.StatusCode, itemResponse.Messages + " Pleace refresh page.");
+
+        device = itemResponse.Data;
 
         await _localStorage.UpsertItemToList(DeviceConstants.DevicesListName, device);
 
@@ -103,14 +108,20 @@ public class DeviceService : AuthorizedService, IDeviceService
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-        var response = await SendAsync<UpdateResponse, Device>(request, options);
+        var response = await SendAsync<Device>(request, options);
 
         if (!response.Succeeded)
             return Result<Device>.Fail(response.StatusCode, response.Messages);
 
-        device.EditedAt = response.Data.EditedAt;
+        var itemResponse = await GetDevice(device.Id);
+
+        if (!itemResponse.Succeeded)
+            return Result<Device>.Fail(itemResponse.StatusCode, itemResponse.Messages + " Pleace refresh page.");
+
+        device = itemResponse.Data;
 
         await _localStorage.UpsertItemToList(DeviceConstants.DevicesListName, device);
+
 
         return Result<Device>.Success(response.StatusCode, device);
     }

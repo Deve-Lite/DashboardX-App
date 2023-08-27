@@ -43,7 +43,7 @@
 
         _loadingService.ShowLoading();
 
-        var result = await _clientService.RemoveDeviceFromClient(ClientId, Device.Id);
+        var result = await _clientService.RemoveDeviceFromClient(ClientId, Device);
 
         _loadingService.HideLoading();
 

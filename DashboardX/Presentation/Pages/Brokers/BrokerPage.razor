@@ -22,19 +22,19 @@ else
             <MudPaper>
                 <MudGrid>
                     <MudItem xs="8">
-                        <MudText Typo="Typo.h6" Class="text-center"> @Client.Broker.Name</MudText>
+                        <MudText Typo="Typo.h6" Class="text-center"> @Client!.Broker.Name</MudText>
                     </MudItem>
                     <MudItem xs="8">
-                        <MudText Class="text-center">@_localizer["Server"]: @Client.Broker.Server</MudText>
+                        <MudText Class="text-center">@_localizer["Server"]: @Client!.Broker.Server</MudText>
                     </MudItem>
                     <MudItem xs="8">
-                        <MudText Class="text-center">@_localizer["Port"]: @Client.Broker.Port</MudText>
+                        <MudText Class="text-center">@_localizer["Port"]: @Client!.Broker.Port</MudText>
                     </MudItem>
                     <MudItem xs="8">
-                        <MudText Class="text-center">@_localizer["Client Id"]: @Client.Broker.ClientId</MudText>
+                        <MudText Class="text-center">@_localizer["Client Id"]: @Client!.Broker.ClientId</MudText>
                     </MudItem>
                     <MudItem xs="8">
-                        <MudText Class="text-center">@_localizer["Keep Alive"]: @Client.Broker.KeepAlive</MudText>
+                        <MudText Class="text-center">@_localizer["Keep Alive"]: @Client!.Broker.KeepAlive</MudText>
                     </MudItem>
                 </MudGrid>
             </MudPaper>
@@ -42,7 +42,7 @@ else
 
         <MudGrid>
 
-            @foreach (var device in Client.Devices)
+            @foreach (var device in Client!.Devices)
             {
                 <MudCard Elevation="25"
                          Class="container container-fit-content p-2"
@@ -74,7 +74,7 @@ else
     [Parameter] public string BrokerId { get; set; } = string.Empty;
 
     private bool LoadedSuccessfully { get; set; } = true;
-    private Client Client { get; set; } = new();
+    private Client? Client { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

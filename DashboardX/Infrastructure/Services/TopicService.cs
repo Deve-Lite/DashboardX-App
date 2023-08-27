@@ -20,16 +20,18 @@ public class TopicService : ITopicService
         OnMessageReceived = default!;
     }
 
-    public async Task RemoveTopic(string brokerId, Device device, Control control)
+    public async Task<string> RemoveTopic(string brokerId, Device device, Control control)
     {
         var identifier = Identifier(brokerId, device, control);
 
         topics.Remove(identifier);
 
         await _localStorage.RemoveItemAsync(identifier);
+
+        return identifier;
     }
 
-    public async Task AddTopic(string brokerId, Device device, Control control)
+    public async Task<string> AddTopic(string brokerId, Device device, Control control)
     {
         var identifier = Identifier(brokerId, device, control);
 
@@ -37,6 +39,8 @@ public class TopicService : ITopicService
             topics[identifier] = await _localStorage.GetItemAsync<string>(identifier);
         else
             topics[identifier] = "";
+
+        return identifier;
     }
 
     public async Task UpdateMessageOnTopic(string brokerId, string topic, string message)

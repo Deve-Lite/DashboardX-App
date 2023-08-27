@@ -155,15 +155,15 @@ public class ClientService : IClientService
 
     #region Device
 
-    public async Task<Result> RemoveDeviceFromClient(string clientId, string deviceId)
+    public async Task<Result> RemoveDeviceFromClient(string clientId, Device device)
     {
         var result = await _deviceService.RemoveDevice(clientId);
 
         if (result.Succeeded)
         {
             var client = _clients.First(x => x.Id == clientId);
-            //TODO: Remove topics from client
-            client.Devices.RemoveAll(x=>x.Id == deviceId);
+            await client.DisconnectAsync(device);
+            client.Devices.RemoveAll(x=>x.Id == device.Id);
 
             return Result.Success(result.StatusCode);
         }
@@ -193,8 +193,8 @@ public class ClientService : IClientService
         if (result.Succeeded)
         {
             var client = _clients.First(x => x.Id == device.BrokerId);
-            client.Devices.RemoveAll(x => x.Id == device.Id);
-            client.Devices.Add(result.Data);
+
+            await UpdateClientDevices(client, new List<Device> { result.Data });
 
             return (Result<Device>)result;
         }
@@ -206,12 +206,7 @@ public class ClientService : IClientService
 
     #region Privates
 
-    private Task UpdateDeviceControls()
-    {
-        throw new NotImplementedException();
-    }
-
-    private Task UpdateClientDevices(Client client, List<Device> devices)
+    private async Task UpdateClientDevices(Client client, List<Device> devices)
     {
         HashSet<string> usedDevices = new();
 
@@ -220,12 +215,48 @@ public class ClientService : IClientService
             var existingDevice = client.Devices.FirstOrDefault(x => x.Id == device.Id);
             if(existingDevice is null)
             {
-                client.Devices.Add(device);
-                //TODO: Subscribe to device topics
+                var result = await _deviceService.GetDeviceControls(device.Id);
+
+                if (result.Succeeded)
+                {
+                    await client.SubscribeAsync(device, result.Data);
+                    device.SuccessfullControlsFetch = true;
+                }
+                else
+                {
+                    device.SuccessfullControlsFetch = false;
+                }
+
             }
-            else if(existingDevice.EditedAt != existingDevice.EditedAt)
+            else if(device.EditedAt != existingDevice.EditedAt)
             {
-                //TODO: Update device
+                await client.DisconnectAsync(existingDevice);
+
+                var result = await _deviceService.GetDeviceControls(device.Id);
+
+                if (result.Succeeded)
+                {
+                    await client.SubscribeAsync(device, result.Data);
+                    device.SuccessfullControlsFetch = true;
+                }
+                else
+                {
+                    device.SuccessfullControlsFetch = false;
+                }
+            }
+            else
+            {
+                var result = await _deviceService.GetDeviceControls(device.Id);
+
+                if (result.Succeeded)
+                {
+                    await client.UpdateSubscribtionsAsync(device, result.Data);
+                    device.SuccessfullControlsFetch = true;
+                }
+                else
+                {
+                    device.SuccessfullControlsFetch = false;
+                } 
             }
 
             usedDevices.Add(device.Id);
@@ -234,8 +265,6 @@ public class ClientService : IClientService
         foreach(var device in client.Devices)
             if(!usedDevices.Contains(device.Id))
                 client.Devices.Remove(device);    
-
-        return Task.CompletedTask;
     }
 
     private async Task UpdateClientBroker(Client client, Broker broker)

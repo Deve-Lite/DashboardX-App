@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using MQTTnet;
 using MQTTnet.Client;
 using Shared.Models.Brokers;
+using Shared.Models.Controls;
 using Shared.Models.Devices;
 using System.Text;
 
@@ -10,8 +11,8 @@ namespace Presentation.Models;
 
 public class Client : IAsyncDisposable
 {
-
     private readonly MqttFactory _factory;
+    private readonly ITopicService _topicService;
 
     public string Id => Broker.Id;
     public bool IsConnected => Service.IsConnected;
@@ -20,19 +21,12 @@ public class Client : IAsyncDisposable
     public IMqttClient Service { get; set; }
     public List<Device> Devices { get; set; } = new();
 
-    public Client()
-    {
-        Devices = new List<Device>();
-        Broker = new Broker();
-        _factory = null;
-        Service = null;
-    }
-
     public Client(Broker broker, ITopicService topicService, MqttFactory factory)
     {
         Broker = broker;
         Service = factory.CreateMqttClient();
 
+        _topicService = topicService;
         _factory = factory;
 
         InitializeCallbacks(topicService);
@@ -40,10 +34,67 @@ public class Client : IAsyncDisposable
 
     public async Task<MqttClientConnectResult> ConnectAsync() => await Service.ConnectAsync(Options());
     public async Task DisconnectAsync() => await Service.DisconnectAsync();
+    public async Task DisconnectAsync(Device device)
+    {
+        foreach(var control in device.Controls)
+        {
+            var topic = await _topicService.RemoveTopic(Broker.Id, device, control);
+            await Service.UnsubscribeAsync(topic);
+        }
+
+        Devices.Remove(device);
+    }
+
+    public async Task SubscribeAsync(Device device, List<Control> controls)
+    {
+        Devices.Add(device);
+
+        foreach(var control in controls)
+        {
+            var topic = await _topicService.AddTopic(Broker.Id, device, control);
+            await Service.SubscribeAsync(topic, control.QualityOfService);
+            device.Controls.Add(control);
+        }
+    }
+
+    /// <summary>
+    /// Updates subsribion topics for a device. 
+    /// </summary>
+    /// <param name="existingDevice"> Device must exist in collection of elemnts.</param>
+    /// <param name="controls"></param>
+    /// <returns></returns>
+    public async Task UpdateSubscribtionsAsync(Device existingDevice, List<Control> controls)
+    {
+        HashSet<string> usedControls = new();
+
+        foreach (var control in controls)
+        {
+            var existingControl = existingDevice.Controls.FirstOrDefault(x => x.Id == control.Id);
+
+            if(existingControl is null || existingControl.IsTheSame(control))
+            {
+                var topic = await _topicService.AddTopic(Broker.Id, existingDevice, control);
+                await Service.SubscribeAsync(topic);
+                existingDevice.Controls.Add(control);
+            }
+            
+            usedControls.Add(control.Id);
+        }
+
+        foreach (var control in existingDevice.Controls)
+            if(!usedControls.Contains(control.Id))
+            {
+                var topic = await _topicService.RemoveTopic(Broker.Id, existingDevice, control);
+                await Service.UnsubscribeAsync(topic);
+                existingDevice.Controls.Remove(control);
+            }
+    }
 
     public async ValueTask DisposeAsync()
     {
-        //TODO: Remove topics ??;
+        foreach(var device in Devices)
+            foreach(var control in device.Controls)
+                await _topicService.RemoveTopic(Broker.Id, device, control);
 
         await Service.DisconnectAsync();
         Service.Dispose();
@@ -74,8 +125,6 @@ public class Client : IAsyncDisposable
             return Task.CompletedTask;
         };
     }
-
-
 
     #endregion
 }
