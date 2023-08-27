@@ -75,7 +75,7 @@ else
 
         _loadingService.ShowLoading();
 
-        var result = await _clientService.GetClients();
+        var result = await _clientService.GetClientsWithDevices();
         LoadedSuccessfully = result.Succeeded;
         if (result.Succeeded)
         {

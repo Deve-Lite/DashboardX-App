@@ -7,7 +7,7 @@ namespace Infrastructure;
 
 public abstract class BaseService
 {
-    protected const int RequestDebugDelay = 1000;
+    protected const int RequestDebugDelay = 0;
     protected readonly HttpClient _client;
 
     public BaseService(HttpClient httpClient)

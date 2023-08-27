@@ -45,15 +45,28 @@ public class Client : IAsyncDisposable
         Devices.Remove(device);
     }
 
-    public async Task SubscribeAsync(Device device, List<Control> controls)
+    public async Task<bool> SubscribeAsync(Device device, List<Control> controls)
     {
         Devices.Add(device);
 
-        foreach(var control in controls)
+        try
         {
-            var topic = await _topicService.AddTopic(Broker.Id, device, control);
-            await Service.SubscribeAsync(topic, control.QualityOfService);
-            device.Controls.Add(control);
+            foreach (var control in controls)
+            {
+                var topic = await _topicService.AddTopic(Broker.Id, device, control);
+
+                if (!Service.IsConnected)
+                    await Service.ConnectAsync(Options());
+
+                await Service.SubscribeAsync(topic, control.QualityOfService);
+                device.Controls.Add(control);
+            }
+
+            return true;
+        }
+        catch
+        {
+            return false;
         }
     }
 
@@ -63,31 +76,44 @@ public class Client : IAsyncDisposable
     /// <param name="existingDevice"> Device must exist in collection of elemnts.</param>
     /// <param name="controls"></param>
     /// <returns></returns>
-    public async Task UpdateSubscribtionsAsync(Device existingDevice, List<Control> controls)
+    public async Task<bool> UpdateSubscribtionsAsync(Device existingDevice, List<Control> controls)
     {
         HashSet<string> usedControls = new();
 
-        foreach (var control in controls)
+        try
         {
-            var existingControl = existingDevice.Controls.FirstOrDefault(x => x.Id == control.Id);
-
-            if(existingControl is null || existingControl.IsTheSame(control))
+            foreach (var control in controls)
             {
-                var topic = await _topicService.AddTopic(Broker.Id, existingDevice, control);
-                await Service.SubscribeAsync(topic);
-                existingDevice.Controls.Add(control);
+                var existingControl = existingDevice.Controls.FirstOrDefault(x => x.Id == control.Id);
+
+                if (existingControl is null || existingControl.IsTheSame(control))
+                {
+                    var topic = await _topicService.AddTopic(Broker.Id, existingDevice, control);
+
+                    if (!Service.IsConnected)
+                        await Service.ConnectAsync(Options());
+
+                    await Service.SubscribeAsync(topic);
+                    existingDevice.Controls.Add(control);
+                }
+
+                usedControls.Add(control.Id);
             }
-            
-            usedControls.Add(control.Id);
+
+            foreach (var control in existingDevice.Controls)
+                if (!usedControls.Contains(control.Id))
+                {
+                    var topic = await _topicService.RemoveTopic(Broker.Id, existingDevice, control);
+                    await Service.UnsubscribeAsync(topic);
+                    existingDevice.Controls.Remove(control);
+                }
+
+            return true;
         }
-
-        foreach (var control in existingDevice.Controls)
-            if(!usedControls.Contains(control.Id))
-            {
-                var topic = await _topicService.RemoveTopic(Broker.Id, existingDevice, control);
-                await Service.UnsubscribeAsync(topic);
-                existingDevice.Controls.Remove(control);
-            }
+        catch
+        {
+            return false;
+        }
     }
 
     public async ValueTask DisposeAsync()
@@ -106,7 +132,8 @@ public class Client : IAsyncDisposable
     {
         var optionsBuilder = _factory.CreateClientOptionsBuilder()
             .WithClientId(Broker.ClientId)
-            .WithWebSocketServer($"wss://{Broker.Server}:{Broker.Port}");
+            .WithWebSocketServer($"wss://{Broker.Server}:{Broker.Port}")
+            .WithTls();
 
         if (!string.IsNullOrEmpty(Broker.Username) && !string.IsNullOrEmpty(Broker.Password))
             optionsBuilder = optionsBuilder.WithCredentials(Broker.Username, Broker.Password);

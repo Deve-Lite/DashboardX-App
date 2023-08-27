@@ -7,6 +7,7 @@ namespace Presentation.Services.Interfaces;
 
 public interface IClientService
 {
+    Task<Result<List<Client>>> GetClientsWithDevices();
     Task<Result<List<Client>>> GetClients();
     Task<Result<Client>> GetClient(string brokerId);
     Task<Result> RemoveClient(string brokerId);
