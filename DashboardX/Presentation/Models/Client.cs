@@ -36,7 +36,7 @@ public class Client : IAsyncDisposable
     public async Task DisconnectAsync() => await Service.DisconnectAsync();
     public async Task DisconnectAsync(Device device)
     {
-        foreach(var control in device.Controls)
+        foreach (var control in device.Controls)
         {
             var topic = await _topicService.RemoveTopic(Broker.Id, device, control);
             await Service.UnsubscribeAsync(topic);
@@ -45,13 +45,14 @@ public class Client : IAsyncDisposable
         Devices.Remove(device);
     }
 
-    public async Task<bool> SubscribeAsync(Device device, List<Control> controls)
+    public async Task<int> SubscribeAsync(Device device, List<Control> controls)
     {
         Devices.Add(device);
+        int failedSubscribtions = 0;
 
-        try
+        foreach (var control in controls)
         {
-            foreach (var control in controls)
+            try
             {
                 var topic = await _topicService.AddTopic(Broker.Id, device, control);
 
@@ -61,13 +62,13 @@ public class Client : IAsyncDisposable
                 await Service.SubscribeAsync(topic, control.QualityOfService);
                 device.Controls.Add(control);
             }
+            catch
+            {
+                ++failedSubscribtions;
+            }
+        }
 
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+        return failedSubscribtions;
     }
 
     /// <summary>
@@ -76,13 +77,15 @@ public class Client : IAsyncDisposable
     /// <param name="existingDevice"> Device must exist in collection of elemnts.</param>
     /// <param name="controls"></param>
     /// <returns></returns>
-    public async Task<bool> UpdateSubscribtionsAsync(Device existingDevice, List<Control> controls)
+    public async Task<int> UpdateSubscribtionsAsync(Device existingDevice, List<Control> controls)
     {
         HashSet<string> usedControls = new();
 
-        try
+        int failedSubscribtions = 0;
+
+        foreach (var control in controls)
         {
-            foreach (var control in controls)
+            try
             {
                 var existingControl = existingDevice.Controls.FirstOrDefault(x => x.Id == control.Id);
 
@@ -99,27 +102,27 @@ public class Client : IAsyncDisposable
 
                 usedControls.Add(control.Id);
             }
-
-            foreach (var control in existingDevice.Controls)
-                if (!usedControls.Contains(control.Id))
-                {
-                    var topic = await _topicService.RemoveTopic(Broker.Id, existingDevice, control);
-                    await Service.UnsubscribeAsync(topic);
-                    existingDevice.Controls.Remove(control);
-                }
-
-            return true;
+            catch
+            {
+                ++failedSubscribtions;
+            }
         }
-        catch
-        {
-            return false;
-        }
+
+        foreach (var control in existingDevice.Controls)
+            if (!usedControls.Contains(control.Id))
+            {
+                var topic = await _topicService.RemoveTopic(Broker.Id, existingDevice, control);
+                await Service.UnsubscribeAsync(topic);
+                existingDevice.Controls.Remove(control);
+            }
+
+        return failedSubscribtions;
     }
 
     public async ValueTask DisposeAsync()
     {
-        foreach(var device in Devices)
-            foreach(var control in device.Controls)
+        foreach (var device in Devices)
+            foreach (var control in device.Controls)
                 await _topicService.RemoveTopic(Broker.Id, device, control);
 
         await Service.DisconnectAsync();

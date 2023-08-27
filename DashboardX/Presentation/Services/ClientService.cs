@@ -6,7 +6,6 @@ using Presentation.Models;
 using Presentation.Services.Interfaces;
 using Shared.Models.Brokers;
 using Shared.Models.Devices;
-using System.Net;
 
 namespace Presentation.Services;
 
@@ -16,15 +15,21 @@ public class ClientService : IClientService
     private readonly IBrokerService _brokerService;
     private readonly ITopicService _topicService;
     private readonly IDeviceService _deviceService;
+    private readonly ILogger<ClientService> _logger;
     private readonly MqttFactory _factory;
     private readonly List<Client> _clients = new();
 
-    public ClientService(ITopicService topicService, IBrokerService brokerService, IDeviceService deviceService, MqttFactory factory)
+    public ClientService(ITopicService topicService, 
+        IBrokerService brokerService,
+        ILogger<ClientService> logger,
+        IDeviceService deviceService, 
+        MqttFactory factory)
     {
         _brokerService = brokerService;
         _topicService = topicService;
         _deviceService = deviceService;
         _factory = factory;
+        _logger = logger;
     }
 
     public async Task<Result<List<Client>>> GetClientsWithDevices()
@@ -276,19 +281,25 @@ public class ClientService : IClientService
     {
         HashSet<string> usedDevices = new();
 
-        int invalidConnectionCount = 0;
+        int failedSubscribtions = 0;
 
         foreach(var device in devices)
         {
             var existingDevice = client.Devices.FirstOrDefault(x => x.Id == device.Id);
-            if(existingDevice is null)
+
+            _logger.LogDebug($"Updating {device.Id} {device.Name}");
+
+            if (existingDevice is null)
             {
                 var result = await _deviceService.GetDeviceControls(device.Id);
 
                 if (result.Succeeded)
                 {
-                    if(!await client.SubscribeAsync(device, result.Data))
-                        invalidConnectionCount+=1;
+                    failedSubscribtions += await client.SubscribeAsync(device, result.Data);
+
+                    if(failedSubscribtions != 0)
+                        _logger.LogWarning($"Failed to subscribe {failedSubscribtions} topics. For {device.Id} {device.Name}.");
+
                     device.SuccessfullControlsFetch = true;
                 }
                 else
@@ -305,8 +316,11 @@ public class ClientService : IClientService
 
                 if (result.Succeeded)
                 {
-                    if (!await client.SubscribeAsync(device, result.Data))
-                        invalidConnectionCount+=1;
+                    failedSubscribtions += await client.SubscribeAsync(device, result.Data);
+
+                    if (failedSubscribtions != 0)
+                        _logger.LogWarning($"Failed to subscribe {failedSubscribtions} topics. For {device.Id} {device.Name}.");
+
                     device.SuccessfullControlsFetch = true;
                 }
                 else
@@ -320,8 +334,10 @@ public class ClientService : IClientService
 
                 if (result.Succeeded)
                 {
-                    if (!await client.UpdateSubscribtionsAsync(device, result.Data))
-                        invalidConnectionCount+=1;
+                    failedSubscribtions += await client.UpdateSubscribtionsAsync(device, result.Data);
+
+                    if (failedSubscribtions != 0)
+                        _logger.LogWarning($"Failed to subscribe {failedSubscribtions} topics. For {device.Id} {device.Name}.");
 
                     device.SuccessfullControlsFetch = true;
                 }
@@ -338,7 +354,7 @@ public class ClientService : IClientService
             if(!usedDevices.Contains(device.Id))
                 client.Devices.Remove(device);
 
-        return invalidConnectionCount;
+        return failedSubscribtions;
     }
 
     private static async Task UpdateClientBroker(Client client, Broker broker)

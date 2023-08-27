@@ -52,6 +52,8 @@ builder.Services.AddSingleton<ILoadingService, LoadingService>();
 builder.Services.AddSingleton<ITopicService, TopicService>();
 builder.Services.AddSingleton<MqttFactory>();
 
+builder.Services.AddLogging();
+
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
 await builder.Build().RunAsync();
