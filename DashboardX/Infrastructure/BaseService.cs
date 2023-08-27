@@ -1,4 +1,5 @@
 ﻿
+using System.Net;
 using System.Text;
 using System.Text.Json;
 
@@ -6,7 +7,7 @@ namespace Infrastructure;
 
 public abstract class BaseService
 {
-    protected const int RequestDebugDelay = 1000;
+    protected const int RequestDebugDelay = 0;
     protected readonly HttpClient _client;
 
     public BaseService(HttpClient httpClient)
@@ -28,14 +29,14 @@ public abstract class BaseService
         return results;
     }
 
-    protected virtual async Task<Result<T>> SendAsync<T, T1>(Request<T1> request, JsonSerializerOptions? options = null) where T1 : class, new() where T : class
+    protected virtual async Task<Result<T>> SendAsync<T, T1>(Request<T1> request, JsonSerializerOptions? options = null) where T1 : class, new() where T : class, new()
     {
         var message = CreateMessage(request);
         var results = await Run<T>(message);
         return results;
     }
 
-    protected async Task<Result<T>> Run<T>(HttpRequestMessage message)
+    protected async Task<Result<T>> Run<T>(HttpRequestMessage message) where T : class, new()
     {
         try
         {
@@ -50,25 +51,31 @@ public abstract class BaseService
 
             if (response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.NoContent)
+                {
+                    //todo log warning that no content was returned
+                    return Result<T>.Success(new(), HttpStatusCode.NoContent);
+                }
+
                 var data = JsonSerializer.Deserialize<T>(payload)!;
-                return Result<T>.Success(response.StatusCode, data);
+                return Result<T>.Success(data, response.StatusCode);
             }
 
             if (!string.IsNullOrEmpty(payload))
             {
                 var errorResponse = JsonSerializer.Deserialize<ErrorMessage>(payload)!;
-                return Result<T>.Fail(response.StatusCode, errorResponse.Message);
+                return Result<T>.Fail(statusCode:response.StatusCode, errorResponse.Message);
             }
 
             return Result<T>.Fail(response.StatusCode);
         }
         catch (TaskCanceledException)
         {
-            return Result<T>.Timeout("Operation timed out.");
+            return Result<T>.Timeout("Request timed out.");
         }
         catch (Exception e)
         {
-            return Result<T>.Fail($"Unknown error occured. {e.Message}");
+            return Result<T>.Fail(message:$"Unknown error occured. {e.Message}");
         }
     }
 
@@ -90,7 +97,7 @@ public abstract class BaseService
             if (!string.IsNullOrEmpty(payload))
             {
                 var errors = JsonSerializer.Deserialize<List<string>>(payload)!;
-                return Result.Fail(response.StatusCode, errors);
+                return Result.Fail(errors, response.StatusCode);
             }
 
             return Result.Fail(response.StatusCode);
@@ -101,7 +108,12 @@ public abstract class BaseService
         }
         catch (Exception e)
         {
-            return Result.Fail($"Unknown error occured. {e.Message}");
+            var errors = new List<string>()
+            {
+                $"Unknown error occured. {e.Message}" 
+            };
+
+            return Result.Fail(errors);
         }
     }
 

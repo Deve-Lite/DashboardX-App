@@ -6,7 +6,8 @@ public class Broker : BaseModel
 {
     [JsonPropertyName("icon")]
     public string Icon { get; set; } = string.Empty;
-
+    [JsonPropertyName("iconBackgroundColor")]
+    public string IconBackgroundColor { get; set; } = string.Empty;
     [JsonPropertyName("name"), Required, MinLength(2), MaxLength(64)]
     public string Name { get; set; } = string.Empty;
     [JsonPropertyName("port"), Required]
@@ -28,5 +29,20 @@ public class Broker : BaseModel
 
     [JsonPropertyName("updatedAt")]
     public DateTime EditedAt { get; set; }
+
+    public Broker Copy() => new()
+    {
+        ClientId = ClientId,
+        EditedAt = EditedAt,
+        Icon = Icon,
+        Id = Id,
+        IsSSL = IsSSL,
+        KeepAlive = KeepAlive,
+        Name = Name,
+        Password = Password,
+        Port = Port,
+        Server = Server,
+        Username = Username
+    };
 
 }

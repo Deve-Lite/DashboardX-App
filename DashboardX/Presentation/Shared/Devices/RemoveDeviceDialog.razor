@@ -1,15 +1,15 @@
-﻿@using Presentation.Utils;
-@using global::Shared.Models.Brokers;
-@inject IStringLocalizer<RemoveBrokerDialog> _localizer;
+﻿@using Infrastructure;
+@using Presentation.Utils;
+@using global::Shared.Models.Devices;
+@inject IStringLocalizer<RemoveDeviceDialog> _localizer;
 @inject IClientService _clientService;
 
 
 <MudDialog Title="Removing Broker">
     <DialogContent>
-        <MudText>@_localizer["Are you sure you want to remove this broker?"]</MudText>
-        <MudText>@_localizer["Server name:"] @Broker.Name</MudText>
-        <MudText>@_localizer["Server url:"] @Broker.Server</MudText>
-        <MudText>@_localizer["Client id:"] @Broker.ClientId</MudText>
+        <MudText>@_localizer["Are you sure you want to remove this device?"]</MudText>
+        <MudText>@_localizer["Name:"] @Device.Name</MudText>
+        <MudText>@_localizer["Placing:"] @Device.Placing</MudText>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">@_localizer["Cancel"]</MudButton>
@@ -20,19 +20,22 @@
     </DialogActions>
 </MudDialog>
 
-@code 
+@code
 {
     [CascadingParameter]
     private MudDialogInstance? Dialog { get; set; }
 
     [Parameter]
-    public Broker Broker { get; set; } = new();
+    public Device Device { get; set; } = new();
+
+    [Parameter]
+    public string ClientId { get; set; } = string.Empty;
 
     private void Cancel() => Dialog!.Cancel();
 
     private async Task RemoveAsync()
     {
-        if (string.IsNullOrEmpty(Broker.Id))
+        if (string.IsNullOrEmpty(Device.Id))
             return;
 
         if (_loadingService.IsLoading)
@@ -40,8 +43,8 @@
 
         _loadingService.ShowLoading();
 
-        var result = await _clientService.RemoveClient(Broker.Id);
-        
+        var result = await _clientService.RemoveDeviceFromClient(ClientId, Device);
+
         _loadingService.HideLoading();
 
         await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnRemoved);
@@ -51,7 +54,7 @@
 
     private Task OnRemoved()
     {
-        _snackbar.Add("Successfully removed broker.", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
+        _snackbar.Add("Successfully removed device.", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
         return Task.CompletedTask;
     }
 

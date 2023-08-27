@@ -10,15 +10,16 @@ using Core;
 using Shared.Models.Devices;
 using Shared.Constraints;
 using Infrastructure.Extensions;
+using Infrastructure.Models;
 
 namespace Infrastructure.Services;
 
 public class BrokerService : AuthorizedService, IBrokerService
 {
-    public BrokerService(HttpClient httpClient, 
-                         ILocalStorageService localStorageService, 
-                         NavigationManager navigationManager, 
-                         AuthenticationStateProvider authenticationState) 
+    public BrokerService(HttpClient httpClient,
+                         ILocalStorageService localStorageService,
+                         NavigationManager navigationManager,
+                         AuthenticationStateProvider authenticationState)
         : base(httpClient, localStorageService, navigationManager, authenticationState)
     {
     }
@@ -37,7 +38,7 @@ public class BrokerService : AuthorizedService, IBrokerService
         {
             var list = await _localStorage.GetItemAsync<List<Device>>(BrokerConstraints.DevicesListName);
 
-            foreach(var device in response.Data)
+            foreach (var device in response.Data)
             {
                 int index = list.FindIndex(x => x.BrokerId == device.BrokerId);
 
@@ -109,24 +110,29 @@ public class BrokerService : AuthorizedService, IBrokerService
             Data = broker
         };
 
-        var response = await SendAsync<Broker, Broker>(request);
+        var response = await SendAsync<CreateResponse, Broker>(request);
 
-        if (response.Succeeded)
-        {
-            //TODO: Update device EditedAt
-            broker.Id = response.Data.Id;
-            await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, response.Data);
-        }
+        if (!response.Succeeded)
+            return Result<Broker>.Fail(response.Messages, response.StatusCode);
 
-        return response;
+        var itemResponse = await GetBroker(response.Data.Id);
+
+        if (!itemResponse.Succeeded)
+            return Result<Broker>.Fail(itemResponse.StatusCode, itemResponse.Messages + " Pleace refresh page.");
+
+        broker = itemResponse.Data;
+
+        await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, broker);
+
+        return Result<Broker>.Success(broker, response.StatusCode);
     }
 
     public async Task<IResult<Broker>> UpdateBroker(Broker broker)
     {
         var request = new Request<Broker>
         {
-            Method = HttpMethod.Put,
-            Route = $"api/v1/brokers{broker.Id}",
+            Method = HttpMethod.Patch,
+            Route = $"api/v1/brokers/{broker.Id}",
             Data = broker
         };
 
@@ -135,16 +141,21 @@ public class BrokerService : AuthorizedService, IBrokerService
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-        var response = await SendAsync<Broker, Broker>(request, options);
+        var response = await SendAsync<Broker>(request, options);
 
-        if (response.Succeeded)
-        {
-            //TODO: Update device EditedAt
-            await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, broker);
-            response.Data = broker;
-        }
-        
-        return response!;
+        if (!response.Succeeded)
+            return Result<Broker>.Fail(response.Messages, response.StatusCode);
+
+        var itemResponse = await GetBroker(broker.Id);
+
+        if (!itemResponse.Succeeded)
+            return Result<Broker>.Fail(itemResponse.Messages, itemResponse.StatusCode);
+
+        broker = itemResponse.Data;
+
+        await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, broker);
+
+        return Result<Broker>.Success(broker, response.StatusCode);
     }
 
     public async Task<IResult> RemoveBroker(string id)

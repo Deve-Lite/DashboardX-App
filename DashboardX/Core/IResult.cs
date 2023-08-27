@@ -1,4 +1,5 @@
 ﻿
+using MudBlazor;
 using System.Net;
 
 namespace Core;
@@ -6,8 +7,12 @@ namespace Core;
 public interface IResult
 {
     HttpStatusCode StatusCode { get; set; }
-    bool Succeeded { get; set; }
+    OperationState OperationState { get; set; }
     List<string> Messages { get; set; }
+
+    bool Succeeded { get; }
+    bool ShowToast { get; }
+    Severity Severity { get; }
 }
 
 public interface IResult<T> : IResult

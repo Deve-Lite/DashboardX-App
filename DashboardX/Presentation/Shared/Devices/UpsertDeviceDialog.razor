@@ -1,0 +1,164 @@
+﻿@using Blazored.FluentValidation;
+@using Infrastructure;
+@using Presentation.Utils;
+@using System.Net;
+@using global::Shared.Models.Brokers;
+@using global::Shared.Models.Devices;
+
+@inject IStringLocalizer<UpsertDeviceDialog> _localizer;
+@inject IClientService _clientService
+@inject IBrokerService _brokerService
+
+<MudDialog>
+    <DialogContent>
+        <EditForm id="upsertBrokerForm" Model="@Device" OnValidSubmit="SubmitAsync">
+            <FluentValidationValidator @ref="_fluentValidationValidator" />
+            <MudGrid>
+
+                <DataAnnotationsValidator />
+
+                <MudItem xs="12">
+                    <div class="d-flex justify-center">
+                        <MudTextField @bind-Value="Device.Name"
+                                      T="string"
+                                      Label="@_localizer["Name"]"
+                                      Variant="Variant.Outlined"
+                                      For="@(() => Device.Name)" />
+                    </div>
+                </MudItem>
+
+                <MudSelect @bind-Value="Device.BrokerId"
+                           xs="12"
+                           T ="string"
+                           Label="Broker" 
+                           For="(() => Device.BrokerId)"
+                           Variant="Variant.Outlined" 
+                           AnchorOrigin="Origin.BottomCenter">
+                    @foreach (var data in AvaliableBrokers)
+                    {
+                        <MudSelectItem Value="@data.Id">@data.Name</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudItem xs="12">
+                    <div class="d-flex justify-center">
+                        <MudTextField @bind-Value="Device.Icon"
+                                      T="string"
+                                      Label="@_localizer["Icon"]"
+                                      Variant="Variant.Outlined"
+                                      For="@(() => Device.Icon)" />
+                    </div>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <div class="d-flex justify-center">
+                        <MudColorPicker @bind-Text="Device.IconBackgroundColor"
+                                        Label="@_localizer["Icon background color"]"
+                                        ColorPickerView="ColorPickerView.Palette" />
+
+                    </div>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <div class="d-flex justify-center">
+                        <MudTextField @bind-Value="Device.Placing"
+                                      T="string"
+                                      Label="@_localizer["Placing"]"
+                                      Variant="Variant.Outlined"
+                                      For="@(() => Device.Placing)" />
+                    </div>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <div class="d-flex justify-center">
+                        <MudTextField @bind-Value="Device.BaseDevicePath"
+                                      T="string"
+                                      Label="@_localizer["Base device path"]"
+                                      Variant="Variant.Outlined"
+                                      For="@(() => Device.BaseDevicePath)" />
+                    </div>
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">@_localizer["Cancel"]</MudButton>
+        <MudButton form="upsertBrokerForm"
+                   OnClick="SubmitAsync"
+                   ButtonType="ButtonType.Submit"
+                   Variant="Variant.Filled"
+                   Disabled="@(!Validated)"
+                   Color="Color.Primary">@_localizer["Submit"] </MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code
+{
+    [CascadingParameter]
+    private MudDialogInstance? Dialog { get; set; }
+
+    [Parameter]
+    public Device Device { get; set; } = new();
+
+    [Parameter]
+    public string ClientId { get; set; } = string.Empty;
+
+    private List<Broker> AvaliableBrokers = new();
+    private FluentValidationValidator? _fluentValidationValidator;
+    private bool Validated => _fluentValidationValidator == null ? false : _fluentValidationValidator.Validate(options => { options.IncludeAllRuleSets(); });
+    private bool ShowAuthorizationFields { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await _brokerService.GetBrokers();
+
+        if (result.Succeeded)
+            AvaliableBrokers = result.Data;
+        else
+            Dialog!.Close(DialogResult.Ok(Result.Fail(result.Messages, result.StatusCode)));
+
+        await base.OnInitializedAsync();
+    }
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Validated && firstRender)
+            StateHasChanged();
+
+        if (firstRender && !string.IsNullOrEmpty(Device.Id))
+            Device = Device.Copy();
+
+        return base.OnAfterRenderAsync(firstRender);
+    }
+
+    private void Cancel() => Dialog!.Cancel();
+
+    private async Task SubmitAsync()
+    {
+        if (_loadingService.IsLoading)
+            return;
+
+        _loadingService.ShowLoading();
+
+        var result = Result<Device>.Fail(HttpStatusCode.BadRequest);
+
+        if (string.IsNullOrEmpty(Device.Id))
+            result = await _clientService.CreateDeviceForClient(Device);
+        else
+            result = await _clientService.UpdateDeviceForClient(Device);
+
+        await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnAdded);
+
+        _loadingService.HideLoading();
+
+        Dialog!.Close(DialogResult.Ok(result));
+    }
+
+    private Task OnAdded()
+    {
+        _snackbar.Add("Success", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
+        return Task.CompletedTask;
+    }
+
+}

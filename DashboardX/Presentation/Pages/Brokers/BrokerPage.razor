@@ -7,7 +7,13 @@
 
 @if (_loadingService.IsLoading)
 {
-    
+    <div> Loading... </div>
+}
+else if (!LoadedSuccessfully)
+{
+    <div>
+        Failed to load... TODO: Refresh button
+    </div>
 }
 else
 {
@@ -16,19 +22,19 @@ else
             <MudPaper>
                 <MudGrid>
                     <MudItem xs="8">
-                        <MudText Typo="Typo.h6" Class="text-center"> @Client.Broker.Name</MudText>
+                        <MudText Typo="Typo.h6" Class="text-center"> @Client!.Broker.Name</MudText>
                     </MudItem>
                     <MudItem xs="8">
-                        <MudText Class="text-center">@_localizer["Server"]: @Client.Broker.Server</MudText>
+                        <MudText Class="text-center">@_localizer["Server"]: @Client!.Broker.Server</MudText>
                     </MudItem>
                     <MudItem xs="8">
-                        <MudText Class="text-center">@_localizer["Port"]: @Client.Broker.Port</MudText>
+                        <MudText Class="text-center">@_localizer["Port"]: @Client!.Broker.Port</MudText>
                     </MudItem>
                     <MudItem xs="8">
-                        <MudText Class="text-center">@_localizer["Client Id"]: @Client.Broker.ClientId</MudText>
+                        <MudText Class="text-center">@_localizer["Client Id"]: @Client!.Broker.ClientId</MudText>
                     </MudItem>
                     <MudItem xs="8">
-                        <MudText Class="text-center">@_localizer["Keep Alive"]: @Client.Broker.KeepAlive</MudText>
+                        <MudText Class="text-center">@_localizer["Keep Alive"]: @Client!.Broker.KeepAlive</MudText>
                     </MudItem>
                 </MudGrid>
             </MudPaper>
@@ -36,24 +42,26 @@ else
 
         <MudGrid>
 
-            @foreach (var device in Client.Devices)
+            @foreach (var device in Client!.Devices)
             {
-                <MudCard Elevation="25" 
-                         Class="container container-fit-content p-2" 
+                <MudCard Elevation="25"
+                         Class="container container-fit-content p-2"
                          style="border-radius: 1rem; max-width: 25rem;">
-                    <MudPaper>
-                        <MudItem xs="12">
-                            <MudText Typo="Typo.h4" Class="text-center">@device.Name</MudText>
-                        </MudItem>
+                    <NavLink href="@($"devices/{device.Id}/{Client.Id}")">
+                        <MudPaper>
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.h4" Class="text-center">@device.Name</MudText>
+                            </MudItem>
 
-                        <MudItem xs="12">
-                            <MudText Typo="Typo.h4" Class="text-center">@device.Placing</MudText>
-                        </MudItem>
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.h4" Class="text-center">@device.Placing</MudText>
+                            </MudItem>
 
-                        <MudItem xs="12">
-                            <MudText Typo="Typo.h4" Class="text-center">@device.EditedAt</MudText>
-                        </MudItem>
-                    </MudPaper>
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.h4" Class="text-center">@device.EditedAt</MudText>
+                            </MudItem>
+                        </MudPaper>
+                    </NavLink>
                 </MudCard>
             }
         </MudGrid>
@@ -63,9 +71,11 @@ else
 
 @code
 {
-    [Parameter] public string BrokerId { get; set; } = string.Empty;
+    [Parameter] 
+    public string BrokerId { get; set; } = string.Empty;
 
-    private Client Client { get; set; } = new();
+    private bool LoadedSuccessfully { get; set; } = false;
+    private Client? Client { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -79,11 +89,13 @@ else
         if (result.Succeeded)
         {
             Client = result.Data;
+            LoadedSuccessfully = true;
         }
-        else
-        {
-            // TODO: error
-        }
+
+        if (result.ShowToast)
+            foreach (var message in result.Messages)
+                _snackbar.Add(message, result.Severity);
+
 
         _loadingService.HideLoading();
         await base.OnInitializedAsync();
