@@ -32,7 +32,19 @@ public class Client : IAsyncDisposable
         InitializeCallbacks(topicService);
     }
 
-    public async Task<MqttClientConnectResult> ConnectAsync() => await Service.ConnectAsync(Options());
+    public async Task<MqttClientConnectResult> ConnectAsync()
+    {
+        try
+        {
+            var options = Options();
+            return await Service.ConnectAsync(options);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            return new MqttClientConnectResult();
+        }
+    }
     public async Task DisconnectAsync() => await Service.DisconnectAsync();
     public async Task DisconnectAsync(Device device)
     {
@@ -57,7 +69,7 @@ public class Client : IAsyncDisposable
                 var topic = await _topicService.AddTopic(Broker.Id, device, control);
 
                 if (!Service.IsConnected)
-                    await Service.ConnectAsync(Options());
+                    await ConnectAsync();
 
                 await Service.SubscribeAsync(topic, control.QualityOfService);
                 device.Controls.Add(control);
@@ -94,7 +106,7 @@ public class Client : IAsyncDisposable
                     var topic = await _topicService.AddTopic(Broker.Id, existingDevice, control);
 
                     if (!Service.IsConnected)
-                        await Service.ConnectAsync(Options());
+                        await ConnectAsync();
 
                     await Service.SubscribeAsync(topic);
                     existingDevice.Controls.Add(control);
@@ -135,8 +147,7 @@ public class Client : IAsyncDisposable
     {
         var optionsBuilder = _factory.CreateClientOptionsBuilder()
             .WithClientId(Broker.ClientId)
-            .WithWebSocketServer($"wss://{Broker.Server}:{Broker.Port}")
-            .WithTls();
+            .WithWebSocketServer($"wss://{Broker.Server}:{Broker.Port}/mqtt");
 
         if (!string.IsNullOrEmpty(Broker.Username) && !string.IsNullOrEmpty(Broker.Password))
             optionsBuilder = optionsBuilder.WithCredentials(Broker.Username, Broker.Password);
@@ -149,7 +160,7 @@ public class Client : IAsyncDisposable
         Service.ApplicationMessageReceivedAsync += (e) =>
         {
             var topic = e.ApplicationMessage.Topic;
-            var message = Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment);
+            var message = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
             topicService.UpdateMessageOnTopic(Broker.Id, topic, message);
 
             return Task.CompletedTask;
