@@ -56,6 +56,13 @@ public class Client : IAsyncDisposable
 
         Devices.Remove(device);
     }
+    public async Task DisconnectAsync(string deviceId, Control control)
+    {
+        var device = Devices.First(x => x.Id == deviceId);
+        var topic = await _topicService.RemoveTopic(Broker.Id, device, control);
+        await Service.UnsubscribeAsync(topic);
+        device.Controls.Remove(control);
+    }
 
     public async Task<int> SubscribeAsync(Device device, List<Control> controls)
     {

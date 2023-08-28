@@ -1,6 +1,7 @@
 ﻿using Infrastructure;
 using Presentation.Models;
 using Shared.Models.Brokers;
+using Shared.Models.Controls;
 using Shared.Models.Devices;
 
 namespace Presentation.Services.Interfaces; 
@@ -17,5 +18,9 @@ public interface IClientService
     Task<Result> RemoveDeviceFromClient(string clientId, Device device);
     Task<Result<Device>> CreateDeviceForClient(Device device);
     Task<Result<Device>> UpdateDeviceForClient(Device device);
+
+    Task<Result> RemoveControlFromDevice(string clientId, string deviceId, Control control);
+    Task<Result> CreateControlForDevice(string clientId, string deviceId, Control control);
+    Task<Result> UpsertControlForDevice(string clientId, string deviceId, Control control);
 }
 

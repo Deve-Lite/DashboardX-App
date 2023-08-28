@@ -1,15 +1,14 @@
 ﻿@using Infrastructure;
 @using Presentation.Utils;
+@using global::Shared.Models.Controls;
 @using global::Shared.Models.Devices;
-@inject IStringLocalizer<RemoveDeviceDialog> _localizer;
+@inject IStringLocalizer<RemoveControlDialog> _localizer;
 @inject IClientService _clientService;
 
 
-<MudDialog Title="Removing Device">
+<MudDialog Title="Removing Control">
     <DialogContent>
-        <MudText>@_localizer["Are you sure you want to remove this device?"]</MudText>
-        <MudText>@_localizer["Name:"] @Device.Name</MudText>
-        <MudText>@_localizer["Placing:"] @Device.Placing</MudText>
+        <MudText>@_localizer["Are you sure you want to remove following control?"]</MudText>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">@_localizer["Cancel"]</MudButton>
@@ -26,8 +25,9 @@
     private MudDialogInstance? Dialog { get; set; }
 
     [Parameter]
+    public Control Controls { get; set; } = new();
+    [Parameter]
     public Device Device { get; set; } = new();
-
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
 
@@ -43,7 +43,7 @@
 
         _loadingService.ShowLoading();
 
-        var result = await _clientService.RemoveDeviceFromClient(ClientId, Device);
+        var result = await _clientService.Remo(ClientId, Device);
 
         _loadingService.HideLoading();
 

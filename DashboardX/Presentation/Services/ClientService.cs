@@ -5,7 +5,9 @@ using MQTTnet;
 using Presentation.Models;
 using Presentation.Services.Interfaces;
 using Shared.Models.Brokers;
+using Shared.Models.Controls;
 using Shared.Models.Devices;
+using System.Runtime.InteropServices;
 
 namespace Presentation.Services;
 
@@ -271,6 +273,57 @@ public class ClientService : IClientService
         }
 
         return Result<Device>.Fail(result.Messages, result.StatusCode);
+    }
+
+    #endregion
+
+    #region Control
+
+    public async Task<Result> RemoveControlFromDevice(string clientId, string deviceId, Control control)
+    {
+        var result = await _deviceService.RemoveDeviceControls(deviceId, new List<string> { clientId });
+
+        if (result.Succeeded)
+        {
+            var client = _clients.First(x => x.Id == clientId);          
+            await client.DisconnectAsync(deviceId, control);
+
+            return Result.Success(result.StatusCode);
+        }
+
+        return Result.Fail(result.Messages, result.StatusCode);
+    } 
+
+    public async Task<Result> CreateControlForDevice(string clientId, string deviceId, Control control)
+    {
+        var result = await _deviceService.CreateDeviceControl(control);
+
+        if (result.Succeeded)
+        {
+            var client = _clients.First(x => x.Id == clientId);
+
+            //TODO: Add control to client
+
+            return Result.Success(result.StatusCode);
+        }
+
+        return Result.Fail(result.Messages, result.StatusCode);
+    }
+
+    public async Task<Result> UpsertControlForDevice(string clientId, string deviceId, Control control)
+    {
+        var result = await _deviceService.UpdateDeviceControl(control);
+
+        if (result.Succeeded)
+        {
+            var client = _clients.First(x => x.Id == clientId);
+
+            //TODO:Update control in client
+
+            return Result.Success(result.StatusCode);
+        }
+
+        return Result.Fail(result.Messages, result.StatusCode);
     }
 
     #endregion
