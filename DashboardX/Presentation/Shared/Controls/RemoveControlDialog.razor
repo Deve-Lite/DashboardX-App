@@ -25,9 +25,9 @@
     private MudDialogInstance? Dialog { get; set; }
 
     [Parameter]
-    public Control Controls { get; set; } = new();
+    public Control Control { get; set; } = new();
     [Parameter]
-    public Device Device { get; set; } = new();
+    public string DeviceId { get; set; } = string.Empty;
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
 
@@ -35,7 +35,7 @@
 
     private async Task RemoveAsync()
     {
-        if (string.IsNullOrEmpty(Device.Id))
+        if (string.IsNullOrEmpty(DeviceId) || string.IsNullOrEmpty(ClientId))
             return;
 
         if (_loadingService.IsLoading)
@@ -43,7 +43,7 @@
 
         _loadingService.ShowLoading();
 
-        var result = await _clientService.Remo(ClientId, Device);
+        var result = await _clientService.RemoveControlFromDevice(ClientId, DeviceId, Control);
 
         _loadingService.HideLoading();
 

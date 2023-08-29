@@ -21,6 +21,6 @@ public interface IClientService
 
     Task<Result> RemoveControlFromDevice(string clientId, string deviceId, Control control);
     Task<Result> CreateControlForDevice(string clientId, string deviceId, Control control);
-    Task<Result> UpsertControlForDevice(string clientId, string deviceId, Control control);
+    Task<Result> UpdateControlForDevice(string clientId, string deviceId, Control control);
 }
 

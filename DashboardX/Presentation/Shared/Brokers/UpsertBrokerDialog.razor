@@ -182,7 +182,7 @@
 
         _loadingService.ShowLoading();
 
-        var result = Result<Client>.Fail(HttpStatusCode.BadRequest);
+        var result = Result<Client>.Fail();
 
         if (string.IsNullOrEmpty(Broker.Id))
             result = await _clientService.CreateClient(Broker);

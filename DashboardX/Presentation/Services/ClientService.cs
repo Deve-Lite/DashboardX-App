@@ -1,5 +1,4 @@
-﻿using Core;
-using Core.Interfaces;
+﻿using Core.Interfaces;
 using Infrastructure;
 using MQTTnet;
 using Presentation.Models;
@@ -7,11 +6,9 @@ using Presentation.Services.Interfaces;
 using Shared.Models.Brokers;
 using Shared.Models.Controls;
 using Shared.Models.Devices;
-using System.Runtime.InteropServices;
 
 namespace Presentation.Services;
 
-//TODO: Update services for not modified responses
 public class ClientService : IClientService
 {
     private readonly IBrokerService _brokerService;
@@ -33,6 +30,8 @@ public class ClientService : IClientService
         _factory = factory;
         _logger = logger;
     }
+
+    #region Client
 
     public async Task<Result<List<Client>>> GetClientsWithDevices()
     {
@@ -223,6 +222,8 @@ public class ClientService : IClientService
         return Result<Client>.Fail(result.Messages, result.StatusCode);
     }
 
+    #endregion
+
     #region Device
 
     public async Task<Result> RemoveDeviceFromClient(string clientId, Device device)
@@ -232,7 +233,7 @@ public class ClientService : IClientService
         if (result.Succeeded)
         {
             var client = _clients.First(x => x.Id == clientId);
-            await client.DisconnectAsync(device);
+            await client.UnsubscribeAsync(device);
             client.Devices.RemoveAll(x=>x.Id == device.Id);
 
             return Result.Success(result.StatusCode);
@@ -286,7 +287,7 @@ public class ClientService : IClientService
         if (result.Succeeded)
         {
             var client = _clients.First(x => x.Id == clientId);          
-            await client.DisconnectAsync(deviceId, control);
+            await client.UnsubscribeAsync(deviceId, control);
 
             return Result.Success(result.StatusCode);
         }
@@ -301,8 +302,10 @@ public class ClientService : IClientService
         if (result.Succeeded)
         {
             var client = _clients.First(x => x.Id == clientId);
+            var device = client.Devices.First(x => x.Id == deviceId);
 
-            //TODO: Add control to client
+            if(!await client.SubscribeAsync(device, control))
+                return Result.Fail(new List<string> { "Failed to subscribe message however, control was created." }, result.StatusCode);
 
             return Result.Success(result.StatusCode);
         }
@@ -310,15 +313,15 @@ public class ClientService : IClientService
         return Result.Fail(result.Messages, result.StatusCode);
     }
 
-    public async Task<Result> UpsertControlForDevice(string clientId, string deviceId, Control control)
+    public async Task<Result> UpdateControlForDevice(string clientId, string deviceId, Control control)
     {
         var result = await _deviceService.UpdateDeviceControl(control);
 
         if (result.Succeeded)
         {
             var client = _clients.First(x => x.Id == clientId);
-
-            //TODO:Update control in client
+            var device = client.Devices.First(x => x.Id == deviceId);
+            await client.UnsubscribeAsync(deviceId, control);
 
             return Result.Success(result.StatusCode);
         }
@@ -363,7 +366,7 @@ public class ClientService : IClientService
             }
             else if(device.EditedAt != existingDevice.EditedAt)
             {
-                await client.DisconnectAsync(existingDevice);
+                await client.UnsubscribeAsync(existingDevice);
 
                 var result = await _deviceService.GetDeviceControls(device.Id);
 

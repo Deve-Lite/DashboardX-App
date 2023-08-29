@@ -141,7 +141,7 @@
 
         _loadingService.ShowLoading();
 
-        var result = Result<Device>.Fail(HttpStatusCode.BadRequest);
+        var result = Result<Device>.Fail();
 
         if (string.IsNullOrEmpty(Device.Id))
             result = await _clientService.CreateDeviceForClient(Device);

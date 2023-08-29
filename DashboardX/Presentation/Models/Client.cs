@@ -46,7 +46,7 @@ public class Client : IAsyncDisposable
         }
     }
     public async Task DisconnectAsync() => await Service.DisconnectAsync();
-    public async Task DisconnectAsync(Device device)
+    public async Task UnsubscribeAsync(Device device)
     {
         foreach (var control in device.Controls)
         {
@@ -56,7 +56,7 @@ public class Client : IAsyncDisposable
 
         Devices.Remove(device);
     }
-    public async Task DisconnectAsync(string deviceId, Control control)
+    public async Task UnsubscribeAsync(string deviceId, Control control)
     {
         var device = Devices.First(x => x.Id == deviceId);
         var topic = await _topicService.RemoveTopic(Broker.Id, device, control);
@@ -70,24 +70,30 @@ public class Client : IAsyncDisposable
         int failedSubscribtions = 0;
 
         foreach (var control in controls)
-        {
-            try
-            {
-                var topic = await _topicService.AddTopic(Broker.Id, device, control);
-
-                if (!Service.IsConnected)
-                    await ConnectAsync();
-
-                await Service.SubscribeAsync(topic, control.QualityOfService);
-                device.Controls.Add(control);
-            }
-            catch
-            {
+            if(!await SubscribeAsync(device, control))
                 ++failedSubscribtions;
-            }
-        }
-
+            
         return failedSubscribtions;
+    }
+
+    public async Task<bool> SubscribeAsync(Device device, Control control)
+    {
+        try
+        {
+            var topic = await _topicService.AddTopic(Broker.Id, device, control);
+
+            if (!Service.IsConnected)
+                await ConnectAsync();
+
+            await Service.SubscribeAsync(topic, control.QualityOfService);
+            device.Controls.Add(control);
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     /// <summary>
@@ -152,9 +158,12 @@ public class Client : IAsyncDisposable
 
     private MqttClientOptions Options()
     {
+        //TODO: Check if celan sesion is not deleting subs if yes every reconec we need to resubscribe to all topics
+
         var optionsBuilder = _factory.CreateClientOptionsBuilder()
             .WithClientId(Broker.ClientId)
-            .WithWebSocketServer($"wss://{Broker.Server}:{Broker.Port}/mqtt");
+            .WithWebSocketServer($"wss://{Broker.Server}:{Broker.Port}/mqtt")
+            .WithCleanSession(false);
 
         if (!string.IsNullOrEmpty(Broker.Username) && !string.IsNullOrEmpty(Broker.Password))
             optionsBuilder = optionsBuilder.WithCredentials(Broker.Username, Broker.Password);

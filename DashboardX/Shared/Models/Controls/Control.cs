@@ -69,4 +69,19 @@ public class Control : BaseModel
                QualityOfService == control.QualityOfService &&
                Topic == control.Topic;
     }
+
+    public Control Copy()
+    {
+        return new()
+        {
+            DeviceId = DeviceId,
+            StringType = StringType,
+            Icon = Icon,
+            IconBackgroundColor = IconBackgroundColor,
+            IsAvailable = IsAvailable,
+            IsConfiramtionRequired = IsConfiramtionRequired,
+            QualityOfService = QualityOfService,
+            Topic = Topic
+        };
+    }
 }
