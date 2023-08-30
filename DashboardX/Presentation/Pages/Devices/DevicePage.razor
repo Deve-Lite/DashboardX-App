@@ -30,6 +30,7 @@ else
                 <MudText>Placing: @Device.Placing </MudText>
                 <MudText>Path: @Device.BaseDevicePath </MudText>
                 <MudText Align="Align.End">Edited At: @Device.EditedAt </MudText>
+                <MudText Align="Align.End">Connection: @Client.Service.IsConnected </MudText>
 
                 <MudButton Variant="Variant.Filled"
                            Color="Color.Primary"
@@ -41,6 +42,14 @@ else
                            Color="Color.Primary"
                            Style="z-index: 10;"
                            OnClick="UpdateDevice">
+                    Update
+                </MudButton>
+
+
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Style="z-index: 10;"
+                           OnClick="(() => ConnectAsync())">
                     Update
                 </MudButton>
 
@@ -168,6 +177,12 @@ else
 
             StateHasChanged();
         }
+    }
+
+    private async Task ConnectAsync()
+    {
+        await Client.ConnectAsync();
+        StateHasChanged();
     }
 
     private async Task AddControl()

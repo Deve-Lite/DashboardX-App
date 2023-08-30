@@ -89,7 +89,7 @@ public class Client : IAsyncDisposable
                 await ConnectAsync();
 
             device.Controls.Add(control);
-            await Service.SubscribeAsync(topic, control.QualityOfService);
+            var result = await Service.SubscribeAsync(topic, control.QualityOfService);
 
             return true;
         }
@@ -191,6 +191,8 @@ public class Client : IAsyncDisposable
 
             return Task.CompletedTask;
         };
+
+        //TODO: check what happend after disconnect
     }
 
     #endregion

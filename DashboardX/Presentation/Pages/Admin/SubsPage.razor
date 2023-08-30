@@ -1,0 +1,19 @@
+﻿@page "/subs"
+
+@inject ITopicService _topicService
+
+<MudGrid>
+    @foreach(var topic in _topicService.Topics)
+    {
+        <MudItem Class="p-5">
+            <MudText>Key: @topic.Item1</MudText>
+            <MudText>Value: @topic.Item2</MudText>
+        </MudItem>
+    }
+</MudGrid>
+
+@code {
+    
+
+
+}
