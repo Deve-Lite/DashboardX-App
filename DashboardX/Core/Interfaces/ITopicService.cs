@@ -9,5 +9,7 @@ public interface ITopicService
     Task<string> AddTopic(string brokerId, Device device, Control control);
     Task<string> RemoveTopic(string brokerId, Device device, Control control);
     Task UpdateMessageOnTopic(string brokerId, string topic, string message);
-    Task<string> LastMessageOnTopic(string brokerId, Device device, Control control);
+    Task<string> LastMessageOnTopicAsync(string brokerId, Device device, Control control);
+    string LastMessageOnTopic(string brokerId, Device device, Control control);
+    bool ConatinsTopic(string brokerId, Device device, Control control);
 }

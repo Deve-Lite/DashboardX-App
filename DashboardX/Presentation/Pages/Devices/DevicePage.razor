@@ -1,9 +1,13 @@
 ﻿@page "/devices/{DeviceId}/{ClientId}"
 @using Infrastructure;
+@using Presentation.Shared.Controls;
 @using Presentation.Shared.Devices;
+@using global::Shared.Models.Controls;
 @using global::Shared.Models.Devices;
 
+@inject ITopicService _topicService
 @inject IClientService _clientService
+@inject NavigationManager _navigationManager
 
 @if (_loadingService.IsLoading)
 {
@@ -43,10 +47,43 @@ else
             </MudCard>
         </MudItem>
         
-        <div>
-            List of controls will be here
-        </div>
+        <MudItem>
 
+            <MudItem>
+                <MudCard Elevation="25" Class="container container-fit-content p-5" style="border-radius: 1rem;">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               OnClick="AddControl">
+                        Add new Control
+                    </MudButton>
+                </MudCard>
+            </MudItem>
+
+            @foreach (var control in Device.Controls)
+            {
+                <MudItem>
+                    <MudText>Type: @control.StringType </MudText>
+                    <MudText>Confirmation: @control.IsConfiramtionRequired </MudText>
+                    <MudText>Last value on topic:  @_topicService.LastMessageOnTopic(ClientId, Device, control) </MudText>
+                    
+                    <MudText>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   Style="z-index: 10;"
+                                   OnClick="(() => RemoveControl(control))">
+                            Remove
+                        </MudButton>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   Style="z-index: 10;"
+                                   OnClick="(() => UpdateControl(control))">
+                            Update
+                        </MudButton>
+                    </MudText>
+                </MudItem>
+            }
+
+        </MudItem>
     </MudGrid>
 }
 
@@ -107,10 +144,13 @@ else
             StateHasChanged();
         }
     }
-
     private async Task RemoveDevice()
     {
-        var parameters = new DialogParameters<UpsertDeviceDialog> { { x => x.Device, Device }, { x => x.ClientId, Client!.Id } };
+        var parameters = new DialogParameters<RemoveDeviceDialog> 
+        { 
+            { x => x.Device, Device },
+            { x => x.ClientId, Client!.Id } 
+        };
 
         var dialog = await _dialogService.ShowAsync<RemoveDeviceDialog>("Remove Device", parameters);
         var result = await dialog.Result;
@@ -122,8 +162,65 @@ else
 
         if (x.Succeeded)
         {
-            // TODO: navigate to valid page
+            // TODO: Implement navigation stack !
+
+            _navigationManager.NavigateTo("/devices");
+
             StateHasChanged();
         }
+    }
+
+    private async Task AddControl()
+    {
+        var dialog = await _dialogService.ShowAsync<UpsertControlDialog>("Create Control");
+        var result = await dialog.Result;
+
+        if (result.Canceled)
+            return;
+
+        var x = result.Data as Result<Client> ?? Result<Client>.Fail(message: "Couldn't parse response.");
+
+        if (x.Succeeded)
+            StateHasChanged();
+    }
+    private async Task UpdateControl(Control control)
+    {
+        var parameters = new DialogParameters<UpsertControlDialog>
+        { 
+            {  x => x.DeviceId, DeviceId }, 
+            {  x => x.ClientId, ClientId } ,
+            {  x => x.Control, control }
+        };
+
+        var dialog = await _dialogService.ShowAsync<UpsertControlDialog>("Edit Control", parameters);
+        var result = await dialog.Result;
+
+        if (result.Canceled)
+            return;
+
+        var x = result.Data as Result<Client> ?? Result<Client>.Fail(message: "Couldn't parse response.");
+
+        if (x.Succeeded)
+            StateHasChanged();
+    }
+    private async Task RemoveControl(Control control)
+    {
+        var parameters = new DialogParameters<RemoveControlDialog> 
+        {
+            {  x => x.DeviceId, DeviceId },
+            {  x => x.ClientId, ClientId } ,
+            {  x => x.Control, control }
+        };
+
+        var dialog = await _dialogService.ShowAsync<RemoveControlDialog>("Remove Control", parameters);
+        var result = await dialog.Result;
+
+        if (result.Canceled)
+            return;
+
+        var x = result.Data as Result ?? Result.Fail(message: "Couldn't parse response.");
+
+        if (x.Succeeded)
+            StateHasChanged();
     }
 }

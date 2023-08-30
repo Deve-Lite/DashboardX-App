@@ -80,13 +80,16 @@ public class Client : IAsyncDisposable
     {
         try
         {
+            if (_topicService.ConatinsTopic(Id, device, control))
+                return true;
+
             var topic = await _topicService.AddTopic(Broker.Id, device, control);
 
             if (!Service.IsConnected)
                 await ConnectAsync();
 
-            await Service.SubscribeAsync(topic, control.QualityOfService);
             device.Controls.Add(control);
+            await Service.SubscribeAsync(topic, control.QualityOfService);
 
             return true;
         }
@@ -102,27 +105,34 @@ public class Client : IAsyncDisposable
     /// <param name="existingDevice"> Device must exist in collection of elemnts.</param>
     /// <param name="controls"></param>
     /// <returns></returns>
-    public async Task<int> UpdateSubscribtionsAsync(Device existingDevice, List<Control> controls)
+    public async Task<int> UpdateSubscribtionsAsync(string deviceId, List<Control> controls)
     {
         HashSet<string> usedControls = new();
 
         int failedSubscribtions = 0;
 
+        var device = Devices.First(x => x.Id == deviceId);
+
         foreach (var control in controls)
         {
             try
             {
-                var existingControl = existingDevice.Controls.FirstOrDefault(x => x.Id == control.Id);
+                var existingControl = device.Controls.FirstOrDefault(x => x.Id == control.Id);
 
-                if (existingControl is null || existingControl.IsTheSame(control))
+                var isSync = existingControl?.IsTheSame(control) ?? false;
+
+                if (existingControl is null || !isSync)
                 {
-                    var topic = await _topicService.AddTopic(Broker.Id, existingDevice, control);
+                    if(!isSync)
+                        await UnsubscribeAsync(device.Id, existingControl!);
+
+                    var topic = await _topicService.AddTopic(Broker.Id, device, control);
 
                     if (!Service.IsConnected)
                         await ConnectAsync();
 
+                    device.Controls.Add(control);
                     await Service.SubscribeAsync(topic);
-                    existingDevice.Controls.Add(control);
                 }
 
                 usedControls.Add(control.Id);
@@ -133,12 +143,12 @@ public class Client : IAsyncDisposable
             }
         }
 
-        foreach (var control in existingDevice.Controls)
+        foreach (var control in device.Controls)
             if (!usedControls.Contains(control.Id))
             {
-                var topic = await _topicService.RemoveTopic(Broker.Id, existingDevice, control);
+                var topic = await _topicService.RemoveTopic(Broker.Id, device, control);
                 await Service.UnsubscribeAsync(topic);
-                existingDevice.Controls.Remove(control);
+                device.Controls.Remove(control);
             }
 
         return failedSubscribtions;

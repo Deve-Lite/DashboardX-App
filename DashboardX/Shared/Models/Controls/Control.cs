@@ -7,37 +7,37 @@ public class Control : BaseModel
     [JsonPropertyName("deviceId")]
     public string DeviceId { get; set; } = string.Empty;
 
-    public ControlTypes Type
+    public ControlType Type
     {
         get
         {
             return StringType switch
             {
-                "button" => ControlTypes.Button,
-                "color" => ControlTypes.Color,
-                "date-time" => ControlTypes.DateTime,
-                "multi-button" => ControlTypes.MultiButton,
-                "radio" => ControlTypes.Radio,
-                "slider" => ControlTypes.Slider,
-                "state" => ControlTypes.State,
-                "switch" => ControlTypes.Switch,
-                "text-out" => ControlTypes.TextOut,
-                _ => ControlTypes.Button,
+                "button" => ControlType.Button,
+                "color" => ControlType.Color,
+                "date-time" => ControlType.DateTime,
+                "multi-button" => ControlType.MultiButton,
+                "radio" => ControlType.Radio,
+                "slider" => ControlType.Slider,
+                "state" => ControlType.State,
+                "switch" => ControlType.Switch,
+                "text-out" => ControlType.TextOut,
+                _ => ControlType.Button,
             };
         }
         set
         {
             StringType = value switch
             {
-                ControlTypes.Button => "button",
-                ControlTypes.Color => "color",
-                ControlTypes.DateTime => "date-time",
-                ControlTypes.MultiButton => "multi-button",
-                ControlTypes.Radio => "radio",
-                ControlTypes.Slider => "slider",
-                ControlTypes.State => "state",
-                ControlTypes.Switch => "switch",
-                ControlTypes.TextOut => "text-out",
+                ControlType.Button => "button",
+                ControlType.Color => "color",
+                ControlType.DateTime => "date-time",
+                ControlType.MultiButton => "multi-button",
+                ControlType.Radio => "radio",
+                ControlType.Slider => "slider",
+                ControlType.State => "state",
+                ControlType.Switch => "switch",
+                ControlType.TextOut => "text-out",
                 _ => "button",
             };
         }

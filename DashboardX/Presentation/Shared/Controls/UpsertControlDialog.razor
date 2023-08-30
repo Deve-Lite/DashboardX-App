@@ -1,5 +1,6 @@
 ﻿@using Blazored.FluentValidation;
 @using Infrastructure;
+@using MQTTnet.Protocol;
 @using Presentation.Utils;
 @using System.Net;
 @using global::Shared.Models.Brokers;
@@ -15,10 +16,108 @@
         <EditForm id="upsertBrokerForm" Model="@Control" OnValidSubmit="SubmitAsync">
             <FluentValidationValidator @ref="_fluentValidationValidator" />
             <MudGrid>
-
                 <DataAnnotationsValidator />
 
-                
+                <MudItem xs="12">
+                    <div class="d-flex justify-center">
+                        <MudTextField @bind-Value="Control.Topic"
+                                      T="string"
+                                      Label="@_localizer["Topic Path"]"
+                                      Variant="Variant.Outlined"
+                                      For="@(() => Control.Topic)" />
+                    </div>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <div class="d-flex justify-center">
+                        <MudTextField @bind-Value="Control.Icon"
+                                      T="string"
+                                      Label="@_localizer["Icon"]"
+                                      Variant="Variant.Outlined"
+                                      For="@(() => Control.Icon)" />
+                    </div>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <div class="d-flex justify-center">
+                        <MudColorPicker @bind-Text="Control.IconBackgroundColor"
+                                        Label="@_localizer["Icon background color"]"
+                                        ColorPickerView="ColorPickerView.Palette" />
+
+                    </div>
+                </MudItem>
+
+                <MudSelect @bind-Value="Control.QualityOfService"
+                           xs="12"
+                           Label="@_localizer["Quality of service"]"
+                           For="(() => Control.QualityOfService)"
+                           Variant="Variant.Outlined"
+                           AnchorOrigin="Origin.BottomCenter">
+
+                    <MudSelectItem Value="MqttQualityOfServiceLevel.AtMostOnce">@_localizer["At most once - 0"]</MudSelectItem>
+                    <MudSelectItem Value="MqttQualityOfServiceLevel.AtLeastOnce">@_localizer["At least once - 1"]</MudSelectItem>
+                    <MudSelectItem Value="MqttQualityOfServiceLevel.ExactlyOnce">@_localizer["Exactly once - 2"]</MudSelectItem>
+                </MudSelect>
+
+                <MudItem xs="12">
+                    <div class="d-flex justify-start">
+                        <MudSwitch @bind-Checked="Control.IsConfiramtionRequired"
+                                   Label="@_localizer["Sending data requires confirmation"]"
+                                   Color="Color.Primary" />
+                    </div>
+                </MudItem>
+
+                <MudSelect @bind-Value="Control.Type"
+                           xs="12"
+                           Label="Broker"
+                           For="(() => Control.Type)"
+                           Variant="Variant.Outlined"
+                           AnchorOrigin="Origin.BottomCenter">
+
+                    <MudSelectItem Value="ControlType.Switch">@_localizer["Switch"]</MudSelectItem>
+                    <MudSelectItem Value="ControlType.Slider">@_localizer["Slider"]</MudSelectItem>
+                    <MudSelectItem Value="ControlType.Color">@_localizer["Color"]</MudSelectItem>
+                    <MudSelectItem Value="ControlType.DateTime">@_localizer["DateTime"]</MudSelectItem>
+                    <MudSelectItem Value="ControlType.State">@_localizer["State"]</MudSelectItem>
+                    <MudSelectItem Value="ControlType.MultiButton">@_localizer["Multi Button"]</MudSelectItem>
+                    <MudSelectItem Value="ControlType.Radio">@_localizer["Radio"]</MudSelectItem>
+                    <MudSelectItem Value="ControlType.TextOut">@_localizer["Text Display"]</MudSelectItem>
+
+                </MudSelect>
+
+                @if (Control.Type == ControlType.Switch)
+                {
+                    <MudText>Switch Specific</MudText>
+                }
+                else if (Control.Type == ControlType.Slider)
+                {
+                    <MudText>Slider Specific</MudText>
+                }
+                else if (Control.Type == ControlType.Color)
+                {
+                    <MudText>Color Specific</MudText>
+                }
+                else if (Control.Type == ControlType.DateTime)
+                {
+                    <MudText>Date Time Specific</MudText>
+                }
+                else if (Control.Type == ControlType.State)
+                {
+                    <MudText>State Specific</MudText>
+                }
+                else if (Control.Type == ControlType.MultiButton)
+                {
+                    <MudText>Multi Button Specific</MudText>
+                }
+                else if (Control.Type == ControlType.Radio)
+                {
+                    <MudText>Radio Specific</MudText>
+                }
+                else if (Control.Type == ControlType.TextOut)
+                {
+                    <MudText>Text Display Specific</MudText>
+                }
+
             </MudGrid>
         </EditForm>
     </DialogContent>
@@ -46,22 +145,8 @@
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
 
-    private List<Broker> AvaliableBrokers = new();
     private FluentValidationValidator? _fluentValidationValidator;
     private bool Validated => _fluentValidationValidator == null ? false : _fluentValidationValidator.Validate(options => { options.IncludeAllRuleSets(); });
-    private bool ShowAuthorizationFields { get; set; } = false;
-
-    protected override async Task OnInitializedAsync()
-    {
-        var result = await _brokerService.GetBrokers();
-
-        if (result.Succeeded)
-            AvaliableBrokers = result.Data;
-        else
-            Dialog!.Close(DialogResult.Ok(Result.Fail(result.Messages, result.StatusCode)));
-
-        await base.OnInitializedAsync();
-    }
 
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
@@ -102,5 +187,4 @@
         _snackbar.Add("Success", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
         return Task.CompletedTask;
     }
-
 }

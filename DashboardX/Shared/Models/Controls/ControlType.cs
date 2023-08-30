@@ -1,7 +1,7 @@
 ﻿
 namespace Shared.Models.Controls;
 
-public enum ControlTypes
+public enum ControlType
 {
    Button,
    Color,

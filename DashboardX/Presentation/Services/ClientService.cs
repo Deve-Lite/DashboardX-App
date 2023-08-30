@@ -390,7 +390,7 @@ public class ClientService : IClientService
 
                 if (result.Succeeded)
                 {
-                    failedSubscribtions += await client.UpdateSubscribtionsAsync(device, result.Data);
+                    failedSubscribtions += await client.UpdateSubscribtionsAsync(device.Id, result.Data);
 
                     if (failedSubscribtions != 0)
                         _logger.LogWarning($"Failed to subscribe {failedSubscribtions} topics. For {device.Id} {device.Name}.");

@@ -54,7 +54,7 @@ public class TopicService : ITopicService
         OnMessageReceived?.Invoke();
     }
 
-    public async Task<string> LastMessageOnTopic(string brokerId, Device device, Control control)
+    public async Task<string> LastMessageOnTopicAsync(string brokerId, Device device, Control control)
     {
         var identifier = Identifier(brokerId, device, control);
 
@@ -66,6 +66,18 @@ public class TopicService : ITopicService
 
         return string.Empty;
     }
+
+    public string LastMessageOnTopic(string brokerId, Device device, Control control)
+    {
+        var identifier = Identifier(brokerId, device, control);
+
+        if (topics.ContainsKey(identifier))
+            return topics[identifier];
+
+        return string.Empty;
+    }
+
+    public bool ConatinsTopic(string brokerId, Device device, Control control) => topics.ContainsKey(Identifier(brokerId, device, control));
 
     #region Privates    
 
