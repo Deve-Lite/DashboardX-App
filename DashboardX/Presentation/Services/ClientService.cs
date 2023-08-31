@@ -1,4 +1,5 @@
-﻿using Core.Interfaces;
+﻿using Blazored.LocalStorage;
+using Core.Interfaces;
 using Infrastructure;
 using MQTTnet;
 using Presentation.Models;
@@ -12,23 +13,26 @@ namespace Presentation.Services;
 public class ClientService : IClientService
 {
     private readonly IBrokerService _brokerService;
-    private readonly ITopicService _topicService;
+    private readonly ILocalStorageService _storageService;
     private readonly IDeviceService _deviceService;
     private readonly ILogger<ClientService> _logger;
+    private readonly ILogger<Client> _clientLogger;
     private readonly MqttFactory _factory;
     private readonly List<Client> _clients = new();
 
-    public ClientService(ITopicService topicService, 
-        IBrokerService brokerService,
+    public ClientService(IBrokerService brokerService,
+        ILocalStorageService storageService,
+        IDeviceService deviceService,
         ILogger<ClientService> logger,
-        IDeviceService deviceService, 
+        ILogger<Client> clientLogger,
         MqttFactory factory)
     {
         _brokerService = brokerService;
-        _topicService = topicService;
+        _storageService = storageService;
         _deviceService = deviceService;
         _factory = factory;
         _logger = logger;
+        _clientLogger = clientLogger;
     }
 
     #region Client
@@ -62,13 +66,13 @@ public class ClientService : IClientService
             var client = _clients.FirstOrDefault(x => x.Id == broker.Id);
             if (client is null)
             {
-                var newClient = new Client(broker, _topicService, _factory);
+                var newClient = new Client(_storageService, _clientLogger, _factory, broker);
                 _clients.Add(newClient);
                 client = newClient;
             }
             else if (client.Broker.EditedAt != broker.EditedAt)
             {
-                await UpdateClientBroker(client, broker);
+                await client.UpdateBroker(broker);
             }
 
             if(devicesGroups.ContainsKey(broker.Id))
@@ -108,12 +112,12 @@ public class ClientService : IClientService
             var client = _clients.FirstOrDefault(x => x.Id == broker.Id);
             if(client is null)
             {
-                var newClient = new Client(broker, _topicService, _factory);
+                var newClient = new Client(_storageService, _clientLogger, _factory, broker);
                 _clients.Add(newClient);
             }
             else if(client.Broker.EditedAt != broker.EditedAt)
             {
-                await UpdateClientBroker(client, broker);
+                await client.UpdateBroker(broker);
             }
 
             usedClients.Add(broker.Id); 
@@ -151,7 +155,7 @@ public class ClientService : IClientService
 
         if (client is null)
         {
-            var newClient = new Client(brokerResult.Data, _topicService, _factory);
+            var newClient = new Client(_storageService, _clientLogger, _factory, brokerResult.Data);
 
             var failedConnections = await UpdateClientDevices(newClient, deviceResult.Data);
 
@@ -163,9 +167,8 @@ public class ClientService : IClientService
             return Result<Client>.Warning(newClient, message: $"Failed to subsribe {failedConnections} topics.");
         }
         else if (client.Broker.EditedAt != brokerResult.Data.EditedAt)
-        {
-            await UpdateClientBroker(client, brokerResult.Data);
-        }
+            await client.UpdateBroker(brokerResult.Data);
+        
 
         var failConnections = await UpdateClientDevices(client, deviceResult.Data);
 
@@ -183,7 +186,7 @@ public class ClientService : IClientService
         {
             var client = _clients.FirstOrDefault(x => x.Id == broker.Id)!;
 
-            await UpdateClientBroker(client, result.Data);
+            await client.UpdateBroker(result.Data);
 
             return Result<Client>.Success(client, result.StatusCode);
         }
@@ -213,7 +216,7 @@ public class ClientService : IClientService
 
         if(result.Succeeded)
         {
-            var client = new Client(result.Data, _topicService, _factory);
+            var client = new Client(_storageService, _clientLogger, _factory, result.Data);
             _clients.Add(client);
 
             return Result<Client>.Success(client, result.StatusCode);
@@ -413,18 +416,7 @@ public class ClientService : IClientService
         return failedSubscribtions;
     }
 
-    private static async Task UpdateClientBroker(Client client, Broker broker)
-    {
-        var connected = client.IsConnected;
 
-        if (connected)
-            await client.DisconnectAsync();
-
-        client.Broker = broker;
-
-        if (connected)
-            await client.ConnectAsync();
-    }
 
     #endregion
 }

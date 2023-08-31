@@ -1,5 +1,6 @@
-﻿using Core.Interfaces;
-using Microsoft.Extensions.Options;
+﻿using Blazored.LocalStorage;
+using Core.Interfaces;
+using Infrastructure.Services;
 using MQTTnet;
 using MQTTnet.Client;
 using Shared.Models.Brokers;
@@ -11,25 +12,44 @@ namespace Presentation.Models;
 
 public class Client : IAsyncDisposable
 {
+
+    private readonly ILogger<Client> _logger;
     private readonly MqttFactory _factory;
-    private readonly ITopicService _topicService;
+    public readonly ITopicService TopicService;
 
     public string Id => Broker.Id;
     public bool IsConnected => Service.IsConnected;
 
-    public Broker Broker { get; set; } = new();
-    public IMqttClient Service { get; set; }
-    public List<Device> Devices { get; set; } = new();
+    public Broker Broker { get; private set; } = new();
+    public IMqttClient Service { get; private set; }
+    public List<Device> Devices { get; private set; } = new();
 
-    public Client(Broker broker, ITopicService topicService, MqttFactory factory)
+    public Func<Task> RerenderPage { get; set; }
+
+    public Client(ILocalStorageService storage, ILogger<Client> clientLogger, MqttFactory factory, Broker broker)
     {
         Broker = broker;
         Service = factory.CreateMqttClient();
 
-        _topicService = topicService;
+        TopicService = new TopicService(storage);
         _factory = factory;
+        _logger = clientLogger;
 
-        InitializeCallbacks(topicService);
+        InitializeCallbacks();
+        RerenderPage += ()=> { return Task.CompletedTask; };
+    }
+
+    public async Task UpdateBroker(Broker broker)
+    {
+        var connected = Service.IsConnected;
+
+        if (connected)
+            await DisconnectAsync();
+
+        Broker = broker;
+
+        if (connected)
+            await ConnectAsync();
     }
 
     public async Task<MqttClientConnectResult> ConnectAsync()
@@ -50,7 +70,7 @@ public class Client : IAsyncDisposable
     {
         foreach (var control in device.Controls)
         {
-            var topic = await _topicService.RemoveTopic(Broker.Id, device, control);
+            var topic = await TopicService.RemoveTopic(Broker.Id, device, control);
             await Service.UnsubscribeAsync(topic);
         }
 
@@ -59,7 +79,7 @@ public class Client : IAsyncDisposable
     public async Task UnsubscribeAsync(string deviceId, Control control)
     {
         var device = Devices.First(x => x.Id == deviceId);
-        var topic = await _topicService.RemoveTopic(Broker.Id, device, control);
+        var topic = await TopicService.RemoveTopic(Broker.Id, device, control);
         await Service.UnsubscribeAsync(topic);
         device.Controls.Remove(control);
     }
@@ -80,10 +100,10 @@ public class Client : IAsyncDisposable
     {
         try
         {
-            if (_topicService.ConatinsTopic(Id, device, control))
+            if (TopicService.ConatinsTopic(Id, device, control))
                 return true;
 
-            var topic = await _topicService.AddTopic(Broker.Id, device, control);
+            var topic = await TopicService.AddTopic(Broker.Id, device, control);
 
             if (!Service.IsConnected)
                 await ConnectAsync();
@@ -126,7 +146,7 @@ public class Client : IAsyncDisposable
                     if(!isSync)
                         await UnsubscribeAsync(device.Id, existingControl!);
 
-                    var topic = await _topicService.AddTopic(Broker.Id, device, control);
+                    var topic = await TopicService.AddTopic(Broker.Id, device, control);
 
                     if (!Service.IsConnected)
                         await ConnectAsync();
@@ -146,7 +166,7 @@ public class Client : IAsyncDisposable
         foreach (var control in device.Controls)
             if (!usedControls.Contains(control.Id))
             {
-                var topic = await _topicService.RemoveTopic(Broker.Id, device, control);
+                var topic = await TopicService.RemoveTopic(Broker.Id, device, control);
                 await Service.UnsubscribeAsync(topic);
                 device.Controls.Remove(control);
             }
@@ -158,7 +178,7 @@ public class Client : IAsyncDisposable
     {
         foreach (var device in Devices)
             foreach (var control in device.Controls)
-                await _topicService.RemoveTopic(Broker.Id, device, control);
+                await TopicService.RemoveTopic(Broker.Id, device, control);
 
         await Service.DisconnectAsync();
         Service.Dispose();
@@ -168,8 +188,6 @@ public class Client : IAsyncDisposable
 
     private MqttClientOptions Options()
     {
-        //TODO: Check if celan sesion is not deleting subs if yes every reconec we need to resubscribe to all topics
-
         var optionsBuilder = _factory.CreateClientOptionsBuilder()
             .WithClientId(Broker.ClientId)
             .WithWebSocketServer($"wss://{Broker.Server}:{Broker.Port}/mqtt")
@@ -181,18 +199,26 @@ public class Client : IAsyncDisposable
         return optionsBuilder.Build();
     }
 
-    private void InitializeCallbacks(ITopicService topicService)
+    private void InitializeCallbacks()
     {
-        Service.ApplicationMessageReceivedAsync += (e) =>
+        Service.ApplicationMessageReceivedAsync += async(e) =>
         {
             var topic = e.ApplicationMessage.Topic;
             var message = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
-            topicService.UpdateMessageOnTopic(Broker.Id, topic, message);
-
-            return Task.CompletedTask;
+            await TopicService.UpdateMessageOnTopic(Broker.Id, topic, message);
+            _logger.LogInformation($"Message received on topic: {topic}. Message: {message}");
+            RerenderPage?.Invoke();
         };
 
-        //TODO: check what happend after disconnect
+        // TODO: Include case of manual disconnection
+        Service.DisconnectedAsync += async(e) =>
+        {
+            _logger.LogWarning($"Client {Broker.Id} disconnected. Reconnecting...");
+            RerenderPage?.Invoke();
+            await Service.ReconnectAsync();
+            RerenderPage?.Invoke();
+            _logger.LogWarning($"Client {Broker.Id} reconnected.");
+        };
     }
 
     #endregion

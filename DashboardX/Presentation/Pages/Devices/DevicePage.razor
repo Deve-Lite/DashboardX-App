@@ -5,9 +5,10 @@
 @using global::Shared.Models.Controls;
 @using global::Shared.Models.Devices;
 
-@inject ITopicService _topicService
 @inject IClientService _clientService
 @inject NavigationManager _navigationManager
+
+@implements IDisposable
 
 @if (_loadingService.IsLoading)
 {
@@ -55,7 +56,7 @@ else
 
             </MudCard>
         </MudItem>
-        
+
         <MudItem>
 
             <MudItem>
@@ -70,25 +71,28 @@ else
 
             @foreach (var control in Device.Controls)
             {
+
                 <MudItem>
-                    <MudText>Type: @control.StringType </MudText>
-                    <MudText>Confirmation: @control.IsConfiramtionRequired </MudText>
-                    <MudText>Last value on topic:  @_topicService.LastMessageOnTopic(ClientId, Device, control) </MudText>
-                    
-                    <MudText>
-                        <MudButton Variant="Variant.Filled"
-                                   Color="Color.Primary"
-                                   Style="z-index: 10;"
-                                   OnClick="(() => RemoveControl(control))">
-                            Remove
-                        </MudButton>
-                        <MudButton Variant="Variant.Filled"
-                                   Color="Color.Primary"
-                                   Style="z-index: 10;"
-                                   OnClick="(() => UpdateControl(control))">
-                            Update
-                        </MudButton>
-                    </MudText>
+                    <MudCard Elevation="25" Class="container container-fit-content p-5" style="border-radius: 1rem;">
+                        <MudText>Type: @control.StringType </MudText>
+                        <MudText>Confirmation: @control.IsConfiramtionRequired </MudText>
+                        <MudText>Last value on topic:  @(Client?.TopicService?.LastMessageOnTopic(ClientId, Device, control) ?? "No message") </MudText>
+
+                        <MudText>
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       Style="z-index: 10;"
+                                       OnClick="(() => RemoveControl(control))">
+                                Remove
+                            </MudButton>
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       Style="z-index: 10;"
+                                       OnClick="(() => UpdateControl(control))">
+                                Update
+                            </MudButton>
+                        </MudText>
+                    </MudCard>
                 </MudItem>
             }
 
@@ -122,6 +126,7 @@ else
         if (result.Succeeded)
         {
             Client = result.Data;
+            Client.RerenderPage += Rerender;
             LoadedSuccessfully = true;
             Device = Client.Devices.FirstOrDefault(x => x.Id == DeviceId)!;
         }
@@ -133,6 +138,10 @@ else
         _loadingService.HideLoading();
 
         await base.OnInitializedAsync();
+    }
+    public void Dispose()
+    {
+        Client!.RerenderPage -= Rerender;
     }
 
     private async Task UpdateDevice()
@@ -155,10 +164,10 @@ else
     }
     private async Task RemoveDevice()
     {
-        var parameters = new DialogParameters<RemoveDeviceDialog> 
-        { 
+        var parameters = new DialogParameters<RemoveDeviceDialog>
+        {
             { x => x.Device, Device },
-            { x => x.ClientId, Client!.Id } 
+            { x => x.ClientId, Client!.Id }
         };
 
         var dialog = await _dialogService.ShowAsync<RemoveDeviceDialog>("Remove Device", parameters);
@@ -179,12 +188,6 @@ else
         }
     }
 
-    private async Task ConnectAsync()
-    {
-        await Client.ConnectAsync();
-        StateHasChanged();
-    }
-
     private async Task AddControl()
     {
         var dialog = await _dialogService.ShowAsync<UpsertControlDialog>("Create Control");
@@ -201,8 +204,8 @@ else
     private async Task UpdateControl(Control control)
     {
         var parameters = new DialogParameters<UpsertControlDialog>
-        { 
-            {  x => x.DeviceId, DeviceId }, 
+        {
+            {  x => x.DeviceId, DeviceId },
             {  x => x.ClientId, ClientId } ,
             {  x => x.Control, control }
         };
@@ -220,7 +223,7 @@ else
     }
     private async Task RemoveControl(Control control)
     {
-        var parameters = new DialogParameters<RemoveControlDialog> 
+        var parameters = new DialogParameters<RemoveControlDialog>
         {
             {  x => x.DeviceId, DeviceId },
             {  x => x.ClientId, ClientId } ,
@@ -237,5 +240,23 @@ else
 
         if (x.Succeeded)
             StateHasChanged();
+    }
+
+    private async Task ConnectAsync()
+    {
+        await Client!.ConnectAsync();
+        StateHasChanged();
+    }
+
+    private async Task DisconnectAsync()
+    {
+        await Client!.DisconnectAsync();
+        StateHasChanged();
+    }
+    
+    private Task Rerender()
+    {
+        StateHasChanged();
+        return Task.CompletedTask;
     }
 }
