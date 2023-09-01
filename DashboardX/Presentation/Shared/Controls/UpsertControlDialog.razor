@@ -85,9 +85,32 @@
 
                 </MudSelect>
 
-                @if (Control.Type == ControlType.Switch)
+                @if (Control.Type == ControlType.Button)
+                {
+                    <MudItem xs="12">
+                        <div class="d-flex justify-start">
+
+                            <MudTextField @bind-Value="Control.Icon"
+                                          T="string"
+                                          Label="@_localizer["Icon"]"
+                                          Variant="Variant.Outlined"
+                                          For="@(() => Control.Icon)" />
+                        </div>
+                    </MudItem>
+
+                }
+                else if (Control.Type == ControlType.Switch)
                 {
                     <MudText>Switch Specific</MudText>
+
+                    <MudItem xs="12">
+                        <div class="d-flex justify-start">
+                            <MudSwitch @bind-Checked="Control.IsConfiramtionRequired"
+                                       Label="@_localizer["Sending data requires confirmation"]"
+                                       Color="Color.Primary" />
+                        </div>
+                    </MudItem>
+
                 }
                 else if (Control.Type == ControlType.Slider)
                 {
