@@ -20,6 +20,16 @@
 
                 <MudItem xs="12">
                     <div class="d-flex justify-center">
+                        <MudTextField @bind-Value="Control.Name"
+                                      T="string"
+                                      Label="@_localizer["Name"]"
+                                      Variant="Variant.Outlined"
+                                      For="@(() => Control.Name)" />
+                    </div>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <div class="d-flex justify-center">
                         <MudTextField @bind-Value="Control.Topic"
                                       T="string"
                                       Label="@_localizer["Topic Path"]"
@@ -67,12 +77,29 @@
                     </div>
                 </MudItem>
 
-                <MudSelect @bind-Value="Control.Type"
-                           xs="12"
+                <MudItem xs="12">
+                    <div class="d-flex justify-start">
+                        <MudSwitch @bind-Checked="Control.IsAvailable"
+                                   Label="@_localizer["Is Avaliable"]"
+                                   Color="Color.Primary" />
+                    </div>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <div class="d-flex justify-start">
+                        <MudSwitch @bind-Checked="Control.DisplayName"
+                                   Label="@_localizer["Display Name"]"
+                                   Color="Color.Primary" />
+                    </div>
+                </MudItem>
+
+                <MudSelect xs="12"
                            Label="Broker"
                            For="(() => Control.Type)"
                            Variant="Variant.Outlined"
-                           AnchorOrigin="Origin.BottomCenter">
+                           AnchorOrigin="Origin.BottomCenter"
+                           T="ControlType"
+                           ValueChanged="TypeChanged">
 
 
                     <MudSelectItem Value="ControlType.Button">@_localizer["Button"]</MudSelectItem>
@@ -92,13 +119,29 @@
                 @if (Control.Type == ControlType.Button)
                 {
                     <MudItem xs="12">
-                        <div class="d-flex justify-start">
+                        <MudText> Button is simplest control sending payload to broker when clicked </MudText>
+                    </MudItem>
 
+                    <MudItem xs="12">
+                        <div class="d-flex justify-start">
                             <MudTextField @bind-Value="Control.Icon"
                                           T="string"
-                                          Label="@_localizer["Icon"]"
+                                          Label="@_localizer["Payload"]"
                                           Variant="Variant.Outlined"
-                                          For="@(() => Control.Icon)" />
+                                          For="@(() => Control.Attributes.Payload)" />
+                        </div>
+                    </MudItem>
+
+                }
+                else if (Control.Type == ControlType.Radio)
+                {
+                    <MudText>Switch Specific</MudText>
+
+                    <MudItem xs="12">
+                        <div class="d-flex justify-start">
+                            <MudSwitch @bind-Checked="Control.IsConfiramtionRequired"
+                                       Label="@_localizer["Sending data requires confirmation"]"
+                                       Color="Color.Primary" />
                         </div>
                     </MudItem>
 
@@ -114,6 +157,8 @@
                                        Color="Color.Primary" />
                         </div>
                     </MudItem>
+
+                    //TODO: List of current values with remove option 
 
                 }
                 else if (Control.Type == ControlType.Slider)
@@ -131,10 +176,6 @@
                 else if (Control.Type == ControlType.State)
                 {
                     <MudText>State Specific</MudText>
-                }
-                else if (Control.Type == ControlType.Radio)
-                {
-                    <MudText>Radio Specific</MudText>
                 }
                 else if (Control.Type == ControlType.Text)
                 {
@@ -209,5 +250,11 @@
     {
         _snackbar.Add("Success", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
         return Task.CompletedTask;
+    }
+
+    private void TypeChanged(ControlType typeSelected)
+    {
+        Control.Type = typeSelected;
+        Control.Attributes = new();
     }
 }

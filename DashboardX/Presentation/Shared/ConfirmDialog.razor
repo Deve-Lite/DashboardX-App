@@ -1,0 +1,37 @@
+﻿@using Infrastructure;
+@using Presentation.Utils;
+@using global::Shared.Models.Controls;
+@using global::Shared.Models.Devices;
+
+@inject IStringLocalizer<ConfirmDialog> _localizer;
+@inject IClientService _clientService;
+
+<MudDialog>
+    <DialogContent>
+        <MudText>@Description</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel"
+                   Variant="Variant.Filled"
+                   Color="Color.Error">@_localizer["Cancel"]</MudButton>
+        <MudButton OnClick="RemoveAsync"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary">@_localizer["Continue"] </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code
+{
+    [CascadingParameter]
+    private MudDialogInstance? Dialog { get; set; }
+
+    [Parameter]
+    public string Description { get; set; } = string.Empty;
+
+    private void Cancel() => Dialog!.Cancel();
+
+    private async Task RemoveAsync()
+    {
+        Dialog!.Close(DialogResult.Ok(true));
+    }
+}

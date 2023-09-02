@@ -53,7 +53,7 @@ else
                            Color="Color.Primary"
                            Style="z-index: 10;"
                            OnClick="(() => ConnectAsync())">
-                    Update
+                    Connect
                 </MudButton>
 
             </MudCard>
@@ -81,7 +81,7 @@ else
                         {
                             <MudButton Color="Color.Secondary" 
                                        Variant="Variant.Filled"
-                                       OnClick="(async() => await control.Send(Device, Client!))">
+                                       OnClick="(async() => await BaseSendAction(control, async() => await control.Send(Device, Client!)))">
                                        @control.Name
                             </MudButton>
                         }
@@ -267,10 +267,36 @@ else
         await Client!.DisconnectAsync();
         StateHasChanged();
     }
-    
+
     private Task Rerender()
     {
         StateHasChanged();
         return Task.CompletedTask;
     }
+
+    #region Control Functions
+
+    public async Task BaseSendAction(Control control, Func<Task> action)
+    {
+        bool confirmed = true;
+        if (control.IsConfiramtionRequired)
+        {
+            var parameters = new DialogParameters<ConfirmDialog>
+            {
+                { x => x.Description, "Are you sure to invoke this action??" }
+            };
+
+            var dialog = await _dialogService.ShowAsync<ConfirmDialog>("Confirmation", parameters);
+            var result = await dialog.Result;
+            confirmed = Convert.ToBoolean(result.Data);
+        }
+
+        if(!confirmed)
+            return;
+
+        await action.Invoke();
+    }
+
+
+    #endregion
 }
