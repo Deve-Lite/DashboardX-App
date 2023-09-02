@@ -4,7 +4,10 @@ namespace Shared.Models.Controls;
 
 public class Control : BaseModel
 {
-    [JsonPropertyName("deviceId")]
+    [JsonPropertyName("name"), Required, MinLength(1), MaxLength(16)]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("deviceId"), Required]
     public string DeviceId { get; set; } = string.Empty;
 
     public ControlType Type
@@ -16,12 +19,11 @@ public class Control : BaseModel
                 "button" => ControlType.Button,
                 "color" => ControlType.Color,
                 "date-time" => ControlType.DateTime,
-                "multi-button" => ControlType.MultiButton,
                 "radio" => ControlType.Radio,
                 "slider" => ControlType.Slider,
                 "state" => ControlType.State,
                 "switch" => ControlType.Switch,
-                "text-out" => ControlType.TextOut,
+                "text-out" => ControlType.Text,
                 _ => ControlType.Button,
             };
         }
@@ -32,35 +34,66 @@ public class Control : BaseModel
                 ControlType.Button => "button",
                 ControlType.Color => "color",
                 ControlType.DateTime => "date-time",
-                ControlType.MultiButton => "multi-button",
                 ControlType.Radio => "radio",
                 ControlType.Slider => "slider",
                 ControlType.State => "state",
                 ControlType.Switch => "switch",
-                ControlType.TextOut => "text-out",
+                ControlType.Text => "text-out",
                 _ => "button",
             };
         }
     }
-
     [JsonPropertyName("type"), Required]
     public string StringType { get; set; } = string.Empty;
+
     [JsonPropertyName("icon"), Required]
     public string Icon { get; set; } = string.Empty;
+
     [JsonPropertyName("iconBackgroundColor"), Required]
     public string IconBackgroundColor { get; set; } = string.Empty;
-    [JsonPropertyName("isAvailable"), Required]
-    public bool IsAvailable { get; set; }
-    [JsonPropertyName("isConfirmationRequired"), Required]
-    public bool IsConfiramtionRequired { get; set; }
-    [JsonPropertyName("qualityOfService"), Required]
-    public MqttQualityOfServiceLevel QualityOfService { get; set; }
+
     [JsonPropertyName("topic"), Required, MinLength(1), MaxLength(64)]
     public string Topic { get; set; } = string.Empty;
 
+    [JsonPropertyName("qualityOfService"), Required]
+    public MqttQualityOfServiceLevel QualityOfService { get; set; } = MqttQualityOfServiceLevel.AtMostOnce;
+
+    [JsonPropertyName("displayName"), Required]
+    public bool DisplayName { get; set; }
+
+    [JsonPropertyName("isAvailable"), Required]
+    public bool IsAvailable { get; set; }
+
+    [JsonPropertyName("isConfirmationRequired"), Required]
+    public bool IsConfiramtionRequired { get; set; }
+
+    [JsonPropertyName("attributes")]
+    public ControlAttributes Attributes { get; set; } = new();
+
+    #region Methods
+
+    public static Control Create(Control dto)
+    {
+        return new Control
+        {
+            Id = dto.Id,
+            QualityOfService = dto.QualityOfService,
+            Type = dto.Type,
+            Topic = dto.Topic,
+            DeviceId = dto.DeviceId,
+            StringType = dto.StringType,
+            Icon = dto.Icon,
+            IconBackgroundColor = dto.IconBackgroundColor,
+            IsAvailable = dto.IsAvailable,
+            IsConfiramtionRequired = dto.IsConfiramtionRequired,
+        };
+    }
+
     public bool IsTheSame(Control control)
     {
-        return DeviceId == control.DeviceId &&
+        //TODO compare attruibutes
+        return Id == control.Id &&
+               DeviceId == control.DeviceId &&
                StringType == control.StringType &&
                Icon == control.Icon &&
                IconBackgroundColor == control.IconBackgroundColor &&
@@ -74,6 +107,8 @@ public class Control : BaseModel
     {
         return new()
         {
+            Name = Name,
+            Id = Id,
             DeviceId = DeviceId,
             StringType = StringType,
             Icon = Icon,
@@ -81,7 +116,10 @@ public class Control : BaseModel
             IsAvailable = IsAvailable,
             IsConfiramtionRequired = IsConfiramtionRequired,
             QualityOfService = QualityOfService,
-            Topic = Topic
+            Topic = Topic,
+            Attributes = Attributes.Copy(),
         };
     }
+
+    #endregion
 }

@@ -10,8 +10,8 @@ public interface IClientService
 {
     Task<Result<List<Client>>> GetClientsWithDevices();
     Task<Result<List<Client>>> GetClients();
-    Task<Result<Client>> GetClient(string brokerId);
-    Task<Result> RemoveClient(string brokerId);
+    Task<Result<Client>> GetClient(string clientId);
+    Task<Result> RemoveClient(string clientId);
     Task<Result<Client>> CreateClient(Broker broker);
     Task<Result<Client>> UpdateClient(Broker broker);
 

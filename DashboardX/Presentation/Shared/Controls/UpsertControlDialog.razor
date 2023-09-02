@@ -74,14 +74,18 @@
                            Variant="Variant.Outlined"
                            AnchorOrigin="Origin.BottomCenter">
 
+
+                    <MudSelectItem Value="ControlType.Button">@_localizer["Button"]</MudSelectItem>
+                    <MudSelectItem Value="ControlType.Radio">@_localizer["Radio"]</MudSelectItem>
+
+                    <!--
                     <MudSelectItem Value="ControlType.Switch">@_localizer["Switch"]</MudSelectItem>
                     <MudSelectItem Value="ControlType.Slider">@_localizer["Slider"]</MudSelectItem>
                     <MudSelectItem Value="ControlType.Color">@_localizer["Color"]</MudSelectItem>
                     <MudSelectItem Value="ControlType.DateTime">@_localizer["DateTime"]</MudSelectItem>
                     <MudSelectItem Value="ControlType.State">@_localizer["State"]</MudSelectItem>
-                    <MudSelectItem Value="ControlType.MultiButton">@_localizer["Multi Button"]</MudSelectItem>
-                    <MudSelectItem Value="ControlType.Radio">@_localizer["Radio"]</MudSelectItem>
-                    <MudSelectItem Value="ControlType.TextOut">@_localizer["Text Display"]</MudSelectItem>
+                    <MudSelectItem Value="ControlType.Text">@_localizer["Text Display"]</MudSelectItem>
+                    -->
 
                 </MudSelect>
 
@@ -128,15 +132,11 @@
                 {
                     <MudText>State Specific</MudText>
                 }
-                else if (Control.Type == ControlType.MultiButton)
-                {
-                    <MudText>Multi Button Specific</MudText>
-                }
                 else if (Control.Type == ControlType.Radio)
                 {
                     <MudText>Radio Specific</MudText>
                 }
-                else if (Control.Type == ControlType.TextOut)
+                else if (Control.Type == ControlType.Text)
                 {
                     <MudText>Text Display Specific</MudText>
                 }

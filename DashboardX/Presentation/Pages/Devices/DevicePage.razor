@@ -1,5 +1,6 @@
 ﻿@page "/devices/{DeviceId}/{ClientId}"
 @using Infrastructure;
+@using Presentation.Extensions;
 @using Presentation.Shared.Controls;
 @using Presentation.Shared.Devices;
 @using global::Shared.Models.Controls;
@@ -30,8 +31,9 @@ else
                 <MudText Align="Align.Center"> @Device.Name </MudText>
                 <MudText>Placing: @Device.Placing </MudText>
                 <MudText>Path: @Device.BaseDevicePath </MudText>
+                <MudText >Connection: @Client!.IsConnected </MudText>
+
                 <MudText Align="Align.End">Edited At: @Device.EditedAt </MudText>
-                <MudText Align="Align.End">Connection: @Client.Service.IsConnected </MudText>
 
                 <MudButton Variant="Variant.Filled"
                            Color="Color.Primary"
@@ -39,13 +41,13 @@ else
                            OnClick="RemoveDevice">
                     Remove
                 </MudButton>
+
                 <MudButton Variant="Variant.Filled"
                            Color="Color.Primary"
                            Style="z-index: 10;"
                            OnClick="UpdateDevice">
                     Update
                 </MudButton>
-
 
                 <MudButton Variant="Variant.Filled"
                            Color="Color.Primary"
@@ -74,9 +76,21 @@ else
 
                 <MudItem>
                     <MudCard Elevation="25" Class="container container-fit-content p-5" style="border-radius: 1rem;">
-                        <MudText>Type: @control.StringType </MudText>
-                        <MudText>Confirmation: @control.IsConfiramtionRequired </MudText>
-                        <MudText>Last value on topic:  @(Client?.TopicService?.LastMessageOnTopic(ClientId, Device, control) ?? "No message") </MudText>
+                       
+                        @if(control.Type == ControlType.Button)
+                        {
+                            <MudButton Color="Color.Secondary" 
+                                       Variant="Variant.Filled"
+                                       OnClick="(async() => await control.Send(Device, Client!))">
+                                       @control.Name
+                            </MudButton>
+                        }
+                        else
+                        {
+                            <MudText>Type: @control.StringType </MudText>
+                            <MudText>Confirmation: @control.IsConfiramtionRequired </MudText>
+                            <MudText>Last value on topic:  @(Client?.TopicService?.LastMessageOnTopic(ClientId, Device, control) ?? "No message") </MudText>
+                        }
 
                         <MudText>
                             <MudButton Variant="Variant.Filled"
@@ -92,6 +106,7 @@ else
                                 Update
                             </MudButton>
                         </MudText>
+
                     </MudCard>
                 </MudItem>
             }
@@ -247,7 +262,6 @@ else
         await Client!.ConnectAsync();
         StateHasChanged();
     }
-
     private async Task DisconnectAsync()
     {
         await Client!.DisconnectAsync();

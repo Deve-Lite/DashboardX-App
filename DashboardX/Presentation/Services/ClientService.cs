@@ -2,6 +2,7 @@
 using Core.Interfaces;
 using Infrastructure;
 using MQTTnet;
+using Presentation.Extensions;
 using Presentation.Models;
 using Presentation.Services.Interfaces;
 using Shared.Models.Brokers;
@@ -231,7 +232,7 @@ public class ClientService : IClientService
 
     public async Task<Result> RemoveDeviceFromClient(string clientId, Device device)
     {
-        var result = await _deviceService.RemoveDevice(clientId);
+        var result = await _deviceService.RemoveDevice(device.Id);
 
         if (result.Succeeded)
         {
@@ -290,7 +291,7 @@ public class ClientService : IClientService
         if (result.Succeeded)
         {
             var client = _clients.First(x => x.Id == clientId);          
-            await client.UnsubscribeAsync(deviceId, control);
+            await client.UnsubscribeAsync(deviceId, control.Id);
 
             return Result.Success(result.StatusCode);
         }
@@ -306,6 +307,7 @@ public class ClientService : IClientService
         {
             var client = _clients.First(x => x.Id == clientId);
             var device = client.Devices.First(x => x.Id == deviceId);
+
 
             if(!await client.SubscribeAsync(device, control))
                 return Result.Fail(new List<string> { "Failed to subscribe message however, control was created." }, result.StatusCode);
@@ -324,7 +326,7 @@ public class ClientService : IClientService
         {
             var client = _clients.First(x => x.Id == clientId);
             var device = client.Devices.First(x => x.Id == deviceId);
-            await client.UnsubscribeAsync(deviceId, control);
+            await client.UnsubscribeAsync(deviceId, control.Id);
 
             return Result.Success(result.StatusCode);
         }
