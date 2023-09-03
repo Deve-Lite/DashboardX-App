@@ -11,7 +11,6 @@ using System.Text.Json;
 using Infrastructure.Extensions;
 using Infrastructure.Models;
 using Shared.Models.Controls;
-using Shared.Models.Brokers;
 
 namespace Infrastructure.Services;
 
@@ -188,7 +187,7 @@ public class DeviceService : AuthorizedService, IDeviceService
             Data = control
         };
 
-        var response = await SendAsync<CreateResponse, Control>(request);
+        var response = await SendAsync<CreateResponse>(request);
 
         if (!response.Succeeded)
             return Result<Control>.Fail(response.Messages, response.StatusCode);
@@ -214,7 +213,7 @@ public class DeviceService : AuthorizedService, IDeviceService
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-        var response = await SendAsync<Control>(request, options);
+        var response = await SendAsync(request, options);
 
         if (!response.Succeeded)
             return Result<Control>.Fail(response.Messages, response.StatusCode);

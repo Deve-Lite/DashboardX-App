@@ -30,7 +30,7 @@
                 <MudSelect @bind-Value="Device.BrokerId"
                            xs="12"
                            T ="string"
-                           Label="Broker" 
+                           Label="@_localizer["Broker"]"
                            For="(() => Device.BrokerId)"
                            Variant="Variant.Outlined" 
                            AnchorOrigin="Origin.BottomCenter">
@@ -107,7 +107,6 @@
     private List<Broker> AvaliableBrokers = new();
     private FluentValidationValidator? _fluentValidationValidator;
     private bool Validated => _fluentValidationValidator == null ? false : _fluentValidationValidator.Validate(options => { options.IncludeAllRuleSets(); });
-    private bool ShowAuthorizationFields { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -141,7 +140,7 @@
 
         _loadingService.ShowLoading();
 
-        var result = Result<Device>.Fail(HttpStatusCode.BadRequest);
+        var result = Result<Device>.Fail();
 
         if (string.IsNullOrEmpty(Device.Id))
             result = await _clientService.CreateDeviceForClient(Device);

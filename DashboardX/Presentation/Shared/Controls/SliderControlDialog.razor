@@ -1,0 +1,65 @@
+﻿@using global::Shared.Models.Controls;
+@using global::Shared.Models.Devices;
+
+@inject IStringLocalizer<ConfirmDialog> _localizer;
+@inject IClientService _clientService;
+
+<MudDialog>
+    <DialogContent>
+
+        <MudSlider Value="Value"
+                   ValueChanged="SetValue"
+                   T="double"
+                   Max="MaxSliderValue"
+                   Min="MinSliderValue"
+                   ValueLabel="true"
+                   Size="Size.Large">
+            Value
+        </MudSlider>
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel"
+                   Variant="Variant.Filled"
+                   Color="Color.Error">@_localizer["Cancel"]</MudButton>
+                   
+        <MudButton OnClick="SubmitSliderValue"
+                   ButtonType="ButtonType.Submit"
+                   Variant="Variant.Filled"
+                   Color="Color.Warning">@_localizer["Submit"] </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code
+{
+    [CascadingParameter]
+    private MudDialogInstance? Dialog { get; set; }
+
+    [Parameter]
+    public double SliderValue { get; set; }
+    [Parameter]
+    public double MaxSliderValue { get; set; }
+    [Parameter]
+    public double MinSliderValue { get; set; }
+
+    private double Value { get; set; }
+
+    protected override void OnInitialized()
+    {
+        //TODO: Remove after database update
+        MaxSliderValue = 100;
+        MinSliderValue = 0;
+
+        Value = SliderValue;
+
+        base.OnInitialized();
+    }
+
+    private void SetValue(double value) 
+    { 
+
+        Value = value; 
+    }
+    private void Cancel() => Dialog!.Cancel();
+    private void SubmitSliderValue() => Dialog!.Close(DialogResult.Ok(Value));
+}

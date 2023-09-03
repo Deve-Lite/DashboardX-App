@@ -5,6 +5,8 @@
 @inject IClientService _clientService
 @inject IStringLocalizer<BrokerPage> _localizer
 
+@implements IDisposable
+
 @if (_loadingService.IsLoading)
 {
     <div> Loading... </div>
@@ -89,6 +91,7 @@ else
         if (result.Succeeded)
         {
             Client = result.Data;
+            Client!.RerenderPage += Rerender;
             LoadedSuccessfully = true;
         }
 
@@ -99,5 +102,16 @@ else
 
         _loadingService.HideLoading();
         await base.OnInitializedAsync();
+    }
+
+    public void Dispose()
+    {
+        Client!.RerenderPage -= Rerender;
+    }
+
+    private Task Rerender()
+    {
+        StateHasChanged();
+        return Task.CompletedTask;
     }
 }

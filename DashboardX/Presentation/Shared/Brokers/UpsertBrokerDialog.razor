@@ -79,7 +79,7 @@
                 <MudItem xs="12">
                     <div class="d-flex justify-start">
                         <MudSwitch @bind-Checked="ShowAuthorizationFields"
-                                   Label="Is password secured"
+                                   Label="@_localizer["Is password secured"]"
                                    Color="Color.Primary" />
                     </div>
                 </MudItem>
@@ -182,7 +182,7 @@
 
         _loadingService.ShowLoading();
 
-        var result = Result<Client>.Fail(HttpStatusCode.BadRequest);
+        var result = Result<Client>.Fail();
 
         if (string.IsNullOrEmpty(Broker.Id))
             result = await _clientService.CreateClient(Broker);

@@ -3,7 +3,6 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 @inject IStringLocalizer<MainLayout> _localizer 
-@inject ITopicService _topicService
 
 <MudLayout Class="p-0 m-0">
     <MudThemeProvider />
@@ -24,6 +23,7 @@
                     <MudNavLink Match="NavLinkMatch.All" Href="/brokers">  @_localizer["Brokers"]  </MudNavLink>
                     <MudNavLink Match="NavLinkMatch.All" Href="/devices"> @_localizer["Devices"] </MudNavLink>
                     <MudNavLink Match="NavLinkMatch.All" Href="/user/settings"> @_localizer["Settings"] </MudNavLink>
+                    <MudNavLink Match="NavLinkMatch.All" Href="/subs"> @_localizer["Subscribtions"] </MudNavLink>
                 </MudNavMenu>
             </MudDrawer>
 
@@ -62,12 +62,6 @@
             IsLoading = isLoading;
             StateHasChanged();
             return Task.CompletedTask;
-        };
-
-        _topicService.OnMessageReceived = () => 
-        { 
-            StateHasChanged();
-            return Task.CompletedTask; 
         };
     }
 
