@@ -104,19 +104,13 @@ else
                         {
                             <MudItem>
                                 <MudText>Name: @control.Name </MudText>
-                                <MudText>Last value on topic:  @(Client?.TopicService?.LastMessageOnTopic(ClientId, Device, control) ?? "No message") </MudText>
+                                <MudText>Last value on topic:  @GetSliderValue(control) </MudText>
                             </MudItem>
 
 
-                            <MudSlider Value="SliderCurrent(control)"
-                                Min="0"
-                                Max="100"
-                                T="double"
-                                Immediate="false"
-                                ValueLabel="true"
-                                ValueChanged="((value) => SliderValueChanged(value, control))">
-
-                            </MudSlider>
+                            <MudButton OnClick="(async() => await SetSliderValue(control))">
+                                Slide value
+                            </MudButton>
                         }
                         else
                         {
@@ -316,58 +310,53 @@ else
 
     #region Slider
 
-    private double? sliderValue = null;
-
-    public long LastUpdateTicks = DateTime.Now.Ticks;
-    private bool valueSetByUser = false;
-
-    public double SliderCurrent(Control control)
+    public double GetSliderValue(Control control)
     {
-        var value = Client?.TopicService?.LastMessageOnTopic(ClientId, Device, control);
+        var currentValue = Client?.TopicService?.LastMessageOnTopic(ClientId, Device, control);
 
-        if (valueSetByUser)
-        {
-            valueSetByUser = false;
-            return Convert.ToDouble(sliderValue);
-        }
+        if (currentValue is null)
+            return 0;
+        
+        if (double.TryParse(currentValue, out var val))
+            return val;
 
-        if (sliderValue is null)
-        {
-            if (double.TryParse(value, out double result))
-                sliderValue = result;
-            else
-                sliderValue = 0;
-        }
-        else
-        {
-            if (double.TryParse(value, out double result))
-                sliderValue = result;
-        }
-
-        return Convert.ToDouble(sliderValue);
+        return 0;
     }
 
-    public void SliderValueChanged(double value, Control control)
+    public async Task SetSliderValue(Control control)
     {
-        var ticks = DateTime.Now.Ticks;
+        var currentValue = GetSliderValue(control);
 
-        valueSetByUser = true;
+        var parameters = new DialogParameters<SliderControlDialog>
+        {
+            { 
+                "SliderValue", currentValue
+            },
+            { 
+                "MaxSliderValue", control.Attributes.MaxValue
+            },
+            { 
+                "MinSliderValue", control.Attributes.MinValue
+            },
+        };
 
-        var diff = ticks - LastUpdateTicks;
+        var dialog = await _dialogService.ShowAsync<SliderControlDialog>("Slider Dialog", parameters);
+        var result = await dialog.Result;
 
-        if (diff < 50000)
+        if (result.Canceled)
             return;
-        
-        LastUpdateTicks = ticks;
 
-        sliderValue = value;
+        var value = Convert.ToDouble(result.Data);
+
+        Client?.TopicService?.UpdateMessageOnTopic(ClientId, Device, control, value.ToString());
+
         var action = (async () =>
         {
             var stringValue = value.ToString();
             await control.Send(Device, Client!, stringValue);
         });
 
-        BaseSendAction(control, action);
+        await BaseSendAction(control, action);
     }
 
     #endregion
