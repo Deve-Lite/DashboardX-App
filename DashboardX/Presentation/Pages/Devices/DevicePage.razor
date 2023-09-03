@@ -31,7 +31,7 @@ else
                 <MudText Align="Align.Center"> @Device.Name </MudText>
                 <MudText>Placing: @Device.Placing </MudText>
                 <MudText>Path: @Device.BaseDevicePath </MudText>
-                <MudText >Connection: @Client!.IsConnected </MudText>
+                <MudText>Connection: @Client!.IsConnected </MudText>
 
                 <MudText Align="Align.End">Edited At: @Device.EditedAt </MudText>
 
@@ -76,13 +76,13 @@ else
 
                 <MudItem>
                     <MudCard Elevation="25" Class="container container-fit-content p-5" style="border-radius: 1rem;">
-                       
-                        @if(control.Type == ControlType.Button)
+
+                        @if (control.Type == ControlType.Button)
                         {
-                            <MudButton Color="Color.Secondary" 
+                            <MudButton Color="Color.Secondary"
                                        Variant="Variant.Filled"
                                        OnClick="(async() => await BaseSendAction(control, async() => await control.Send(Device, Client!)))">
-                                       @control.Name
+                                @control.Name
                             </MudButton>
                         }
                         else if (control.Type == ControlType.Radio)
@@ -112,11 +112,62 @@ else
                                 Slide value
                             </MudButton>
                         }
-                        else
+                        else if (control.Type == ControlType.DateTime)
                         {
-                            <MudText>Type: @control.StringType </MudText>
-                            <MudText>Confirmation: @control.IsConfiramtionRequired </MudText>
-                            <MudText>Last value on topic:  @(Client?.TopicService?.LastMessageOnTopic(ClientId, Device, control) ?? "No message") </MudText>
+                            <MudItem>
+                                <MudText>Name: @control.Name </MudText>
+                                <MudText>Last value on topic:  @GetValue(control) </MudText>
+                            </MudItem>
+
+                            //TODO: Dialog
+                        }
+                        else if (control.Type == ControlType.Switch)
+                        {
+                            @if (OnStateSwitch(control))
+                            {
+                                <MudItem>
+                                    <MudText>Name: @control.Name </MudText>
+                                    <MudText>Last value on topic:  @GetValue(control) </MudText>
+                                    <MudText>Current State:  @GetValue(control) </MudText>
+                                </MudItem>
+
+                                <MudSwitch Checked="true" CheckedChanged="async (bool value) => { await SwitchStateChanged(value, control); }">
+                                    Switch
+                                </MudSwitch>
+                            }
+                            else
+                            {
+                                <MudItem>
+                                    <MudText>Name: @control.Name </MudText>
+                                    <MudText>Last value on topic:  @GetValue(control) </MudText>
+                                    <MudText>Current State:  @GetValue(control) </MudText>
+                                </MudItem>
+
+                                <MudSwitch Checked="false" CheckedChanged="async (bool value) => { await SwitchStateChanged(value, control); }">
+                                    Switch
+                                </MudSwitch>
+
+                            }
+                        }
+                        else if (control.Type == ControlType.Color)
+                        {
+                            <MudItem>
+                                <MudText>Name: @control.Name </MudText>
+                                <MudText>Last value on topic:  @GetValue(control) </MudText>
+                            </MudItem>
+
+                            //TODO: Dialog
+                        }
+                        else if (control.Type == ControlType.State)
+                        {
+                            <MudItem>
+                                <MudText>Name: @control.Name </MudText>
+                                <MudText>Last value on topic:  @GetValue(control) </MudText>
+                            </MudItem>
+
+                            <MudButton OnClick="(async() => await BaseSendAction(control, async() => await control.Send(Device, Client!)))">
+                                Send State Payload
+                            </MudButton>
                         }
 
                         <MudText>
@@ -308,6 +359,38 @@ else
 
     #region Control Functions
 
+    #region Switch
+
+    private bool trueValue = true;
+    private bool falseValue = false;
+
+    private bool OnStateSwitch(Control control)
+    {
+        var value = GetValue(control);
+
+        var onPayload = control.Attributes.OnPayload;
+
+        if (value == onPayload)
+            return true;
+
+        return false;
+    }
+
+    private async Task SwitchStateChanged(bool state, Control control)
+    {
+
+        Client?.TopicService?.UpdateMessageOnTopic(ClientId, Device, control, state.ToString());
+
+        var action = (async () =>
+        {
+            await control.Send(Device, Client!, state);
+        });
+
+        await BaseSendAction(control, action);
+    }
+
+    #endregion
+
     #region Slider
 
     public double GetSliderValue(Control control)
@@ -316,7 +399,7 @@ else
 
         if (currentValue is null)
             return 0;
-        
+
         if (double.TryParse(currentValue, out var val))
             return val;
 
@@ -329,15 +412,9 @@ else
 
         var parameters = new DialogParameters<SliderControlDialog>
         {
-            { 
-                "SliderValue", currentValue
-            },
-            { 
-                "MaxSliderValue", control.Attributes.MaxValue
-            },
-            { 
-                "MinSliderValue", control.Attributes.MinValue
-            },
+            { "SliderValue", currentValue },
+            { "MaxSliderValue", control.Attributes.MaxValue },
+            { "MinSliderValue", control.Attributes.MinValue },
         };
 
         var dialog = await _dialogService.ShowAsync<SliderControlDialog>("Slider Dialog", parameters);
@@ -361,6 +438,8 @@ else
 
     #endregion
 
+    #region Radio
+
     public async Task RadioAction(Control control)
     {
         var parameters = new DialogParameters<RadioControlDialog>
@@ -376,17 +455,19 @@ else
 
         var key = result.Data as string ?? string.Empty;
 
-        if(!control.Attributes.Payloads.ContainsKey(key))
+        if (!control.Attributes.Payloads.ContainsKey(key))
             return;
 
-        var action = (async () => 
-        { 
+        var action = (async () =>
+        {
             var payload = control.Attributes.Payloads[key];
             await control.Send(Device, Client!, payload);
         });
 
         await BaseSendAction(control, action);
     }
+
+    #endregion
 
     public async Task BaseSendAction(Control control, Func<Task> action)
     {
@@ -403,10 +484,15 @@ else
             confirmed = Convert.ToBoolean(result.Data);
         }
 
-        if(!confirmed)
+        if (!confirmed)
             return;
 
         await action.Invoke();
+    }
+
+    public string GetValue(Control control)
+    {
+        return Client?.TopicService?.LastMessageOnTopic(ClientId, Device, control) ?? "No message";
     }
 
     #endregion
