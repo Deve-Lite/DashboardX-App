@@ -4,12 +4,37 @@ namespace Shared.Models.Controls;
 
 public class Control : BaseModel
 {
-    [JsonPropertyName("name"), Required, MinLength(1), MaxLength(16)]
-    public string Name { get; set; } = string.Empty;
+    #region Constructors
+
+    public Control() { }
+
+    public Control(string deviceId)
+    {
+        DeviceId = deviceId;
+    }
+
+    #endregion
+
+
+    #region Foreign Keys
 
     [JsonPropertyName("deviceId"), Required]
     public string DeviceId { get; set; } = string.Empty;
 
+    #endregion
+
+    [JsonPropertyName("name"), Required, MinLength(1), MaxLength(16)]
+    public string Name { get; set; } = string.Empty;
+    [JsonPropertyName("icon"), Required]
+    public string Icon { get; set; } = string.Empty;
+    [JsonPropertyName("iconBackgroundColor"), Required]
+    public string IconBackgroundColor { get; set; } = string.Empty;
+    [JsonPropertyName("topic"), Required, MinLength(1), MaxLength(64)]
+    public string Topic { get; set; } = string.Empty;
+
+    [JsonPropertyName("type"), Required]
+    public string StringType { get; set; } = string.Empty;
+    [JsonIgnore, Required]
     public ControlType Type
     {
         get
@@ -43,29 +68,18 @@ public class Control : BaseModel
             };
         }
     }
-    [JsonPropertyName("type"), Required]
-    public string StringType { get; set; } = string.Empty;
-
-    [JsonPropertyName("icon"), Required]
-    public string Icon { get; set; } = string.Empty;
-
-    [JsonPropertyName("iconBackgroundColor"), Required]
-    public string IconBackgroundColor { get; set; } = string.Empty;
-
-    [JsonPropertyName("topic"), Required, MinLength(1), MaxLength(64)]
-    public string Topic { get; set; } = string.Empty;
 
     [JsonPropertyName("qualityOfService"), Required]
     public MqttQualityOfServiceLevel QualityOfService { get; set; } = MqttQualityOfServiceLevel.AtMostOnce;
 
-    [JsonPropertyName("displayName"), Required]
+    [JsonPropertyName("displayName")]
     public bool DisplayName { get; set; }
-
-    [JsonPropertyName("isAvailable"), Required]
+    [JsonPropertyName("isAvailable")]
     public bool IsAvailable { get; set; }
-
-    [JsonPropertyName("isConfirmationRequired"), Required]
+    [JsonPropertyName("isConfirmationRequired")]
     public bool IsConfiramtionRequired { get; set; }
+    [JsonPropertyName("notifyOnPublish")]
+    public bool NotifyOnPublish { get; set; }
 
     [JsonPropertyName("attributes")]
     public ControlAttributes Attributes { get; set; } = new();

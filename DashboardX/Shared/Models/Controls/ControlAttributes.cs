@@ -2,20 +2,20 @@
 
 public class ControlAttributes
 {
-    // Out controls: Button, Radio
+    // Out controls: Button
 
     //Used by: Button
     [JsonPropertyName("payload")]
     public string Payload { get; set; } = string.Empty;
 
+    // In Controls: Text
+
+    //Two way controls: Switch, Slider, Color, DateTime, State, Radio
+
     //Used by: Radio
 
     [JsonPropertyName("payloads")]
     public Dictionary<string, string> Payloads { get; set; } = new();
-
-    // In Controls: Text
-
-    //Two way controls: Switch, Slider, Color, DateTime, State
 
     // Used by: Switch
     [JsonPropertyName("onPayload")]

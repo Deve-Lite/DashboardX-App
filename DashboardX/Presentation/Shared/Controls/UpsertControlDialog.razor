@@ -104,6 +104,7 @@
 
                     <MudSelectItem Value="ControlType.Button">@_localizer["Button"]</MudSelectItem>
                     <MudSelectItem Value="ControlType.Radio">@_localizer["Radio"]</MudSelectItem>
+                    <MudSelectItem Value="ControlType.Text">@_localizer["Text Display"]</MudSelectItem>
 
                     <!--
                     <MudSelectItem Value="ControlType.Switch">@_localizer["Switch"]</MudSelectItem>
@@ -111,7 +112,6 @@
                     <MudSelectItem Value="ControlType.Color">@_localizer["Color"]</MudSelectItem>
                     <MudSelectItem Value="ControlType.DateTime">@_localizer["DateTime"]</MudSelectItem>
                     <MudSelectItem Value="ControlType.State">@_localizer["State"]</MudSelectItem>
-                    <MudSelectItem Value="ControlType.Text">@_localizer["Text Display"]</MudSelectItem>
                     -->
 
                 </MudSelect>
@@ -124,9 +124,12 @@
 
                     <MudItem xs="12">
                         <div class="d-flex justify-start">
-                            <MudTextField @bind-Value="Control.Icon"
+                            <MudTextField @bind-Value="Control.Attributes.Payload"
                                           T="string"
+                                          Lines="4"
                                           Label="@_localizer["Payload"]"
+                                          Validation="@(new Func<string,string>(IsPayloadValid))"
+                                              Required="true"
                                           Variant="Variant.Outlined"
                                           For="@(() => Control.Attributes.Payload)" />
                         </div>
@@ -135,35 +138,70 @@
                 }
                 else if (Control.Type == ControlType.Radio)
                 {
-                    <MudText>Switch Specific</MudText>
+                    <MudText>Radio allows to select single action to send to device from list </MudText>
 
                     <MudItem xs="12">
                         <div class="d-flex justify-start">
-                            <MudSwitch @bind-Checked="Control.IsConfiramtionRequired"
-                                       Label="@_localizer["Sending data requires confirmation"]"
-                                       Color="Color.Primary" />
+                            <MudTextField @bind-Value="@Key"
+                                          T="string"
+                                          Label="@_localizer["Key"]" />
                         </div>
                     </MudItem>
 
+                    <MudItem xs="12">
+                        <div class="d-flex justify-start">
+                            <MudTextField @bind-Value="@Payload"
+                                       Lines="4"
+                                       Label="@_localizer["Payload"]" />
+                        </div>
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudButton EndIcon="@Icons.Material.Filled.Add"
+                                   OnClick="AddItemToPayload"/>
+                    </MudItem>
+
+                    @foreach(var (key, value) in Control.Attributes.Payloads)
+                    {
+                        <MudSimpleTable xs="12">
+                            <MudTr>
+                                <MudTd>Key</MudTd>
+                                <MudTd>Value</MudTd>
+                                <MudTd></MudTd>
+                            </MudTr>
+                            <MudTr>
+                                <MudTd>@key</MudTd>
+                                <MudTd>@value</MudTd>
+                                <MudTd>
+                                    <MudButton EndIcon="@Icons.Material.Filled.Delete"
+                                               OnClick="(()=>RemoveItemFromPayloads(key))" />
+                                </MudTd>
+                            </MudTr>
+                        </MudSimpleTable>
+                    }
                 }
-                else if (Control.Type == ControlType.Switch)
+                else if (Control.Type == ControlType.Text)
                 {
-                    <MudText>Switch Specific</MudText>
-
-                    <MudItem xs="12">
-                        <div class="d-flex justify-start">
-                            <MudSwitch @bind-Checked="Control.IsConfiramtionRequired"
-                                       Label="@_localizer["Sending data requires confirmation"]"
-                                       Color="Color.Primary" />
-                        </div>
-                    </MudItem>
-
-                    //TODO: List of current values with remove option 
-
+                    <MudText>Text just displays last data received on certain topic.</MudText>
                 }
                 else if (Control.Type == ControlType.Slider)
                 {
-                    <MudText>Slider Specific</MudText>
+                    <MudItem xs="12">
+                        <MudText> Slider is simplest control sending payload to broker when clicked </MudText>
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <div class="d-flex justify-start">
+                            <MudTextField @bind-Value="Control.Attributes.Payload"
+                                          T="string"
+                                          Lines="4"
+                                          Label="@_localizer["Payload"]"
+                                          Validation="@(new Func<string,string>(IsPayloadValid))"
+                                          Required="true"
+                                          Variant="Variant.Outlined"
+                                          For="@(() => Control.Attributes.Payload)" />
+                        </div>
+                    </MudItem>
                 }
                 else if (Control.Type == ControlType.Color)
                 {
@@ -177,7 +215,7 @@
                 {
                     <MudText>State Specific</MudText>
                 }
-                else if (Control.Type == ControlType.Text)
+                else if (Control.Type == ControlType.Switch)
                 {
                     <MudText>Text Display Specific</MudText>
                 }
@@ -199,18 +237,48 @@
 
 @code
 {
+    //TODO: Rethink validation
+
     [CascadingParameter]
     private MudDialogInstance? Dialog { get; set; }
 
     [Parameter]
-    public Control Control { get; set; } = new();
+    public Control Control { get; set; }
+
+    public UpsertControlDialog()
+    {
+        Control = new();
+        Control.Type = ControlType.Button;
+    }
+
     [Parameter]
     public string DeviceId { get; set; } = string.Empty;
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
 
     private FluentValidationValidator? _fluentValidationValidator;
-    private bool Validated => _fluentValidationValidator == null ? false : _fluentValidationValidator.Validate(options => { options.IncludeAllRuleSets(); });
+    private bool Validated
+    {
+        get
+        {
+            if(_fluentValidationValidator == null)
+                return false;
+
+            if (!_fluentValidationValidator.Validate(options => { options.IncludeAllRuleSets(); }))
+                return false;
+
+            if (Control.Type == ControlType.Button)
+                return true;
+
+            return false;
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        Control.DeviceId = DeviceId;
+        base.OnInitialized();
+    }
 
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
@@ -227,6 +295,8 @@
 
     private async Task SubmitAsync()
     {
+        //Add additional validation for specific control types
+
         if (_loadingService.IsLoading)
             return;
 
@@ -252,9 +322,67 @@
         return Task.CompletedTask;
     }
 
+    #region Control Sepcific Actions
+
+    private string IsPayloadValid(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return "Payload cannot be empty";
+
+        return string.Empty;
+    }
+
+    private bool IsSpecificValid()
+    {
+        if (Control.Type == ControlType.Button)
+        {
+            var isValid = string.IsNullOrEmpty(Control.Attributes.Payload);
+            return isValid;
+        }
+        else if (Control.Type == ControlType.Radio)
+            return true;
+        else if (Control.Type == ControlType.Text)
+            return true;
+        else if (Control.Type == ControlType.Slider)
+            return true;
+        else if (Control.Type == ControlType.Color)
+            return true;
+        else if (Control.Type == ControlType.DateTime)
+            return true;
+        else if (Control.Type == ControlType.State)
+            return true;
+        else if (Control.Type == ControlType.Switch)
+            return true;
+
+        return false;
+    }
+
     private void TypeChanged(ControlType typeSelected)
     {
         Control.Type = typeSelected;
         Control.Attributes = new();
     }
+
+    private string Key { get; set; } = string.Empty;
+    private string Payload { get; set; } = string.Empty;
+
+    private void RemoveItemFromPayloads(string key)
+    {
+        Control.Attributes.Payloads.Remove(key);
+        StateHasChanged();
+    }
+
+    private void AddItemToPayload()
+    {
+        if (string.IsNullOrEmpty(Key) || string.IsNullOrEmpty(Payload))
+        {
+            _snackbar.Add("Couldn't add empty value", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
+            return;
+        }
+
+        Control.Attributes.Payloads[Key] = Payload;
+        StateHasChanged();
+    }
+
+    #endregion
 }

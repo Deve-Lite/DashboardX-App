@@ -85,6 +85,21 @@ else
                                        @control.Name
                             </MudButton>
                         }
+                        else if (control.Type == ControlType.Radio)
+                        {
+                            <MudButton Color="Color.Secondary"
+                                       Variant="Variant.Filled"
+                                       OnClick="(async() => {await RadioAction(control); })">
+                                @control.Name
+                            </MudButton>
+                        }
+                        else if (control.Type == ControlType.Text)
+                        {
+                            <MudItem>
+                                <MudText>Name: @control.Name </MudText>
+                                <MudText>Last value on topic:  @(Client?.TopicService?.LastMessageOnTopic(ClientId, Device, control) ?? "No message") </MudText>
+                            </MudItem>
+                        }
                         else
                         {
                             <MudText>Type: @control.StringType </MudText>
@@ -205,7 +220,13 @@ else
 
     private async Task AddControl()
     {
-        var dialog = await _dialogService.ShowAsync<UpsertControlDialog>("Create Control");
+        var parameters = new DialogParameters<UpsertControlDialog>
+        {
+            {  x => x.DeviceId, DeviceId },
+            {  x => x.ClientId, ClientId }
+        };
+
+        var dialog = await _dialogService.ShowAsync<UpsertControlDialog>("Create Control", parameters);
         var result = await dialog.Result;
 
         if (result.Canceled)
@@ -276,6 +297,33 @@ else
 
     #region Control Functions
 
+    public async Task RadioAction(Control control)
+    {
+        var parameters = new DialogParameters<RadioControlDialog>
+        {
+            { x => x.Payloads,  control.Attributes.Payloads }
+        };
+
+        var dialog = await _dialogService.ShowAsync<RadioControlDialog>("Confirmation", parameters);
+        var result = await dialog.Result;
+
+        if (result.Canceled)
+            return;
+
+        var key = result.Data as string ?? string.Empty;
+
+        if(!control.Attributes.Payloads.ContainsKey(key))
+            return;
+
+        var action = (async () => 
+        { 
+            var payload = control.Attributes.Payloads[key];
+            await control.Send(Device, Client!, payload);
+        });
+
+        await BaseSendAction(control, action);
+    }
+
     public async Task BaseSendAction(Control control, Func<Task> action)
     {
         bool confirmed = true;
@@ -296,7 +344,6 @@ else
 
         await action.Invoke();
     }
-
 
     #endregion
 }
