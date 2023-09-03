@@ -100,6 +100,24 @@ else
                                 <MudText>Last value on topic:  @(Client?.TopicService?.LastMessageOnTopic(ClientId, Device, control) ?? "No message") </MudText>
                             </MudItem>
                         }
+                        else if (control.Type == ControlType.Slider)
+                        {
+                            <MudItem>
+                                <MudText>Name: @control.Name </MudText>
+                                <MudText>Last value on topic:  @(Client?.TopicService?.LastMessageOnTopic(ClientId, Device, control) ?? "No message") </MudText>
+                            </MudItem>
+
+
+                            <MudSlider Value="SliderCurrent(control)"
+                                Min="0"
+                                Max="100"
+                                T="double"
+                                Immediate="false"
+                                ValueLabel="true"
+                                ValueChanged="((value) => SliderValueChanged(value, control))">
+
+                            </MudSlider>
+                        }
                         else
                         {
                             <MudText>Type: @control.StringType </MudText>
@@ -121,7 +139,6 @@ else
                                 Update
                             </MudButton>
                         </MudText>
-
                     </MudCard>
                 </MudItem>
             }
@@ -296,6 +313,64 @@ else
     }
 
     #region Control Functions
+
+    #region Slider
+
+    private double? sliderValue = null;
+
+    public long LastUpdateTicks = DateTime.Now.Ticks;
+    private bool valueSetByUser = false;
+
+    public double SliderCurrent(Control control)
+    {
+        var value = Client?.TopicService?.LastMessageOnTopic(ClientId, Device, control);
+
+        if (valueSetByUser)
+        {
+            valueSetByUser = false;
+            return Convert.ToDouble(sliderValue);
+        }
+
+        if (sliderValue is null)
+        {
+            if (double.TryParse(value, out double result))
+                sliderValue = result;
+            else
+                sliderValue = 0;
+        }
+        else
+        {
+            if (double.TryParse(value, out double result))
+                sliderValue = result;
+        }
+
+        return Convert.ToDouble(sliderValue);
+    }
+
+    public void SliderValueChanged(double value, Control control)
+    {
+        var ticks = DateTime.Now.Ticks;
+
+        valueSetByUser = true;
+
+        var diff = ticks - LastUpdateTicks;
+
+        if (diff < 50000)
+            return;
+        
+        LastUpdateTicks = ticks;
+
+        sliderValue = value;
+        var action = (async () =>
+        {
+            var stringValue = value.ToString();
+            await control.Send(Device, Client!, stringValue);
+        });
+
+        BaseSendAction(control, action);
+    }
+
+    #endregion
 
     public async Task RadioAction(Control control)
     {

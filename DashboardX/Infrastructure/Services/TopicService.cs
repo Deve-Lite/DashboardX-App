@@ -63,6 +63,17 @@ public class TopicService : ITopicService
         OnMessageReceived?.Invoke();
     }
 
+    public async Task UpdateMessageOnTopic(string brokerId, Device device, Control control, string message)
+    {
+        var topic = GetTopic(device, control);
+        topics[topic] = message;
+
+        var identifier = Identifier(brokerId, topic);
+        await _localStorage.SetItemAsync(identifier, message);
+
+        OnMessageReceived?.Invoke();
+    }
+
     public async Task<string> LastMessageOnTopicAsync(string brokerId, Device device, Control control)
     {
         var topic = GetTopic(device, control);

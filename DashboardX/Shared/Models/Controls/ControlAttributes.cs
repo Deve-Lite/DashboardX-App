@@ -29,17 +29,46 @@ public class ControlAttributes
     [JsonPropertyName("payloadTemplate")]
     public string PayloadTemplate { get; set; } = string.Empty;
 
+    // Used by: Slider
+    [JsonPropertyName("maxValue")]
+    public double? MaxValue { get; set; }
+
+    // Used by: Slider
+    [JsonPropertyName("minValue")]
+    public double? MinValue { get; set; }
+
     // Used by: Color 
     [JsonPropertyName("colorFormat")]
-    public string ColorFormat { get; set; } = string.Empty;
+    public string StringColorFormat { get; set; } = "rgb";
 
-    // Used by: State
-    [JsonPropertyName("secondSpan")]
-    public int? SecondSpan { get; set; } = null;
+    [JsonIgnore]
+    public ColorFormat ColorFormatEnum 
+    {
+        get
+        {
+            return StringColorFormat switch
+            {
+                "rgb" => ColorFormat.RGB,
+                _ => ColorFormat.RGB,
+            };
+        }
+        set
+        {
+            StringColorFormat = value switch
+            {
+                ColorFormat.RGB => "rgb",
+                _ => "rgb"
+            };
+        }
+    }
 
     // Used by: DateTime
     [JsonPropertyName("sendAsTicks")]
     public bool? SendAsTicks { get; set; } = null;
+
+    // Used by: State
+    [JsonPropertyName("secondSpan")]
+    public int? SecondSpan { get; set; } = null;
 
     public ControlAttributes Copy()
     {
@@ -50,9 +79,11 @@ public class ControlAttributes
             OnPayload = OnPayload,
             OffPayload = OffPayload,
             PayloadTemplate = PayloadTemplate,
-            ColorFormat = ColorFormat,
+            StringColorFormat = StringColorFormat,
             SecondSpan = SecondSpan,
-            SendAsTicks = SendAsTicks
+            SendAsTicks = SendAsTicks,
+            MaxValue = MaxValue,
+            MinValue = MinValue
         };
     }
 }

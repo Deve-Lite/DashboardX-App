@@ -105,10 +105,10 @@
                     <MudSelectItem Value="ControlType.Button">@_localizer["Button"]</MudSelectItem>
                     <MudSelectItem Value="ControlType.Radio">@_localizer["Radio"]</MudSelectItem>
                     <MudSelectItem Value="ControlType.Text">@_localizer["Text Display"]</MudSelectItem>
+                    <MudSelectItem Value="ControlType.Slider">@_localizer["Slider"]</MudSelectItem>
 
                     <!--
                     <MudSelectItem Value="ControlType.Switch">@_localizer["Switch"]</MudSelectItem>
-                    <MudSelectItem Value="ControlType.Slider">@_localizer["Slider"]</MudSelectItem>
                     <MudSelectItem Value="ControlType.Color">@_localizer["Color"]</MudSelectItem>
                     <MudSelectItem Value="ControlType.DateTime">@_localizer["DateTime"]</MudSelectItem>
                     <MudSelectItem Value="ControlType.State">@_localizer["State"]</MudSelectItem>
@@ -127,11 +127,8 @@
                             <MudTextField @bind-Value="Control.Attributes.Payload"
                                           T="string"
                                           Lines="4"
-                                          Label="@_localizer["Payload"]"
-                                          Validation="@(new Func<string,string>(IsPayloadValid))"
-                                              Required="true"
-                                          Variant="Variant.Outlined"
-                                          For="@(() => Control.Attributes.Payload)" />
+                                          Required="true"
+                                          Variant="Variant.Outlined"/>
                         </div>
                     </MudItem>
 
@@ -187,25 +184,34 @@
                 else if (Control.Type == ControlType.Slider)
                 {
                     <MudItem xs="12">
-                        <MudText> Slider is simplest control sending payload to broker when clicked </MudText>
+                        <MudText> Slider control sending payload is to broker when slided. Current slided value will be matched to !value! field.</MudText>
                     </MudItem>
 
                     <MudItem xs="12">
                         <div class="d-flex justify-start">
-                            <MudTextField @bind-Value="Control.Attributes.Payload"
+                            <MudTextField @bind-Value="Control.Attributes.PayloadTemplate"
                                           T="string"
                                           Lines="4"
-                                          Label="@_localizer["Payload"]"
-                                          Validation="@(new Func<string,string>(IsPayloadValid))"
-                                          Required="true"
-                                          Variant="Variant.Outlined"
-                                          For="@(() => Control.Attributes.Payload)" />
+                                          Label="@_localizer["Payload Template"]"
+                                          Variant="Variant.Outlined" />
                         </div>
                     </MudItem>
                 }
                 else if (Control.Type == ControlType.Color)
                 {
-                    <MudText>Color Specific</MudText>
+                    <MudItem xs="12">
+                        <MudText> Color control is sending payload to broker when value is set. Current slided value will be matched to $value field.</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <div class="d-flex justify-start">
+                            <MudTextField @bind-Value="Control.Attributes.PayloadTemplate"
+                                          T="string"
+                                          Lines="4"
+                                          Label="@_localizer["Payload Template"]"
+                                          Variant="Variant.Outlined" />
+                        </div>
+                    </MudItem>
                 }
                 else if (Control.Type == ControlType.DateTime)
                 {

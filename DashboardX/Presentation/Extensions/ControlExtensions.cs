@@ -29,6 +29,15 @@ public static class ControlExtensions
                 var payload = control.Attributes.Payloads!.GetValueOrDefault(key, string.Empty);
                 await client.PublishAsync(topic, payload, control.QualityOfService);
                 break;
+            case ControlType.Slider:
+                var value = (additionalValue as string);
+                var payloadTemplate = control.Attributes.PayloadTemplate;
+ 
+                payloadTemplate = payloadTemplate.Replace("!value!", value);
+
+                await client.PublishAsync(topic, payloadTemplate, control.QualityOfService);
+
+                break;
         }
     }
 }
