@@ -21,7 +21,7 @@ else
 {
     <MudGrid Class="p-5">
         @foreach (var client in Clients)
-            foreach(var device in client.Devices)
+            @foreach(var device in client.Devices)
             {
                 <MudItem>
                     <MudCard Elevation="25" Class="container container-fit-content p-2" style="border-radius: 1rem; max-width: 25rem;">
