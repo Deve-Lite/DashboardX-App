@@ -15,7 +15,11 @@
 @inject IAuthenticationService _authenticationService
 @inject AuthenticationStateProvider _authenticationStateProvider;
 
-@if (!Initializing)
+@if (_loadingService.IsLoading)
+{
+    <div> Loading... </div>
+}
+else
 {
     <MudCard Class="container d-flex container-fit-content p-5" style="border-radius: 1rem; max-width 25rem; height 100vh;">
         <EditForm Model="@LoginData" OnValidSubmit="LoginAsync">
@@ -45,7 +49,7 @@
                 <MudItem xs="12">
                     <MudTextField Label="@_localizer["Password"]"
                                   Variant="Variant.Outlined"
-                                 @bind-Value="LoginData.Password"
+                    @bind-Value="LoginData.Password"
                                   For="@(() => LoginData.Password)"
                                   InputType="@_passwordInput"
                                   Adornment="Adornment.End"
@@ -85,9 +89,8 @@
 
 @code
 {
-    [Parameter] 
+    [Parameter]
     public bool IsLoading { get; set; }
-    public bool Initializing { get; set; }
 
     private LoginModel LoginData { get; set; } = new LoginModel();
     private bool RememberMe { get; set; }
@@ -97,55 +100,38 @@
 
     protected override async Task OnInitializedAsync()
     {
-        //TODO : fix tokens are null after refresh
-
-        var appState = (_authenticationStateProvider as ApplicationStateProvider);
-
-
-        if (!string.IsNullOrEmpty(appState!.RefreshToken))
-        {
-            //TODO: save actual page and redirect to it if authorized state
-            _navigationManager.NavigateTo("/brokers");
-            return;
-        }
-
-        var refreshToken = await _localStorage.GetItemAsync<string>(AuthConstraints.RefreshToken);
-
-        if(string.IsNullOrEmpty(refreshToken))
-            return;
-
         if (_loadingService.IsLoading)
             return;
 
-        Initializing = true;
+        RememberMe = await _localStorage.GetItemAsync<bool>(AuthConstraints.RememberMeName);
 
-        await appState.RemoveLoginState();
+        if (!RememberMe)
+            return;
+
+        var refreshToken = await _localStorage.GetItemAsync<string>(AuthConstraints.RefreshToken);
+
+        if (string.IsNullOrEmpty(refreshToken))
+            return;
 
         _loadingService.ShowLoading();
 
-        RememberMe = await _localStorage.GetItemAsync<bool>(AuthConstraints.RememberMeName);
+        var successfullLoign = await _authenticationService.ReAuthenticate(refreshToken);
 
-        if (RememberMe)
+        if (successfullLoign)
         {
-            var successfullLoign = await _authenticationService.AuthenticateOnRememberMe(refreshToken);
+            //TODO: Login Flow
 
-            if (successfullLoign)
-            {
-                //TODO: Download user data -> settings / profile / etc
-
-                _snackbar.Add("Hello there!", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
-                _navigationManager.NavigateTo("/brokers");
-            }
+            _snackbar.Add("Hello there!", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
+            _navigationManager.NavigateTo("/brokers");
         }
 
-        Initializing = false;
 
         _loadingService.HideLoading();
     }
 
     private async Task LoginAsync()
     {
-        if(_loadingService.IsLoading)
+        if (_loadingService.IsLoading)
             return;
 
         _loadingService.ShowLoading();
@@ -154,6 +140,8 @@
 
         var result = await _authenticationService.Login(LoginData);
 
+        //TODO: Login Flow
+
         await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnLoaded, "Hello there!");
 
         _loadingService.HideLoading();
@@ -161,6 +149,7 @@
 
     private Task OnLoaded()
     {
+        //TODO: Login Flow
         _snackbar.Add("Hello there!", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
         _navigationManager.NavigateTo("/brokers");
 

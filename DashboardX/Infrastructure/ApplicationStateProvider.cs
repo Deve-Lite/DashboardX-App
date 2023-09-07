@@ -1,8 +1,10 @@
 ﻿using Blazored.LocalStorage;
+using Blazored.SessionStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using Shared.Constraints;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
+using System.Security.AccessControl;
 using System.Security.Claims;
 
 namespace Infrastructure;
@@ -11,34 +13,35 @@ public class ApplicationStateProvider : AuthenticationStateProvider
 {
     private readonly HttpClient _httpClient;
     private readonly ILocalStorageService _localStorage;
-
-    private AuthenticationState currentState;
+    private readonly ISessionStorageService _sessionStorage;
 
     public string AccessToken { get; private set; }
     public string RefreshToken { get; private set; }
 
-    public ApplicationStateProvider(HttpClient httpClient, ILocalStorageService localStorage)
+    public ApplicationStateProvider(HttpClient httpClient, ILocalStorageService localStorage, ISessionStorageService sessionStorage)
     {
         _httpClient = httpClient;
         _localStorage = localStorage;
+        _sessionStorage = sessionStorage;
         AccessToken = string.Empty;
         RefreshToken = string.Empty;
-        currentState = NoAuthState();
     }
 
     public override Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        if (string.IsNullOrWhiteSpace(AccessToken) || string.IsNullOrWhiteSpace(RefreshToken))
-            return Task.FromResult(NoAuthState());
+        if (!string.IsNullOrWhiteSpace(AccessToken))
+            return Task.FromResult(AuthState());
         
-        return Task.FromResult(currentState);
+        return Task.FromResult(NoAuthState());
     }
 
     public async Task Login(string accessToken, string refreshToken)
     {
+
+
         await SetAuthState(accessToken, refreshToken);
 
-        NotifyAuthenticationStateChanged(Task.FromResult(currentState));
+        NotifyAuthenticationStateChanged(Task.FromResult(AuthState()));
     }
 
     public async Task ExtendSession(string accessToken, string refreshToken) => await SetAuthState(accessToken, refreshToken);
@@ -48,15 +51,12 @@ public class ApplicationStateProvider : AuthenticationStateProvider
         await _localStorage.RemoveItemAsync(AuthConstraints.AccessToken);
         await _localStorage.RemoveItemAsync(AuthConstraints.RefreshToken);
 
-        currentState = NoAuthState();
-
-        NotifyAuthenticationStateChanged(Task.FromResult(currentState));
+        NotifyAuthenticationStateChanged(Task.FromResult(NoAuthState()));
     }
 
     public Task RemoveLoginState()
     {
-        currentState = NoAuthState();
-        NotifyAuthenticationStateChanged(Task.FromResult(currentState));
+        NotifyAuthenticationStateChanged(Task.FromResult(NoAuthState()));
         return Task.CompletedTask;
     }
 
@@ -66,23 +66,29 @@ public class ApplicationStateProvider : AuthenticationStateProvider
         AccessToken = accessToken;
         RefreshToken = refreshToken;
 
-        var isSession = await _localStorage.GetItemAsync<bool>(AuthConstraints.RememberMeName);
+        var rememberUser = await _localStorage.GetItemAsync<bool>(AuthConstraints.RememberMeName);
 
-        //TODO: Proposal save session in session storage / add another servicee for tokens management
-      
+        await _sessionStorage.SetItemAsync(AuthConstraints.AccessToken, accessToken);
+        await _sessionStorage.SetItemAsync(AuthConstraints.RefreshToken, refreshToken);
+
+        if (rememberUser)
+        {
             await _localStorage.SetItemAsync(AuthConstraints.AccessToken, accessToken);
             await _localStorage.SetItemAsync(AuthConstraints.RefreshToken, refreshToken);
+        }
+        else
+        {
+            await _localStorage.RemoveItemAsync(AuthConstraints.AccessToken);
+            await _localStorage.RemoveItemAsync(AuthConstraints.RefreshToken);
+        }
         
-
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-        currentState = AuthState(accessToken);
     }
     private static AuthenticationState NoAuthState() => new(new ClaimsPrincipal(new ClaimsIdentity()));
-    private static AuthenticationState AuthState(string token)
+    private AuthenticationState AuthState()
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var jwtToken = tokenHandler.ReadJwtToken(token);
+        var jwtToken = tokenHandler.ReadJwtToken(AccessToken);
         var claims = jwtToken.Claims;
         var role = UserRole(claims);
 

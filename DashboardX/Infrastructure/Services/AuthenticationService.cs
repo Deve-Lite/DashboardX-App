@@ -50,7 +50,7 @@ public class AuthenticationService : BaseService, IAuthenticationService
         return await SendAsync(request);
     }
 
-    public async Task<bool> AuthenticateOnRememberMe(string currentRefreshToken)
+    public async Task<bool> ReAuthenticate(string currentRefreshToken)
     {
         var request = new Request
         {
