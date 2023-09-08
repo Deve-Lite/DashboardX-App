@@ -1,8 +1,11 @@
+@using Infrastructure;
 @using global::Shared.Constraints;
 @inherits LayoutComponentBase
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-@inject IStringLocalizer<MainLayout> _localizer 
+@inject IStringLocalizer<MainLayout> _localizer
+@inject AuthenticationStateProvider _authenticationStateProvider
+@inject ILocalStorageService _localStorage
 
 <MudLayout Class="p-0 m-0">
     <MudThemeProvider />
@@ -24,6 +27,7 @@
                     <MudNavLink Match="NavLinkMatch.All" Href="/devices"> @_localizer["Devices"] </MudNavLink>
                     <MudNavLink Match="NavLinkMatch.All" Href="/user/settings"> @_localizer["Settings"] </MudNavLink>
                     <MudNavLink Match="NavLinkMatch.All" Href="/subs"> @_localizer["Subscribtions"] </MudNavLink>
+                    <MudButton Variant="Variant.Text" OnClick="Logout">@_localizer["Logout"]</MudButton>
                 </MudNavMenu>
             </MudDrawer>
 
@@ -63,6 +67,16 @@
             StateHasChanged();
             return Task.CompletedTask;
         };
+    }
+
+    private async Task Logout()
+    {
+        var applicationAuthorization = (_authenticationStateProvider as ApplicationStateProvider)!;
+
+        await applicationAuthorization.Logout();
+        await _localStorage.RemoveItemAsync(BrokerConstraints.BrokerListName);
+        await _localStorage.RemoveItemAsync(DeviceConstants.DevicesListName);
+        await _localStorage.RemoveItemAsync(UserConstraints.UserStorage);
     }
 
     private void ToggleDrawer()

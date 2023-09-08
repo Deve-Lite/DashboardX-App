@@ -14,21 +14,6 @@
 {
     protected override async Task OnInitializedAsync()
     {
-        var appState = (_authenticationStateProvider as ApplicationStateProvider);
-
-        var refreshToken = await _sessionStorage.GetItemAsync<string>(AuthConstraints.RefreshToken);
-
-        if (!string.IsNullOrEmpty(refreshToken))
-        {
-            var successfullLoign = await _authenticationService.ReAuthenticate(refreshToken);
-
-            if (successfullLoign)
-            {
-                await JSRuntime.InvokeVoidAsync("history.back");
-                return;
-            }
-        }
-        
         navigationManager.NavigateTo("/auth/login");
     }
 

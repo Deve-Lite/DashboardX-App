@@ -21,7 +21,7 @@ public class UserService : AuthorizedService, IUserService
 
     public async Task<IResult> DeleteUser()
     {
-        //TODO - Add password as a confirmation? 
+        //TODO: Add password as a confirmation
 
         var request = new Request<User>
         {
@@ -45,7 +45,7 @@ public class UserService : AuthorizedService, IUserService
         var response = await SendAsync<User>(request);
 
         if (response.StatusCode == HttpStatusCode.OK)
-            await _localStorage.SetItemAsync(UserConstraints.SettingsStorage, response.Data);
+            await _localStorage.SetItemAsync(UserConstraints.UserStorage, response.Data);
 
         if (response.StatusCode == HttpStatusCode.NotModified)
             response.Data = await _localStorage.GetItemAsync<User>(UserConstraints.UserStorage);

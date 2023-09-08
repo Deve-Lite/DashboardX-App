@@ -1,6 +1,7 @@
 ﻿using Blazored.LocalStorage;
 using Blazored.SessionStorage;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.Logging;
 using Shared.Constraints;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
@@ -14,15 +15,18 @@ public class ApplicationStateProvider : AuthenticationStateProvider
     private readonly HttpClient _httpClient;
     private readonly ILocalStorageService _localStorage;
     private readonly ISessionStorageService _sessionStorage;
+    private readonly ILogger<ApplicationStateProvider> _logger;
 
     public string AccessToken { get; private set; }
     public string RefreshToken { get; private set; }
 
-    public ApplicationStateProvider(HttpClient httpClient, ILocalStorageService localStorage, ISessionStorageService sessionStorage)
+    public ApplicationStateProvider(HttpClient httpClient, ILocalStorageService localStorage, ISessionStorageService sessionStorage, ILogger<ApplicationStateProvider> logger)
     {
         _httpClient = httpClient;
         _localStorage = localStorage;
         _sessionStorage = sessionStorage;
+        _logger = logger;
+
         AccessToken = string.Empty;
         RefreshToken = string.Empty;
     }
@@ -98,30 +102,27 @@ public class ApplicationStateProvider : AuthenticationStateProvider
         if (string.IsNullOrWhiteSpace(token))
             return NoAuthState();
 
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-        var tokenHandler = new JwtSecurityTokenHandler();
         try
         {
-
+            var tokenHandler = new JwtSecurityTokenHandler();
             var jwtToken = tokenHandler.ReadJwtToken(token);
-
             var claims = jwtToken.Claims;
             var role = UserRole(claims);
-
             claims = claims.Append(role);
 
-            var identity = new ClaimsIdentity(claims, "jwt");
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            return new AuthenticationState(new ClaimsPrincipal(identity));
+            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt")));
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex);
+#if DEBUG
+            _logger.LogError(ex, ex.Message);
+#endif
+
+            _logger.LogError("Couldn't authenticate user.");
+            return new AuthenticationState(new ClaimsPrincipal());
         }
-
-
-        return new AuthenticationState(new ClaimsPrincipal());
     }
     private Claim UserRole(IEnumerable<Claim> claims)
     {
