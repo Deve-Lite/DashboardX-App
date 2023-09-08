@@ -1,0 +1,7 @@
+.image-in-background {
+    background-image: url('/image/unauthorised-background.png');
+    background-size: cover; 
+    background-position: center; 
+    min-height: 300px; 
+    color: #fff; 
+}

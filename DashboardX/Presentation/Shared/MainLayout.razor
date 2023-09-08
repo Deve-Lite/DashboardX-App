@@ -45,9 +45,13 @@
             {
                 <MudProgressLinear Color="Color.Primary" Indeterminate="@IsLoading" Class="loading position-absolute" />
             }
-            <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-items-center" Style="height: 100vh;">
-                @Body
-            </MudContainer>
+
+            <MudItem Class="image-in-background">
+                <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-items-center bg-transparent" Style="height: 100vh;">
+                    @Body
+                </MudContainer>
+            </MudItem>
+
         </NotAuthorized>
     </AuthorizeView>
 </MudLayout>

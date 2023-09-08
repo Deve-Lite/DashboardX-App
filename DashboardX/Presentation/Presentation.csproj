@@ -34,4 +34,9 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\css\pages\" />
+    <Folder Include="wwwroot\icon\" />
+  </ItemGroup>
+
 </Project>
