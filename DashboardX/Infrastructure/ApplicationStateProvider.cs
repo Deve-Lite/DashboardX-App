@@ -27,41 +27,49 @@ public class ApplicationStateProvider : AuthenticationStateProvider
         RefreshToken = string.Empty;
     }
 
-    public override Task<AuthenticationState> GetAuthenticationStateAsync()
+    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        if (!string.IsNullOrWhiteSpace(AccessToken))
-            return Task.FromResult(AuthState());
-        
-        return Task.FromResult(NoAuthState());
+        if (string.IsNullOrEmpty(AccessToken))
+        {
+            var rememberUser = await _localStorage.GetItemAsync<bool>(AuthConstraints.RememberMeName);
+
+            if(rememberUser)
+            {
+               AccessToken =  await _localStorage.GetItemAsync<string>(AuthConstraints.AccessToken);
+               RefreshToken = await _localStorage.GetItemAsync<string>(AuthConstraints.RefreshToken);
+            }
+            else
+            {
+                AccessToken =  await _sessionStorage.GetItemAsync<string>(AuthConstraints.AccessToken);
+                RefreshToken = await _sessionStorage.GetItemAsync<string>(AuthConstraints.RefreshToken);
+            }
+        }
+
+        return AuthState(AccessToken);
     }
 
     public async Task Login(string accessToken, string refreshToken)
     {
+        await SaveTokens(accessToken, refreshToken);
 
-
-        await SetAuthState(accessToken, refreshToken);
-
-        NotifyAuthenticationStateChanged(Task.FromResult(AuthState()));
+        NotifyAuthenticationStateChanged(Task.FromResult(AuthState(AccessToken)));
     }
 
-    public async Task ExtendSession(string accessToken, string refreshToken) => await SetAuthState(accessToken, refreshToken);
+    public async Task ExtendSession(string accessToken, string refreshToken) => await SaveTokens(accessToken, refreshToken);
 
     public async Task Logout()
     {
+        await _sessionStorage.RemoveItemAsync(AuthConstraints.AccessToken);
+        await _sessionStorage.RemoveItemAsync(AuthConstraints.RefreshToken);
+
         await _localStorage.RemoveItemAsync(AuthConstraints.AccessToken);
         await _localStorage.RemoveItemAsync(AuthConstraints.RefreshToken);
 
         NotifyAuthenticationStateChanged(Task.FromResult(NoAuthState()));
     }
 
-    public Task RemoveLoginState()
-    {
-        NotifyAuthenticationStateChanged(Task.FromResult(NoAuthState()));
-        return Task.CompletedTask;
-    }
-
     #region State
-    private async Task SetAuthState(string accessToken, string refreshToken)
+    private async Task SaveTokens(string accessToken, string refreshToken)
     {
         AccessToken = accessToken;
         RefreshToken = refreshToken;
@@ -84,28 +92,43 @@ public class ApplicationStateProvider : AuthenticationStateProvider
         
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
     }
-    private static AuthenticationState NoAuthState() => new(new ClaimsPrincipal(new ClaimsIdentity()));
-    private AuthenticationState AuthState()
+    private AuthenticationState NoAuthState() => new(new ClaimsPrincipal(new ClaimsIdentity()));
+    private AuthenticationState AuthState(string token)
     {
+        if (string.IsNullOrWhiteSpace(token))
+            return NoAuthState();
+
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
         var tokenHandler = new JwtSecurityTokenHandler();
-        var jwtToken = tokenHandler.ReadJwtToken(AccessToken);
-        var claims = jwtToken.Claims;
-        var role = UserRole(claims);
+        try
+        {
 
-        claims = claims.Append(role);
+            var jwtToken = tokenHandler.ReadJwtToken(token);
 
-        var identity = new ClaimsIdentity(claims, "jwt");
+            var claims = jwtToken.Claims;
+            var role = UserRole(claims);
 
-        return new AuthenticationState(new ClaimsPrincipal(identity));
+            claims = claims.Append(role);
+
+            var identity = new ClaimsIdentity(claims, "jwt");
+
+            return new AuthenticationState(new ClaimsPrincipal(identity));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
+
+
+        return new AuthenticationState(new ClaimsPrincipal());
     }
-    private static Claim UserRole(IEnumerable<Claim> claims)
+    private Claim UserRole(IEnumerable<Claim> claims)
     {
-        if(IsAdmin(claims))
+        if(claims.FirstOrDefault(c => c.Type == "isAdmin")?.Value == "true")
             return new Claim(ClaimTypes.Role, RolesConstraints.Admin);
 
         return new Claim(ClaimTypes.Role, RolesConstraints.User);
     }
-    private static bool IsAdmin(IEnumerable<Claim> claims) => claims.FirstOrDefault(c => c.Type == "isAdmin")?.Value == "true";
-
     #endregion
 }
