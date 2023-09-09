@@ -1,5 +1,4 @@
 ﻿using Blazored.LocalStorage;
-using Core;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Logging;

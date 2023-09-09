@@ -11,6 +11,7 @@
 @inject AuthenticationStateProvider _authenticationStateProvider
 @inject ILocalStorageService _localStorage
 @inject IPrefrenceService _preferenceService
+@inject IClientService _clientService
 
 <MudLayout Class="p-0 m-0">
     <MudThemeProvider IsDarkMode="@IsDarkMode" @ref="_mudThemeProvider" Theme="@AppTheme" />
@@ -32,47 +33,46 @@
                        Variant="@DrawerVariant.Responsive">
 
                 <MudNavMenu Class="text-center">
-                    <MudGrid>
-                        <MudItem xs="12">
-                            <MudButton OnClick="NavigateToBrokers"
-                                       Variant="Variant.Text"
-                                       DisableRipple="true">
-                                @_localizer["Brokers"]
-                            </MudButton>
-                        </MudItem>
 
-                        <MudItem xs="12">
-                            <MudButton OnClick="NavigateToDevices"
-                                       Variant="Variant.Text"
-                                       DisableRipple="true">
-                                @_localizer["Devices"]
-                            </MudButton>
-                        </MudItem>
 
-                        <MudItem xs="12">
-                            <MudButton OnClick="NavigateToProfile"
-                                       Variant="Variant.Text"
-                                       DisableRipple="true">
-                                @_localizer["Settings"]
-                            </MudButton>
-                        </MudItem>
+                    <MudButton OnClick="NavigateToBrokers"
+                               Variant="Variant.Text"
+                               DisableRipple="true"
+                               Class="w-100">
+                        @_localizer["Brokers"]
+                    </MudButton>
 
-                        <MudItem xs="12">
-                            <AuthorizeView Roles="@RolesConstraints.Admin" Context="adminContext">
-                                    <MudButton OnClick="NavigateToSubs"
-                                           Variant="Variant.Text"
-                                           DisableRipple="true">
-                                    @_localizer["Subscribtions"]
-                                    </MudButton>
-                            </AuthorizeView>
-                        </MudItem>
 
-                        <MudItem xs="12">
-                            <MudButton Variant="Variant.Text"
-                                       OnClick="Logout">@_localizer["Logout"]</MudButton>
-                        </MudItem>
 
-                    </MudGrid>
+                    <MudButton OnClick="NavigateToDevices"
+                               Variant="Variant.Text"
+                               DisableRipple="true"
+                               Class="w-100">
+                        @_localizer["Devices"]
+                    </MudButton>
+
+
+
+                    <MudButton OnClick="NavigateToProfile"
+                               Variant="Variant.Text"
+                               DisableRipple="true"
+                               Class="w-100">
+                        @_localizer["Settings"]
+                    </MudButton>
+
+                    <!-- <AuthorizeView Roles="@RolesConstraints.Admin" Context="adminContext">-->
+                    <MudButton OnClick="NavigateToSubs"
+                               Variant="Variant.Text"
+                               DisableRipple="true"
+                               Class="w-100">
+                        @_localizer["Subscribtions"]
+                    </MudButton>
+                    <!-- </AuthorizeView> -->
+
+                    <MudButton Variant="Variant.Text"
+                               Class="w-100"
+                               OnClick="Logout">@_localizer["Logout"]</MudButton>
+
                 </MudNavMenu>
             </MudDrawer>
 
@@ -194,6 +194,8 @@
         await _localStorage.RemoveItemAsync(BrokerConstraints.BrokerListName);
         await _localStorage.RemoveItemAsync(DeviceConstants.DevicesListName);
         await _localStorage.RemoveItemAsync(UserConstraints.PreferencesStorage);
+
+        await _clientService.Logout();
     }
 
     #endregion

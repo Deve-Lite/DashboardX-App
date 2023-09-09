@@ -36,6 +36,15 @@ public class ClientService : IClientService
         _clientLogger = clientLogger;
     }
 
+    public async Task Logout()
+    {
+        foreach(var client in _clients) 
+            await client.DisconnectAsync();
+        
+        _clients.Clear();
+    }
+
+
     #region Client
 
     public async Task<Result<List<Client>>> GetClientsWithDevices()
@@ -124,7 +133,7 @@ public class ClientService : IClientService
             usedClients.Add(broker.Id); 
         }
 
-        foreach (var client in _clients)
+        foreach (var client in _clients.ToList())
         {
             if (!usedClients.Contains(client.Id))
             {
