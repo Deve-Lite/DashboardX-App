@@ -67,6 +67,20 @@ public class Result : IResult
             message 
         } 
     };
+
+    #region Operators
+
+    public static implicit operator bool(Result myClass)
+    {
+        if (myClass == null)
+        {
+            throw new ArgumentNullException(nameof(myClass));
+        }
+
+        return myClass.Succeeded;
+    }
+
+    #endregion
 }
 
 

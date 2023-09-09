@@ -3,8 +3,8 @@ namespace Shared.Models.Auth;
 
 public class LoginModel
 {
-    [JsonPropertyName("email"), Required, MinLength(6), MaxLength(256), EmailAddress]
+    [JsonPropertyName("email")]
     public string Email { get; set; } = string.Empty;
-    [JsonPropertyName("password"), Required, MinLength(6), MaxLength(30)]
+    [JsonPropertyName("password")]
     public string Password { get; set; } = string.Empty;
 }

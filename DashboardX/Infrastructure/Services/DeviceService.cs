@@ -11,6 +11,7 @@ using System.Text.Json;
 using Infrastructure.Extensions;
 using Infrastructure.Models;
 using Shared.Models.Controls;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services;
 
@@ -18,9 +19,10 @@ public class DeviceService : AuthorizedService, IDeviceService
 {
     public DeviceService(HttpClient httpClient, 
                          ILocalStorageService localStorageService, 
+                         ILogger<DeviceService> logger,
                          NavigationManager navigationManager, 
                          AuthenticationStateProvider authenticationState)
-        : base(httpClient, localStorageService, navigationManager, authenticationState)
+        : base(httpClient, localStorageService, logger, navigationManager, authenticationState)
     {
     }
 

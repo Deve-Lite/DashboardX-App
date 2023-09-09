@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -7,12 +8,14 @@ namespace Infrastructure;
 
 public abstract class BaseService
 {
-    protected const int RequestDebugDelay = 0;
+    protected const int RequestDebugDelay = 200;
     protected readonly HttpClient _client;
+    protected readonly ILogger<BaseService> _logger;
 
-    public BaseService(HttpClient httpClient)
+    public BaseService(HttpClient httpClient, ILogger<BaseService> logger)
     {
         _client = httpClient;
+        _logger = logger;
     }
 
     protected virtual async Task<Result<T>> SendAsync<T>(Request request, JsonSerializerOptions? options = null) where T : class, new()
@@ -53,7 +56,7 @@ public abstract class BaseService
             {
                 if (response.StatusCode == HttpStatusCode.NoContent)
                 {
-                    //todo log warning that no content was returned
+                    _logger.LogWarning("Response should have content but received no content status code.");
                     return Result<T>.Success(new(), HttpStatusCode.NoContent);
                 }
 
@@ -71,11 +74,13 @@ public abstract class BaseService
         }
         catch (TaskCanceledException)
         {
+            _logger.LogWarning("Request timed out.");
             return Result<T>.Timeout("Request timed out.");
         }
         catch (Exception e)
         {
-            return Result<T>.Fail(message:$"Unknown error occured. {e.Message}");
+            _logger.LogError($"Unexpected error occured. {e.Message}");
+            return Result<T>.Fail(message:"Failed to fetch data");
         }
     }
 
@@ -96,24 +101,21 @@ public abstract class BaseService
             
             if (!string.IsNullOrEmpty(payload))
             {
-                var errors = JsonSerializer.Deserialize<List<string>>(payload)!;
-                return Result.Fail(errors, response.StatusCode);
+                var error = JsonSerializer.Deserialize<ErrorMessage>(payload)!;
+                return Result.Fail(response.StatusCode, error.Message);
             }
 
             return Result.Fail(response.StatusCode);
         }
         catch (TaskCanceledException)
         {
+            _logger.LogWarning("Request timed out.");
             return Result.Timeout("Operation timed out.");
         }
         catch (Exception e)
         {
-            var errors = new List<string>()
-            {
-                $"Unknown error occured. {e.Message}" 
-            };
-
-            return Result.Fail(errors);
+            _logger.LogError($"Unexpected error occured. {e.Message}");
+            return Result.Fail(message: "Failed to fetch data");
         }
     }
 

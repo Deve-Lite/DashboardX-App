@@ -6,6 +6,7 @@
 @using Infrastructure;
 @using System.Diagnostics;
 @using Presentation.Utils;
+@using Presentation.Validators.Auth;
 @using global::Shared.Models.Auth;
 @using global::Shared.Constraints;
 
@@ -13,7 +14,9 @@
 @inject IStringLocalizer<LoginPage> _localizer
 @inject ILocalStorageService _localStorage
 @inject IAuthenticationService _authenticationService
-@inject AuthenticationStateProvider _authenticationStateProvider;
+@inject AuthenticationStateProvider _authenticationStateProvider
+@inject IUserService _userService
+@inject IPrefrenceService _preferenceService
 
 @if (_loadingService.IsLoading)
 {
@@ -21,85 +24,114 @@
 }
 else
 {
-    <MudCard Class="container d-flex container-fit-content p-5" style="border-radius: 1rem; max-width 25rem; height 100vh;">
-        <EditForm Model="@LoginData" OnValidSubmit="LoginAsync">
-            <FluentValidationValidator @ref="_fluentValidationValidator" />
+    <MudCard Class="container d-flex container-fit-content p-5" Style="border-radius: 1rem;">
+        <MudForm @ref="@form" 
+                 Model="@LoginData"
+                 Validation="@(LoginValidator.ValidateValue)"
+                 ValidationDelay="0">
             <MudGrid>
 
-                <DataAnnotationsValidator />
-
                 <MudItem xs="12">
-                    <div class="d-flex justify-center">
-                        <MudText Typo="Typo.h4">@_localizer["Sign In"]</MudText>
-                    </div>
+                    <MudText Class="text-center"
+                             Color="Color.Primary"
+                             Typo="Typo.h4">
+                        @_localizer["DashboardX"]
+                    </MudText>
                 </MudItem>
 
                 <MudItem xs="12">
-                    <div class="d-flex justify-center">
-                        <MudText>@_localizer["Don't have an account?"] <MudLink Href="/auth/register">@_localizer["Register"]</MudLink></MudText>
-                    </div>
+                    <MudText Class="text-center">
+                        @_localizer["Don't know what to do with your custom IoT device? Use It. It is so simple."]
+                    </MudText>
                 </MudItem>
+
                 <MudItem xs="12">
-                    <MudTextField T="string"
+                    <MudTextField @bind-Value="LoginData.Email"
+                                  T="string"
+                                  OnlyValidateIfDirty="true"
+                                  Variant="Variant.Filled"
                                   Label="@_localizer["Email"]"
-                                  Variant="Variant.Outlined"
-                    @bind-Value="LoginData.Email"
                                   For="@(() => LoginData.Email)" />
                 </MudItem>
-                <MudItem xs="12">
-                    <MudTextField Label="@_localizer["Password"]"
-                                  Variant="Variant.Outlined"
-                    @bind-Value="LoginData.Password"
+                <MudItem xs="12" Class="h">
+                    <MudTextField @bind-Value="LoginData.Password"
+                                  Label="@_localizer["Password"]"
+                                  OnlyValidateIfDirty="true"
                                   For="@(() => LoginData.Password)"
+                                  Variant="Variant.Filled"
                                   InputType="@_passwordInput"
                                   Adornment="Adornment.End"
                                   AdornmentIcon="@_passwordInputIcon"
                                   OnAdornmentClick="TogglePasswordVisibility" />
                 </MudItem>
                 <MudItem xs="12" Class="d-flex justify-space-between align-center">
-                    <MudCheckBox T="bool"
-                    @bind-Checked="RememberMe"
+                    <MudLink Href="/account/forgot-password">@_localizer["Forgot password?"]</MudLink>
+
+                    <MudCheckBox @bind-Checked="RememberMe"
+                                 T="bool"
                                  Label="@_localizer["Remember Me"]"
                                  Color="Color.Primary"
-                                 Class="ml-n1"></MudCheckBox>
-                    <MudLink Href="/account/forgot-password">@_localizer["Forgot password?"]</MudLink>
+                                 Class="ml-n1" />
                 </MudItem>
-                <MudItem xs="12" Class="d-flex justify-center">
-                    <MudButton ButtonType="ButtonType.Submit"
-                               Variant="Variant.Filled"
-                               Disabled="@(!Validated)"
+                <MudItem xs="7">
+
+                </MudItem>
+                <MudItem xs="5" Class="d-flex justify-end">
+                    <MudButton Variant="Variant.Filled"
+                               OnClick="LoginAsync"
+                               Disabled="@((!form?.IsValid) ?? false)"
                                Color="Color.Primary"
                                Size="Size.Large"
+                               EndIcon="@Icons.Material.Filled.Login"
                                Style="width: 100%;">
                         @_localizer["Sign In"]
                     </MudButton>
+
                 </MudItem>
 
+                @if (IsDebug)
+                {
+                    <MudItem xs="12">
+                        <MudButton OnClick="FillAdministratorCredentials"
+                            >@_localizer["Fill Administrator Credentials"]
+                        </MudButton>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudButton OnClick="FillBasicUserCredentials">
+                            @_localizer["Login with user Credentials."]
+                        </MudButton>
+                    </MudItem>
+                }
+
                 <MudItem xs="12">
-                    <MudButton OnClick="FillAdministratorCredentials">@_localizer["Fill Administrator Credentials"]</MudButton>
-                </MudItem>
-                <MudItem xs="12">
-                    <MudButton OnClick="FillBasicUserCredentials">@_localizer["Login with user Credentials."]</MudButton>
+                    <MudText Class="text-center">
+                        <MudLink Color="Color.Primary" Href="/auth/register" Typo="Typo.h6">
+                            @_localizer["Sign up"]
+                        </MudLink>
+                        @_localizer["now for a smarter tommorow!"]
+                    </MudText>
                 </MudItem>
             </MudGrid>
-        </EditForm>
+        </MudForm>
     </MudCard>
 }
 
 
 @code
 {
-    [Parameter]
-    public bool IsLoading { get; set; }
-
-    private LoginModel LoginData { get; set; } = new LoginModel();
+    public bool IsDebug { get; set; }
     private bool RememberMe { get; set; }
-    private FluentValidationValidator? _fluentValidationValidator = new();
-    private bool Validated => _fluentValidationValidator == null ? false : _fluentValidationValidator.Validate(options => { options.IncludeAllRuleSets(); });
 
+    private LoginModel LoginData = new();
+    private LoginValidator LoginValidator = new();
+    MudForm? form;
 
     protected override async Task OnInitializedAsync()
     {
+#if DEBUG
+    IsDebug = true;
+#endif
+
         if (_loadingService.IsLoading)
             return;
 
@@ -115,16 +147,9 @@ else
 
         _loadingService.ShowLoading();
 
-        var successfullLoign = await _authenticationService.ReAuthenticate(refreshToken);
+        var result = await _authenticationService.ReAuthenticate(refreshToken);
 
-        if (successfullLoign)
-        {
-            //TODO: Login Flow
-
-            _snackbar.Add("Hello there!", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
-            _navigationManager.NavigateTo("/brokers");
-        }
-
+        await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnSuccessfullLogin);
 
         _loadingService.HideLoading();
     }
@@ -140,27 +165,32 @@ else
 
         var result = await _authenticationService.Login(LoginData);
 
-        //TODO: Login Flow
-
-        await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnLoaded, "Hello there!");
+        await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnSuccessfullLogin);
 
         _loadingService.HideLoading();
     }
 
-    private Task OnLoaded()
+    private async Task OnSuccessfullLogin()
     {
-        //TODO: Login Flow
-        _snackbar.Add("Hello there!", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
-        _navigationManager.NavigateTo("/brokers");
+        var result = await _userService.GetUser();
 
-        return Task.CompletedTask;
+        if (!result.Succeeded)
+            _snackbar.Add(_localizer["Couldn't load user settings."], MudBlazor.Severity.Warning);
+
+        _snackbar.Add(_localizer["Hello there!"], MudBlazor.Severity.Success);
+
+        _loadingService.HideLoading();
+
+        _navigationManager.NavigateTo("/brokers");
     }
+
+    #region Form
 
     private bool _passwordVisibility;
     private InputType _passwordInput = InputType.Password;
     private string _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
 
-    void TogglePasswordVisibility()
+    private void TogglePasswordVisibility()
     {
         if (_passwordVisibility)
         {
@@ -176,6 +206,10 @@ else
         }
     }
 
+    #endregion
+
+    #region DEBUG
+
     private void FillAdministratorCredentials()
     {
         LoginData.Email = "psp515@wp.pl";
@@ -187,4 +221,6 @@ else
         LoginData.Email = "dred@gmail.pl";
         LoginData.Password = "User123!";
     }
+
+    #endregion
 }

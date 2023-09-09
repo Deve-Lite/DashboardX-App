@@ -1,21 +1,26 @@
-@using Infrastructure;
-@using global::Shared.Constraints;
+@using Infrastructure
+@using Presentation.Utils
+
+@using global::Shared.Constraints
+@using global::Shared.Models.Users
+
 @inherits LayoutComponentBase
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 @inject IStringLocalizer<MainLayout> _localizer
 @inject AuthenticationStateProvider _authenticationStateProvider
 @inject ILocalStorageService _localStorage
+@inject IPrefrenceService _preferenceService
 
 <MudLayout Class="p-0 m-0">
-    <MudThemeProvider />
+    <MudThemeProvider IsDarkMode="@IsDarkMode" @ref="_mudThemeProvider" Theme="@AppTheme" />
     <MudSnackbarProvider />
     <MudDialogProvider />
 
     <AuthorizeView Roles="@Roles">
         <Authorized>
-            <MudAppBar Elevation="1" Style="height:50px" Dense="@true">
-                <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
+            <MudAppBar Elevation="1" Dense="@true" Color="Color.Primary">
+                <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Secondary" Edge="Edge.Start" OnClick="@ToggleDrawer" />
                 <MudSpacer />
             </MudAppBar>
             <MudDrawer @bind-Open="@Open" ClipMode="DrawerClipMode.Docked" Elevation="1" Variant="@DrawerVariant.Responsive">
@@ -59,10 +64,14 @@
 @code {
     private bool Open { get; set; } = false;
     private bool IsLoading { get; set; } = false;
+    private bool IsDarkMode { get; set; } = false;
+
+    private MudTheme AppTheme { get; set; } = ThemeColors.AppTheme;
+    private MudThemeProvider _mudThemeProvider = new();
 
     private string Roles { get; set; } = $"{RolesConstraints.Admin}, {RolesConstraints.User}";
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         base.OnInitialized();
         _loadingService.OnLoadingChanged = (isLoading) =>
@@ -71,6 +80,35 @@
             StateHasChanged();
             return Task.CompletedTask;
         };
+        _preferenceService.OnPreferenceChange = async (preferences) =>
+        {
+            try
+            {
+                if (Theme.Inherit == preferences.Theme)
+                {
+                    var deviceMode = await _mudThemeProvider!.GetSystemPreference();
+                    IsDarkMode = deviceMode;
+                }
+                else if (Theme.Light == preferences.Theme)
+                    IsDarkMode = false;
+                else
+                    IsDarkMode = true;
+            }
+            catch
+            {
+                IsDarkMode = false;
+            }
+        };
+
+        await _preferenceService.LoadPreferences();
+        await _mudThemeProvider!.WatchSystemPreference(OnSystemPreferenceChanged);
+    }
+
+    private Task OnSystemPreferenceChanged(bool newValue)
+    {
+        IsDarkMode = newValue;
+        StateHasChanged();
+        return Task.CompletedTask;
     }
 
     private async Task Logout()
@@ -80,7 +118,7 @@
         await applicationAuthorization.Logout();
         await _localStorage.RemoveItemAsync(BrokerConstraints.BrokerListName);
         await _localStorage.RemoveItemAsync(DeviceConstants.DevicesListName);
-        await _localStorage.RemoveItemAsync(UserConstraints.UserStorage);
+        await _localStorage.RemoveItemAsync(UserConstraints.PreferencesStorage);
     }
 
     private void ToggleDrawer()

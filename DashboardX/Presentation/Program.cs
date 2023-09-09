@@ -49,6 +49,7 @@ builder.Services.AddScoped<AuthenticationStateProvider, ApplicationStateProvider
 builder.Services.AddBlazoredLocalStorageAsSingleton();
 builder.Services.AddBlazoredSessionStorageAsSingleton();
 builder.Services.AddSingleton<ILoadingService, LoadingService>();
+builder.Services.AddSingleton<IPrefrenceService, PreferenceService>();
 builder.Services.AddSingleton<MqttFactory>();
 
 builder.Services.AddLogging();
