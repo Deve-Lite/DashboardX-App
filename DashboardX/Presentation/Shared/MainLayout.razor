@@ -17,28 +17,71 @@
     <MudSnackbarProvider />
     <MudDialogProvider />
 
-    <AuthorizeView Roles="@Roles">
+    <AuthorizeView Roles="@($"{RolesConstraints.User}, {RolesConstraints.Admin}")">
         <Authorized>
             <MudAppBar Elevation="1" Dense="@true" Color="Color.Primary">
-                <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Secondary" Edge="Edge.Start" OnClick="@ToggleDrawer" />
+                <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                               Color="Color.Secondary"
+                               Edge="Edge.Start"
+                               OnClick="@ToggleDrawer" />
                 <MudSpacer />
             </MudAppBar>
-            <MudDrawer @bind-Open="@Open" ClipMode="DrawerClipMode.Docked" Elevation="1" Variant="@DrawerVariant.Responsive">
-                <MudDrawerHeader>
-                    <!-- TODO: Add icon here -->
-                </MudDrawerHeader>
-                <MudNavMenu>
-                    <MudNavLink Match="NavLinkMatch.All" Href="/brokers">  @_localizer["Brokers"]  </MudNavLink>
-                    <MudNavLink Match="NavLinkMatch.All" Href="/devices"> @_localizer["Devices"] </MudNavLink>
-                    <MudNavLink Match="NavLinkMatch.All" Href="/user/settings"> @_localizer["Settings"] </MudNavLink>
-                    <MudNavLink Match="NavLinkMatch.All" Href="/subs"> @_localizer["Subscribtions"] </MudNavLink>
-                    <MudButton Variant="Variant.Text" OnClick="Logout">@_localizer["Logout"]</MudButton>
+            <MudDrawer @bind-Open="@Open"
+                       ClipMode="DrawerClipMode.Docked"
+                       Elevation="1"
+                       Variant="@DrawerVariant.Responsive">
+
+                <MudNavMenu Class="text-center">
+                    <MudGrid>
+                        <MudItem xs="12">
+                            <MudButton OnClick="NavigateToBrokers"
+                                       Variant="Variant.Text"
+                                       DisableRipple="true">
+                                @_localizer["Brokers"]
+                            </MudButton>
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudButton OnClick="NavigateToDevices"
+                                       Variant="Variant.Text"
+                                       DisableRipple="true">
+                                @_localizer["Devices"]
+                            </MudButton>
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudButton OnClick="NavigateToProfile"
+                                       Variant="Variant.Text"
+                                       DisableRipple="true">
+                                @_localizer["Settings"]
+                            </MudButton>
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <AuthorizeView Roles="@RolesConstraints.Admin" Context="adminContext">
+                                    <MudButton OnClick="NavigateToSubs"
+                                           Variant="Variant.Text"
+                                           DisableRipple="true">
+                                    @_localizer["Subscribtions"]
+                                    </MudButton>
+                            </AuthorizeView>
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudButton Variant="Variant.Text"
+                                       OnClick="Logout">@_localizer["Logout"]</MudButton>
+                        </MudItem>
+
+                    </MudGrid>
                 </MudNavMenu>
             </MudDrawer>
 
             @if (IsLoading)
             {
-                <MudProgressLinear Color="Color.Primary" Indeterminate="@IsLoading" Class="loading position-absolute" Style="margin-top: 50px" />
+                <MudProgressLinear Color="Color.Tertiary"
+                                   Indeterminate="@IsLoading"
+                                   Size="Size.Medium"
+                                   Class="progress-linear-under-appbar position-absolute" />
             }
 
             <MudMainContent Style="height: 100vh;">
@@ -48,7 +91,10 @@
         <NotAuthorized>
             @if (IsLoading)
             {
-                <MudProgressLinear Color="Color.Primary" Indeterminate="@IsLoading" Class="loading position-absolute" />
+                <MudProgressLinear Color="Color.Tertiary"
+                                   Indeterminate="@IsLoading"
+                                   Size="Size.Medium"
+                                   Class="progress-linear position-absolute" />
             }
 
             <MudItem Class="image-in-background">
@@ -68,8 +114,6 @@
 
     private MudTheme AppTheme { get; set; } = ThemeColors.AppTheme;
     private MudThemeProvider _mudThemeProvider = new();
-
-    private string Roles { get; set; } = $"{RolesConstraints.Admin}, {RolesConstraints.User}";
 
     protected override async Task OnInitializedAsync()
     {
@@ -111,6 +155,37 @@
         return Task.CompletedTask;
     }
 
+    private void ToggleDrawer()
+    {
+        Open = !Open;
+    }
+
+    #region Navigations
+
+    public void NavigateToBrokers()
+    {
+        Open = false;
+        _navigationManager.NavigateTo("/brokers");
+    }
+
+    public void NavigateToDevices()
+    {
+        Open = false;
+        _navigationManager.NavigateTo("/devices");
+    }
+
+    public void NavigateToSubs()
+    {
+        Open = false;
+        _navigationManager.NavigateTo("/user/settings");
+    }
+
+    public void NavigateToProfile()
+    {
+        Open = false;
+        _navigationManager.NavigateTo("/subs");
+    }
+
     private async Task Logout()
     {
         var applicationAuthorization = (_authenticationStateProvider as ApplicationStateProvider)!;
@@ -121,8 +196,5 @@
         await _localStorage.RemoveItemAsync(UserConstraints.PreferencesStorage);
     }
 
-    private void ToggleDrawer()
-    {
-        Open = !Open;
-    }
+    #endregion
 }

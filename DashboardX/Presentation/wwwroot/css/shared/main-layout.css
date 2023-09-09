@@ -5,3 +5,12 @@
     min-height: 300px; 
     color: #fff; 
 }
+
+.progress-linear {
+    z-index: 10;
+}
+
+.progress-linear-under-appbar {
+    z-index: 10;
+    margin-top: 49px;
+}

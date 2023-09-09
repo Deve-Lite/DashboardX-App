@@ -20,7 +20,7 @@
 
 @if (_loadingService.IsLoading)
 {
-    <div> Loading... </div>
+    
 }
 else
 {
@@ -79,7 +79,6 @@ else
                 <MudItem xs="5" Class="d-flex justify-end">
                     <MudButton Variant="Variant.Filled"
                                OnClick="LoginAsync"
-                               Disabled="@((!form?.IsValid) ?? false)"
                                Color="Color.Primary"
                                Size="Size.Large"
                                EndIcon="@Icons.Material.Filled.Login"
@@ -159,6 +158,11 @@ else
         if (_loadingService.IsLoading)
             return;
 
+        await form!.Validate();
+
+        if (!form.IsValid)
+            return;
+
         _loadingService.ShowLoading();
 
         await _localStorage.SetItemAsync(AuthConstraints.RememberMeName, RememberMe);
@@ -208,7 +212,7 @@ else
 
     #endregion
 
-    #region DEBUG
+    #region Debug
 
     private void FillAdministratorCredentials()
     {

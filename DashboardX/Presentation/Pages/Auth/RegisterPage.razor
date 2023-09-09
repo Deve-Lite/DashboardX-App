@@ -12,7 +12,7 @@
 
 @if (_loadingService.IsLoading)
 {
-    <div> Loading... </div>
+    
 }
 else
 {
@@ -82,7 +82,6 @@ else
                              Class="d-flex justify-content-center">
                         <MudButton Class="w-100"
                                    Variant="Variant.Filled"
-                                   Disabled="@((!form?.IsValid) ?? false)"
                                    Color="Color.Primary"
                                    OnClick="RegisterAsync"
                                    EndIcon="@Icons.Material.Filled.AssignmentInd"
@@ -111,11 +110,17 @@ else
 @code {
     private RegisterModel RegisterData = new();
     private RegisterValidator RegisterValidator = new();
+
     MudForm? form;
 
     private async Task RegisterAsync()
     {
         if (_loadingService.IsLoading)
+            return;
+
+        await form!.Validate();
+
+        if (!form.IsValid)
             return;
 
         _loadingService.ShowLoading();
