@@ -32,45 +32,44 @@
                        Elevation="1"
                        Variant="@DrawerVariant.Responsive">
 
-                <MudNavMenu Class="text-center">
-
-
+                <MudNavMenu>
                     <MudButton OnClick="NavigateToBrokers"
                                Variant="Variant.Text"
                                DisableRipple="true"
-                               Class="w-100">
+                               StartIcon="@Icons.Material.Filled.DisplaySettings"
+                               Class="w-100 mt-2">
                         @_localizer["Brokers"]
                     </MudButton>
-
-
 
                     <MudButton OnClick="NavigateToDevices"
                                Variant="Variant.Text"
                                DisableRipple="true"
-                               Class="w-100">
+                               StartIcon="@Icons.Material.Filled.SettingsInputComponent"
+                               Class="w-100 mt-1">
                         @_localizer["Devices"]
                     </MudButton>
 
-
-
                     <MudButton OnClick="NavigateToProfile"
                                Variant="Variant.Text"
+                               StartIcon="@Icons.Material.Filled.Settings"
                                DisableRipple="true"
-                               Class="w-100">
+                               Class="w-100 mt-1">
                         @_localizer["Settings"]
                     </MudButton>
 
                     <!-- <AuthorizeView Roles="@RolesConstraints.Admin" Context="adminContext">-->
                     <MudButton OnClick="NavigateToSubs"
                                Variant="Variant.Text"
+                               StartIcon="@Icons.Material.Filled.Email"
                                DisableRipple="true"
-                               Class="w-100">
+                               Class="w-100 mt-1">
                         @_localizer["Subscribtions"]
                     </MudButton>
                     <!-- </AuthorizeView> -->
 
                     <MudButton Variant="Variant.Text"
-                               Class="w-100"
+                               Class="w-100 mt-1"
+                               StartIcon="@Icons.Material.Filled.Logout"
                                OnClick="Logout">@_localizer["Logout"]</MudButton>
 
                 </MudNavMenu>
@@ -177,13 +176,13 @@
     public void NavigateToSubs()
     {
         Open = false;
-        _navigationManager.NavigateTo("/user/settings");
+        _navigationManager.NavigateTo("/subs");
     }
 
     public void NavigateToProfile()
     {
         Open = false;
-        _navigationManager.NavigateTo("/subs");
+        _navigationManager.NavigateTo("/user/settings");
     }
 
     private async Task Logout()
