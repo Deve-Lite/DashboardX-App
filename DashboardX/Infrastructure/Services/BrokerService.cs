@@ -11,6 +11,7 @@ using Shared.Models.Devices;
 using Shared.Constraints;
 using Infrastructure.Extensions;
 using Infrastructure.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services;
 
@@ -18,9 +19,10 @@ public class BrokerService : AuthorizedService, IBrokerService
 {
     public BrokerService(HttpClient httpClient,
                          ILocalStorageService localStorageService,
+                         ILogger<BrokerService> logger,
                          NavigationManager navigationManager,
                          AuthenticationStateProvider authenticationState)
-        : base(httpClient, localStorageService, navigationManager, authenticationState)
+        : base(httpClient, localStorageService, logger, navigationManager, authenticationState)
     {
     }
 

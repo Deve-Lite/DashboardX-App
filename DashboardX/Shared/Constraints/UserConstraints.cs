@@ -2,6 +2,5 @@
 
 public static class UserConstraints
 {
-    public const string UserStorage = "DasboardXuser";
-    public const string SettingsStorage = "DasboardXSettings";
+    public const string PreferencesStorage = "DasboardXuser";
 }

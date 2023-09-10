@@ -1,6 +1,7 @@
 ﻿using Core;
 using Core.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.Logging;
 using Shared.Models.Auth;
 using System.Net.Http.Headers;
 
@@ -10,8 +11,9 @@ public class AuthenticationService : BaseService, IAuthenticationService
 {
     private readonly ApplicationStateProvider _applicationStateProvider;
 
-    public AuthenticationService(HttpClient httpClient, 
-        AuthenticationStateProvider authenticationStateProvider) : base(httpClient)
+    public AuthenticationService(HttpClient httpClient,
+        ILogger<AuthenticationService> logger,
+        AuthenticationStateProvider authenticationStateProvider) : base(httpClient, logger)
     {
         _applicationStateProvider = (ApplicationStateProvider?)authenticationStateProvider!;
     }
@@ -50,7 +52,7 @@ public class AuthenticationService : BaseService, IAuthenticationService
         return await SendAsync(request);
     }
 
-    public async Task<bool> AuthenticateOnRememberMe(string currentRefreshToken)
+    public async Task<IResult> ReAuthenticate(string currentRefreshToken)
     {
         var request = new Request
         {
@@ -68,9 +70,9 @@ public class AuthenticationService : BaseService, IAuthenticationService
             var refreshToken = response.Data!.RefreshToken;
             await _applicationStateProvider.Login(accessToken, refreshToken);
 
-            return true;
+            return Result.Success(response.StatusCode);
         }
 
-        return false;
+        return Result.Fail(response.StatusCode);
     }
 }

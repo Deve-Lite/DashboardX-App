@@ -1,7 +1,7 @@
 ﻿using Blazored.LocalStorage;
-using Core;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.Logging;
 using Shared.Models.Auth;
 using System.Net;
 using System.Net.Http.Headers;
@@ -17,15 +17,14 @@ public abstract class AuthorizedService : BaseService
     
     protected AuthorizedService(HttpClient httpClient, 
         ILocalStorageService localStorageService, 
+        ILogger<AuthorizedService> logger,
         NavigationManager navigationManager,
-        AuthenticationStateProvider authenticationState) : base(httpClient)
+        AuthenticationStateProvider authenticationState) : base(httpClient, logger)
     {
         _navigationManager = navigationManager;
         _localStorage = localStorageService;
         _applicationStateProvider = (ApplicationStateProvider)authenticationState;
     }
-
-    //TODO: Try to optimize SendAsync methods
 
     protected virtual async Task<Result> SendAsync(Request request, JsonSerializerOptions? options = null)
     {

@@ -8,6 +8,8 @@ namespace Presentation.Services.Interfaces;
 
 public interface IClientService
 {
+    Task Logout();
+
     Task<Result<List<Client>>> GetClientsWithDevices();
     Task<Result<List<Client>>> GetClients();
     Task<Result<Client>> GetClient(string clientId);
