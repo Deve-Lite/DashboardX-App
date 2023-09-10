@@ -18,17 +18,70 @@ else if (!LoadedSuccessfully)
         Failed to load... TODO: Refresh button
     </div>
 }
+else if(IsMobile)
+{
+    //TODO: Implement
+}
 else
 {
-    <MudGrid Class="p-5">
+    <MudGrid Class="p-5 w-100">
+
+        <MudItem xs="12">
+
+            <MudButton OnClick="AddBroker"
+                       Color="Color.Primary"
+                       Variant="Variant.Filled"
+                       StartIcon="@Icons.Material.Filled.AddToQueue">
+                       @_localizer["Add Broker"]
+            </MudButton>
+
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudList Class="width-100">
+
+                <MudListSubheader>
+
+
+                    
+                </MudListSubheader>
+
+                <MudDivider Light="true"/>
+
+                @foreach(var client in Clients)
+                {
+                    
+                }
+
+                <MudListItem Class="width-100" OnClick="test1">
+
+
+                    <MudButton OnClick="test2">
+                        SDFSDF
+                    </MudButton>
+
+                    <MudButton OnClick="test3">
+                        SDFSDF 3
+                    </MudButton>
+                    <div>
+                        dfojhgioudhksfg sdfgg hdfgh  dfgh dfgh dfg hdfg hdfgh
+                    </div>
+
+                </MudListItem>
+            </MudList>
+        </MudItem>
+
+        
+
+
+
         @foreach (var client in Clients)
         {
-
             <MudItem>
                 <MudCard Elevation="25" Class="container container-fit-content p-2" style="border-radius: 1rem; max-width: 25rem;">
                     <NavLink href="@($"brokers/{client.Broker.Id}")">
                         <MudText Align="Align.Center"> @client.Broker.Name </MudText>
-                        <MudText >Server: @client.Broker.Server </MudText>
+                        <MudText>Server: @client.Broker.Server </MudText>
                         <MudText>Port: @client.Broker.Port </MudText>
                         <MudText>Keep Alive: @client.Broker.KeepAlive </MudText>
                         <MudText Align="Align.End">Edited At: @client.Broker.EditedAt </MudText>
@@ -68,6 +121,7 @@ else
 
 @code {
 
+    public bool IsMobile { get; set; }
     public bool LoadedSuccessfully { get; set; } = true;
     private List<Client> Clients { get; set; } = new();
 
@@ -77,6 +131,8 @@ else
             return;
 
         _loadingService.ShowLoading();
+
+        IsMobile = false; //TODO: Uncoment = await _runtime.IsMobile();
 
         var result = await _clientService.GetClients();
         if (result.Succeeded)
@@ -91,6 +147,8 @@ else
 
         _loadingService.HideLoading();
     }
+
+    #region Broker
 
     private async Task UpdateBroker(Client client)
     {
@@ -136,5 +194,21 @@ else
 
         if (x.Succeeded)
             StateHasChanged();
+    }
+
+    #endregion
+
+    public void test1()
+    {
+        Console.WriteLine("test1");
+    }
+
+    public void test2()
+    {
+        Console.WriteLine("test2");
+    }
+    public void test3()
+    {
+        Console.WriteLine("test3");
     }
 }

@@ -13,7 +13,7 @@
 @inject IPrefrenceService _preferenceService
 @inject IClientService _clientService
 
-<MudLayout Class="p-0 m-0">
+<MudLayout Class="p-0 m-0 w-100 h-100">
     <MudThemeProvider IsDarkMode="@IsDarkMode" @ref="_mudThemeProvider" Theme="@AppTheme" />
     <MudSnackbarProvider />
     <MudDialogProvider />
@@ -25,7 +25,12 @@
                                Color="Color.Secondary"
                                Edge="Edge.Start"
                                OnClick="@ToggleDrawer" />
+                <MudText Color="Color.Secondary" Typo="Typo.h6">
+                    @_localizer["DashboardX"]
+                </MudText>
+
                 <MudSpacer />
+
             </MudAppBar>
             <MudDrawer @bind-Open="@Open"
                        ClipMode="DrawerClipMode.Docked"

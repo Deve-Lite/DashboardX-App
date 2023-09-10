@@ -32,7 +32,7 @@ public class UserService : AuthorizedService, IUserService
         var request = new Request<User>
         {
             Method = HttpMethod.Delete,
-            Route = "users/me"
+            Route = "api/v1/users/me"
         };
 
         var response = await SendAsync(request);
@@ -45,7 +45,7 @@ public class UserService : AuthorizedService, IUserService
         var request = new Request
         {
             Method = HttpMethod.Get,
-            Route = "users/me"
+            Route = "api/v1/users/me"
         };
 
         var response = await SendAsync<User>(request);
@@ -70,7 +70,7 @@ public class UserService : AuthorizedService, IUserService
         var request = new Request<User>
         {
             Method = HttpMethod.Patch,
-            Route = "users/me",
+            Route = "api/v1/users/me",
             Data = user
         };
 

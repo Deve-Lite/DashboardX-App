@@ -50,12 +50,14 @@ else
                                   T="string"
                                   OnlyValidateIfDirty="true"
                                   Variant="Variant.Filled"
+                                  HelperText="@_localizer["Provide email for your account."]"
                                   Label="@_localizer["Email"]"
                                   For="@(() => LoginData.Email)" />
                 </MudItem>
                 <MudItem xs="12" Class="h">
                     <MudTextField @bind-Value="LoginData.Password"
                                   Label="@_localizer["Password"]"
+                                  HelperText="@_localizer["Provide password for your account."]"
                                   OnlyValidateIfDirty="true"
                                   For="@(() => LoginData.Password)"
                                   Variant="Variant.Filled"
@@ -127,24 +129,32 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+
 #if DEBUG
     IsDebug = true;
 #endif
+        //TODO: refactor it for using using(var xxx) 
 
         if (_loadingService.IsLoading)
             return;
 
+        _loadingService.ShowLoading();
+
         RememberMe = await _localStorage.GetItemAsync<bool>(AuthConstraints.RememberMeName);
 
         if (!RememberMe)
+        {
+            _loadingService.HideLoading();
             return;
+        }
 
         var refreshToken = await _localStorage.GetItemAsync<string>(AuthConstraints.RefreshToken);
 
         if (string.IsNullOrEmpty(refreshToken))
+        {
+            _loadingService.HideLoading();
             return;
-
-        _loadingService.ShowLoading();
+        }
 
         var result = await _authenticationService.ReAuthenticate(refreshToken);
 

@@ -44,7 +44,8 @@ else
                                       Variant="Variant.Filled"
                                       OnlyValidateIfDirty="true"
                                       Clearable="true"
-                                      Label="@_localizer["Username"]" />
+                                      Label="@_localizer["Username"]"
+                                      HelperText="@_localizer["Provide username for your account."]" />
                     </MudItem>
                     <MudItem xs="12">
                         <MudTextField @bind-Value="RegisterData.Email"
@@ -53,6 +54,7 @@ else
                                       Variant="Variant.Filled"
                                       OnlyValidateIfDirty="true"
                                       Clearable="true"
+                                      HelperText="@_localizer["Provide email for your account."]"
                                       Label="@_localizer["Email"]" />
                     </MudItem>
                     <MudItem xs="12">
@@ -66,7 +68,8 @@ else
                                       Clearable="true"
                                       AdornmentIcon="@_passwordInputIcon"
                                       OnAdornmentClick="TogglePasswordVisibility"
-                                      Label="@_localizer["Password"]" />
+                                      Label="@_localizer["Password"]"
+                                      HelperText="@_localizer["Provide password for your account."]" />
                     </MudItem>
                     <MudItem xs="12">
                         <MudTextField @bind-Value="RegisterData.ConfirmPassword"
@@ -75,7 +78,8 @@ else
                                       Variant="Variant.Filled"
                                       Clearable="true"
                                       InputType="InputType.Password"
-                                      Label="@_localizer["Confirm Password"]" />
+                                      Label="@_localizer["Confirm Password"]"
+                                      HelperText="@_localizer["Please repeat password."]" />
                     </MudItem>
 
                     <MudItem xs="12"
