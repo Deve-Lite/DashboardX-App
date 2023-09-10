@@ -1,5 +1,6 @@
 ﻿using Blazored.LocalStorage;
 using Core.Interfaces;
+using Infrastructure;
 using Infrastructure.Services;
 using MQTTnet;
 using MQTTnet.Client;
@@ -19,7 +20,7 @@ public class Client : IAsyncDisposable
     public readonly IMqttClient MqttService;
 
     public string Id => Broker.Id;
-    public bool IsConnected => MqttService.IsConnected;
+    public bool IsConnected { get; set; }
 
     public Broker Broker { get; private set; } = new();
     public List<Device> Devices { get; private set; } = new();
@@ -66,20 +67,30 @@ public class Client : IAsyncDisposable
         return await MqttService.PublishAsync(mqttMessage);
     }
 
-    public async Task<MqttClientConnectResult> ConnectAsync()
+    public async Task<Result> ConnectAsync()
     {
         try
         {
             var options = Options();
-            return await MqttService.ConnectAsync(options);
+            var response = await MqttService.ConnectAsync(options);
+            IsConnected = true;
+
+            return Result.Success();
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
-            return new MqttClientConnectResult();
+            IsConnected = false;
+            _logger.LogError($"Failed to connect to broker. {ex.Message}");
+
+            return Result.Fail(message: "Failed to connect to broker.");
         }
     }
-    public async Task DisconnectAsync() => await MqttService.DisconnectAsync();
+
+    public async Task DisconnectAsync() 
+    {
+        IsConnected = false;
+        await MqttService.DisconnectAsync();
+    }
 
     /// <summary>
     /// Unsubscribes from all topics for device and removed device from device collection.
@@ -249,6 +260,9 @@ public class Client : IAsyncDisposable
         // TODO: Include case of manual disconnection
         MqttService.DisconnectedAsync += async(e) =>
         {
+            if (!IsConnected)
+                return;
+
             _logger.LogWarning($"Client {Broker.Id} disconnected. Reconnecting...");
             RerenderPage?.Invoke();
             await MqttService.ReconnectAsync();

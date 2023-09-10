@@ -38,45 +38,33 @@
                        Variant="@DrawerVariant.Responsive">
 
                 <MudNavMenu>
-                    <MudButton OnClick="NavigateToBrokers"
-                               Variant="Variant.Text"
-                               DisableRipple="true"
-                               StartIcon="@Icons.Material.Filled.DisplaySettings"
-                               Class="w-100 mt-2">
-                        @_localizer["Brokers"]
-                    </MudButton>
+                    <MudList Clickable="true" Class="w-100">
 
-                    <MudButton OnClick="NavigateToDevices"
-                               Variant="Variant.Text"
-                               DisableRipple="true"
-                               StartIcon="@Icons.Material.Filled.SettingsInputComponent"
-                               Class="w-100 mt-1">
-                        @_localizer["Devices"]
-                    </MudButton>
+                        <MudListItem Icon="@Icons.Material.Filled.DisplaySettings" 
+                                     OnClick="NavigateToBrokers">
+                            @_localizer["Brokers"]
+                        </MudListItem>
 
-                    <MudButton OnClick="NavigateToProfile"
-                               Variant="Variant.Text"
-                               StartIcon="@Icons.Material.Filled.Settings"
-                               DisableRipple="true"
-                               Class="w-100 mt-1">
-                        @_localizer["Settings"]
-                    </MudButton>
+                        <MudListItem Icon="@Icons.Material.Filled.SettingsInputComponent"
+                                     OnClick="NavigateToDevices">
+                            @_localizer["Devices"]
+                        </MudListItem>
 
-                    <!-- <AuthorizeView Roles="@RolesConstraints.Admin" Context="adminContext">-->
-                    <MudButton OnClick="NavigateToSubs"
-                               Variant="Variant.Text"
-                               StartIcon="@Icons.Material.Filled.Email"
-                               DisableRipple="true"
-                               Class="w-100 mt-1">
-                        @_localizer["Subscribtions"]
-                    </MudButton>
-                    <!-- </AuthorizeView> -->
+                        <MudListItem Icon="@Icons.Material.Filled.Settings"
+                                     OnClick="NavigateToProfile">
+                            @_localizer["Settings"]
+                        </MudListItem>
 
-                    <MudButton Variant="Variant.Text"
-                               Class="w-100 mt-1"
-                               StartIcon="@Icons.Material.Filled.Logout"
-                               OnClick="Logout">@_localizer["Logout"]</MudButton>
+                        <MudListItem Icon="@Icons.Material.Filled.Email"
+                                     OnClick="NavigateToSubs">
+                            @_localizer["Subscribtions"]
+                        </MudListItem>
 
+                        <MudListItem Icon="@Icons.Material.Filled.Logout"
+                                     OnClick="Logout">
+                            @_localizer["Logout"]
+                        </MudListItem>
+                    </MudList>
                 </MudNavMenu>
             </MudDrawer>
 
