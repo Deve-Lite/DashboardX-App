@@ -58,6 +58,11 @@ public class Client : IAsyncDisposable
 
     public async Task<MqttClientPublishResult> PublishAsync(string topic, string payload, MqttQualityOfServiceLevel quality)
     {
+        //TODO Change to Result
+
+        if (!MqttService.IsConnected)
+            await ConnectAsync();
+
         var mqttMessage = new MqttApplicationMessageBuilder()
                .WithTopic(topic)
                .WithPayload(Encoding.UTF8.GetBytes(payload))
@@ -257,7 +262,6 @@ public class Client : IAsyncDisposable
             RerenderPage?.Invoke();
         };
 
-        // TODO: Include case of manual disconnection
         MqttService.DisconnectedAsync += async(e) =>
         {
             if (!IsConnected)

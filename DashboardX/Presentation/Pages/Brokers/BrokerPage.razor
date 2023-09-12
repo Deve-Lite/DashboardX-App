@@ -1,6 +1,7 @@
 ﻿@page "/brokers/{BrokerId}"
 @using MQTTnet.Client;
 @using Presentation.Models;
+@using Presentation.Utils.PagesUtils;
 @using global::Shared.Models.Devices;
 
 @inject IClientService _clientService
@@ -25,63 +26,93 @@ else if (IsMobile)
 else
 {
     <MudGrid Class="m-0 p-3 w-100">
-        <MudItem xs="5" Class="fit-content">
-            <MudPaper>
-                <MudGrid>
-                    <MudItem xs="8">
-                        <MudText Typo="Typo.h6" Class="text-center"> @Client!.Broker.Name</MudText>
+
+        <MudItem xs="7">
+
+            <!-- Todo Breadcrumb -->
+
+        </MudItem>
+        <MudItem xs="5" Class="d-flex justify-content-end">
+
+            <MudButton OnClick="() => DevicePagesUtils.AddDevice(Client!.Id, StateHasChanged, _dialogService, _localizer)"
+                       Color="Color.Primary"
+                       Variant="Variant.Filled"
+                       StartIcon="@Icons.Material.Filled.AddToQueue">
+                @_localizer["Add Device"]
+            </MudButton>
+
+        </MudItem>
+
+        <MudItem xs="12"  Class="p-0 m-0 pt-4 pb-5 fit-content">
+            <MudPaper Elevation="15"
+                      Class="m-0 p-2 rounded-2">
+                <MudGrid Class="m-0 p-0">
+
+                    <MudItem xs="4" Class="p-0 m-0 mud-fill-height mud-h-100">
+                        <MudGrid Class="p-0 m-0 justify-content-center mud-fill-height mud-h-100">
+                            <MudItem xs="12" Class="p-1 m-0">
+                                <MudText Typo="Typo.h6" Class="text-center"> @Client!.Broker.Name</MudText>
+                            </MudItem>
+                            <MudItem xs="12" Class="p-1 m-0 h-100 d-flex justify-content-center align-content-center">
+                                <MudPaper Elevation="10" Class="p-1 m-1 rounded-circle mud-fill-height mud-h-100">
+                                    <MudIcon Class="p-0 m-0"
+                                             Icon="@Icons.Material.Filled.Home">
+                                            <!-- TODO Create icon recognition system -->
+                                    </MudIcon>
+                                </MudPaper>
+                            </MudItem>
+                        </MudGrid>
                     </MudItem>
+
                     <MudItem xs="8">
-                        <MudText Class="text-center">@_localizer["Server"]: @Client!.Broker.Server</MudText>
-                    </MudItem>
-                    <MudItem xs="8">
-                        <MudText Class="text-center">@_localizer["Port"]: @Client!.Broker.Port</MudText>
-                    </MudItem>
-                    <MudItem xs="8">
-                        <MudText Class="text-center">@_localizer["Client Id"]: @Client!.Broker.ClientId</MudText>
-                    </MudItem>
-                    <MudItem xs="8">
-                        <MudText Class="text-center">@_localizer["Keep Alive"]: @Client!.Broker.KeepAlive</MudText>
+                        <MudItem xs="8">
+                            <MudText Class="text-center">@_localizer["Server"]: @Client!.Broker.Server</MudText>
+                        </MudItem>
+                        <MudItem xs="8">
+                            <MudText Class="text-center">@_localizer["Port"]: @Client!.Broker.Port</MudText>
+                        </MudItem>
+                        <MudItem xs="8">
+                            <MudText Class="text-center">@_localizer["Client Id"]: @Client!.Broker.ClientId</MudText>
+                        </MudItem>
+                        <MudItem xs="8">
+                            <MudText Class="text-center">@_localizer["Keep Alive"]: @Client!.Broker.KeepAlive</MudText>
+                        </MudItem>
                     </MudItem>
                 </MudGrid>
             </MudPaper>
         </MudItem>
 
-        <MudItem xs="7" Class="fit-content p-5">
-            TODO: Simple console
-        </MudItem>
-
-        <MudItem xs="12">
+        <MudItem Class="p-0 pt-2" xs="12">
             <MudList Class="p-0 w-100"
-                     Dense="true" 
+                     Dense="true"
                      Clickable="true">
 
-                <MudListSubheader>
-                    <MudGrid Class="text-center">
-                        <MudItem xs="1">
+                <MudListSubheader Class="d-flex p-0 m-0">
+                    <MudGrid Class="p-0 m-0">
+                        <MudItem xs="1" Class="d-flex p-1 m-0">
 
                         </MudItem>
-                        <MudItem xs="2">
-                            <MudText Typo="Typo.button">
+                        <MudItem xs="2" Class="d-flex p-1 m-0 align-items-center justify-content-start">
+                            <MudText Typo="Typo.h6">
                                 @_localizer["Name"]
                             </MudText>
                         </MudItem>
-                        <MudItem xs="4">
-                            <MudText Typo="Typo.button">
+                        <MudItem xs="3" Class="d-flex p-1 m-0 align-items-center justify-content-start">
+                            <MudText Typo="Typo.h6">
                                 @_localizer["Placing"]
                             </MudText>
                         </MudItem>
-                        <MudItem xs="1">
-                            <MudText Typo="Typo.button">
-                                @_localizer["Port"]
+                        <MudItem xs="3" Class="d-flex p-1 m-0 align-items-center justify-content-start">
+                            <MudText Typo="Typo.h6">
+                                @_localizer["Base device path"]
                             </MudText>
                         </MudItem>
-                        <MudItem xs="2">
-                            <MudText Typo="Typo.button">
-                                @_localizer["Status"]
+                        <MudItem xs="1" Class="d-flex p-1 m-0 align-items-center justify-content-center">
+                            <MudText Typo="Typo.h6">
+                                @_localizer["State"]
                             </MudText>
                         </MudItem>
-                        <MudItem> </MudItem>
+                        <MudItem xs="2"> </MudItem>
                     </MudGrid>
 
                 </MudListSubheader>
@@ -90,10 +121,50 @@ else
 
                 @foreach (var device in Client!.Devices)
                 {
-                    <MudListItem Class="d-flex align-items-center text-center"
+                    <MudListItem Class="d-flex m-0 p-0 pt-1 pb-1 align-items-center justify-content-center"
                                  OnClick="() => NavigateToDevice(device)">
-                       
 
+                        <MudGrid Class="w-100 p-0 m-0">
+                            <MudItem xs="1" Class="d-flex p-0 m-0 align-items-center justify-content-center">
+                                <MudIcon Class="p-0 m-0" 
+                                         Icon="@Icons.Material.Filled.Home">
+                                    <!-- TODO Create icon recognition system -->
+                                </MudIcon>
+                            </MudItem>
+                            <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-start">
+                                <MudText Class="hide-overlapping-text">
+                                    @device.Name
+                                </MudText>
+                            </MudItem>
+                            <MudItem xs="3" Class="d-flex m-0 p-0 align-items-center justify-content-start">
+                                <MudText Class="hide-overlapping-text">
+                                    @device.Placing
+                                </MudText>
+                            </MudItem>
+                            <MudItem xs="3" Class="d-flex m-0 p-0 align-items-center justify-content-start">
+                                <MudText Class="hide-overlapping-text">
+                                    @device.BaseDevicePath
+                                </MudText>
+                            </MudItem>
+                            <MudItem xs="1" Class="d-flex m-0 p-0 align-items-center justify-content-center">
+                                <MudText>
+                                    @_localizer["State"]
+                                </MudText>
+                            </MudItem>
+                            <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-evenly">
+                                <MudIconButton Class="z-10"
+                                               Icon="@Icons.Material.Filled.Edit"
+                                               OnClick="() => DevicePagesUtils.UpdateDevice(device, _dialogService, StateHasChanged, _localizer)">
+
+                                </MudIconButton>
+
+                                <MudIconButton Class="z-10"
+                                               Icon="@Icons.Material.Filled.Delete"
+                                               OnClick="() => DevicePagesUtils.RemoveDevice(device, _dialogService, _localizer, _navigationManager)">
+
+                                </MudIconButton>
+                            </MudItem>
+                        </MudGrid>
                     </MudListItem>
 
                     <MudProgressLinear Size="Size.Small" Color="Color.Primary" Rounded="true" Value="0" />
@@ -150,13 +221,8 @@ else
         return Task.CompletedTask;
     }
 
-
-    #region Devices Actions
-
     public void NavigateToDevice(Device device)
     {
         _navigationManager.NavigateTo($"/devices/{device.Id}/{BrokerId}");
     }
-
-    #endregion
 }

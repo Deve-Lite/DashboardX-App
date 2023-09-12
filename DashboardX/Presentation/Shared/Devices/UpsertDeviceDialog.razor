@@ -113,7 +113,14 @@
         var result = await _brokerService.GetBrokers();
 
         if (result.Succeeded)
+        {
             AvaliableBrokers = result.Data;
+
+            if (!string.IsNullOrEmpty(ClientId))
+            {
+                   
+            }
+        }
         else
             Dialog!.Close(DialogResult.Ok(Result.Fail(result.Messages, result.StatusCode)));
 

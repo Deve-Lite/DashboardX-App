@@ -4,6 +4,7 @@
 @using Presentation.Shared.Brokers;
 @using Presentation.Utils;
 @using global::Shared.Models.Brokers;
+@using Presentation.Utils.PagesUtils;
 
 @inject IClientService _clientService
 @inject IStringLocalizer<BrokerListPage> _localizer
@@ -33,7 +34,7 @@ else
         </MudItem>
         <MudItem xs="5" Class="d-flex justify-content-end">
 
-            <MudButton OnClick="AddBroker"
+            <MudButton OnClick="() => BrokerPagesUtils.AddBroker(_dialogService, StateHasChanged, _localizer)"
                        Color="Color.Primary"
                        Variant="Variant.Filled"
                        StartIcon="@Icons.Material.Filled.AddToQueue">
@@ -43,14 +44,14 @@ else
         </MudItem>
 
         <MudItem Class="p-0" xs="12">
-            <MudList Class="p-0" Dense="true" Clickable="true">
+            <MudList Class="p-0 m-0" 
+                     Dense="true" 
+                     Clickable="true">
                 <MudListSubheader Class="d-flex p-0 m-0">
                     <MudGrid Class="p-0 m-0">
-
                         <MudItem xs="1" Class="p-1 m-0">
 
                         </MudItem>
-
                         <MudItem xs="2" Class="d-flex p-1 m-0 align-items-center justify-content-start">
                             <MudText Typo="Typo.h6">
                                 @_localizer["Name"]
@@ -80,30 +81,30 @@ else
 
                 @foreach(var client in Clients)
                 {
-                    <MudListItem Class="d-flex p-0 m-0"
+                    <MudListItem Class="d-flex m-0 p-0 pt-1 pb-1"
                                  OnClick="() => NavigateToBroker(client)">
-                        <MudGrid Class="p-0 m-0 w-100">
-                            <MudItem xs="1" Class="d-flex m-0 p-1 pt-2 pb-2 align-items-center justify-content-center">
+                        <MudGrid Class="w-100 p-0 m-0">
+                            <MudItem xs="1" Class="d-flex m-0 p-0 align-items-center justify-content-center">
                                 <MudIcon Class="p-0 m-0" Icon="@Icons.Material.Filled.Home">
                                     <!-- TODO Create icon recognition system -->
                                 </MudIcon>
                             </MudItem>
-                            <MudItem xs="2" Class="d-flex m-0 p-1 pt-2 pb-2 align-items-center justify-content-start">
+                            <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-start">
                                 <MudText >
                                     @client.Broker.Name
                                 </MudText>
                             </MudItem>
-                            <MudItem xs="4" Class="d-flex m-0 p-1 pt-2 pb-2 align-items-center justify-content-start">
+                            <MudItem xs="4" Class="d-flex m-0 p-0 align-items-center justify-content-start">
                                 <MudText Class="hide-overlapping-text">
                                     @client.Broker.Server
                                 </MudText>
                             </MudItem>
-                            <MudItem xs="1" Class="d-flex m-0 p-1 pt-2 pb-2 align-items-center justify-content-start">
+                            <MudItem xs="1" Class="d-flex m-0 p-0 align-items-center justify-content-start">
                                 <MudText>
                                     @client.Broker.Port
                                 </MudText>
                             </MudItem>
-                            <MudItem xs="2" Class="d-flex m-0 p-1 pt-2 pb-2 align-items-center justify-content-center">
+                            <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-center">
                                 @if (client.IsConnected)
                                 {
                                     <MudButton Variant="Variant.Filled"
@@ -121,16 +122,16 @@ else
                                     </MudButton>
                                 }
                             </MudItem>
-                            <MudItem xs="2" Class="d-flex m-0 p-1 pt-2 pb-2 align-items-center justify-content-evenly">
+                            <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-evenly">
                                 <MudIconButton Class="z-10"
                                                Icon="@Icons.Material.Filled.Edit"
-                                               OnClick="() => UpdateBroker(client)">
+                                               OnClick="() => BrokerPagesUtils.UpdateBroker(client, _dialogService, StateHasChanged, _localizer)">
 
                                 </MudIconButton>
 
                                 <MudIconButton Class="z-10"
                                                Icon="@Icons.Material.Filled.Delete"
-                                               OnClick="() => RemoveBroker(client)">
+                                               OnClick="() => BrokerPagesUtils.RemoveBroker(client, _dialogService, StateHasChanged, _localizer)">
 
                                 </MudIconButton>
                             </MudItem>
@@ -174,54 +175,6 @@ else
         _loadingService.HideLoading();
     }
 
-    #region Table actions
-
-    private async Task UpdateBroker(Client client)
-    {
-        var parameters = new DialogParameters<UpsertBrokerDialog> { { x => x.Broker, client.Broker } };
-
-        var dialog = await _dialogService.ShowAsync<UpsertBrokerDialog>("Edit Broker", parameters);
-        var result = await dialog.Result;
-
-        if (result.Canceled)
-            return;
-
-        var x = result.Data as Result<Client> ?? Result<Client>.Fail(message:"Couldn't parse response.");
-
-        if (x.Succeeded)
-            StateHasChanged();
-    }
-
-    private async Task AddBroker()
-    {
-        var dialog = await _dialogService.ShowAsync<UpsertBrokerDialog>("Create Broker");
-        var result = await dialog.Result;
-
-        if (result.Canceled)
-            return;
-
-        var x = result.Data as Result<Client> ?? Result<Client>.Fail(message: "Couldn't parse response.");
-
-        if (x.Succeeded)
-            StateHasChanged();
-    }
-
-    private async Task RemoveBroker(Client client)
-    {
-        var parameters = new DialogParameters<RemoveBrokerDialog> { { x => x.Broker, client.Broker } };
-
-        var dialog = await _dialogService.ShowAsync<RemoveBrokerDialog>("Remove Broker", parameters);
-        var result = await dialog.Result;
-
-        if (result.Canceled)
-            return;
-
-        var x = result.Data as Result ?? Result.Fail(message: "Couldn't parse response.");
-
-        if (x.Succeeded)
-            StateHasChanged();
-    }
-
     private void NavigateToBroker(Client clinet)
     {
         _navigationManager.NavigateTo($"/brokers/{clinet.Id}");
@@ -235,5 +188,9 @@ else
             _snackbar.Add(result.Messages.First(), Severity.Error);
     }
 
-    #endregion
+    private async Task DisconnectAsync(Client client)
+    {
+        await client.DisconnectAsync();
+    }
+
 }
