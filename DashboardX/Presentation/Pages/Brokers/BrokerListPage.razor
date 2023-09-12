@@ -105,22 +105,7 @@ else
                                 </MudText>
                             </MudItem>
                             <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-center">
-                                @if (client.IsConnected)
-                                {
-                                    <MudButton Variant="Variant.Filled"
-                                               Color="Color.Success"
-                                               OnClick="client.DisconnectAsync">
-                                        @_localizer["Connected"]
-                                    </MudButton>
-                                }
-                                else
-                                {
-                                    <MudButton Variant="Variant.Filled"
-                                               OnClick="() => ConnectAsync(client)"
-                                               Color="Color.Error">
-                                        @_localizer["Disconnected"]
-                                    </MudButton>
-                                }
+                                <BrokerConnectionSwitch Client="client" />
                             </MudItem>
                             <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-evenly">
                                 <MudIconButton Class="z-10"
@@ -187,10 +172,4 @@ else
         if (!result && result.ShowToast)
             _snackbar.Add(result.Messages.First(), Severity.Error);
     }
-
-    private async Task DisconnectAsync(Client client)
-    {
-        await client.DisconnectAsync();
-    }
-
 }
