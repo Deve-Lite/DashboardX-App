@@ -129,7 +129,7 @@ else
                         </MudItem>
                         <MudItem xs="3" Class="d-flex p-1 m-0 align-items-center justify-content-start">
                             <MudText Typo="Typo.h6">
-                                @_localizer["Base device path"]
+                                @_localizer["Base path"]
                             </MudText>
                         </MudItem>
                         <MudItem xs="1" Class="d-flex p-1 m-0 align-items-center justify-content-center">
@@ -151,10 +151,11 @@ else
 
                         <MudGrid Class="w-100 p-0 m-0">
                             <MudItem xs="1" Class="d-flex p-0 m-0 align-items-center justify-content-center">
-                                <MudIcon Class="p-0 m-0" 
-                                         Icon="@Icons.Material.Filled.Home">
-                                    <!-- TODO Create icon recognition system -->
-                                </MudIcon>
+
+                                <ModelIcon Icon="@Client!.Broker.Icon"
+                                           BackgroundColor="@Client!.Broker.IconBackgroundColor"
+                                           IconSize="Size.Medium" />
+
                             </MudItem>
                             <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-start">
                                 <MudText Class="hide-overlapping-text">
