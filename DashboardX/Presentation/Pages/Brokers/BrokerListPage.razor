@@ -44,34 +44,34 @@ else
 
         <MudItem Class="p-0" xs="12">
             <MudList Class="p-0" Dense="true" Clickable="true">
-                <MudListSubheader>
-                    <MudGrid Class="text-center">
+                <MudListSubheader Class="d-flex p-0 m-0">
+                    <MudGrid Class="p-0 m-0">
 
-                        <MudItem xs="1">
+                        <MudItem xs="1" Class="p-1 m-0">
 
                         </MudItem>
 
-                        <MudItem xs="2">
-                            <MudText Typo="Typo.button">
+                        <MudItem xs="2" Class="d-flex p-1 m-0 align-items-center justify-content-start">
+                            <MudText Typo="Typo.h6">
                                 @_localizer["Name"]
                             </MudText>
                         </MudItem>
-                        <MudItem xs="4">
-                            <MudText Typo="Typo.button">
+                        <MudItem xs="4" Class="d-flex p-1 m-0 align-items-center justify-content-start">
+                            <MudText Typo="Typo.h6">
                                 @_localizer["Server"]
                             </MudText>
                         </MudItem>
-                        <MudItem xs="1">
-                            <MudText Typo="Typo.button">
+                        <MudItem xs="1" Class="d-flex p-1 m-0 align-items-center justify-content-start">
+                            <MudText Typo="Typo.h6">
                                 @_localizer["Port"]
                             </MudText>
                         </MudItem>
-                        <MudItem xs="2">
-                            <MudText Typo="Typo.button">
+                        <MudItem xs="2" Class="d-flex p-1 m-0 align-items-center justify-content-center">
+                            <MudText Typo="Typo.h6">
                                 @_localizer["Status"]
                             </MudText>
-                        </MudItem>
-                        <MudItem> </MudItem>
+                        </MudItem xs="2">
+                        <MudItem Class="p-1 m-0"> </MudItem>
                     </MudGrid>
 
                 </MudListSubheader>
@@ -80,30 +80,30 @@ else
 
                 @foreach(var client in Clients)
                 {
-                    <MudListItem Class="d-flex align-items-center text-center"
+                    <MudListItem Class="d-flex p-0 m-0"
                                  OnClick="() => NavigateToBroker(client)">
-                        <MudGrid>
-                            <MudItem xs="1" Class="d-flex align-items-center justify-content-center">
+                        <MudGrid Class="p-0 m-0 w-100">
+                            <MudItem xs="1" Class="d-flex m-0 p-1 pt-2 pb-2 align-items-center justify-content-center">
                                 <MudIcon Class="p-0 m-0" Icon="@Icons.Material.Filled.Home">
                                     <!-- TODO Create icon recognition system -->
                                 </MudIcon>
                             </MudItem>
-                            <MudItem xs="2" Class="d-flex align-items-center justify-content-center">
+                            <MudItem xs="2" Class="d-flex m-0 p-1 pt-2 pb-2 align-items-center justify-content-start">
                                 <MudText >
                                     @client.Broker.Name
                                 </MudText>
                             </MudItem>
-                            <MudItem xs="4" Class="d-flex align-items-center justify-content-center">
+                            <MudItem xs="4" Class="d-flex m-0 p-1 pt-2 pb-2 align-items-center justify-content-start">
                                 <MudText Class="hide-overlapping-text">
                                     @client.Broker.Server
                                 </MudText>
                             </MudItem>
-                            <MudItem xs="1" Class="d-flex align-items-center justify-content-center">
+                            <MudItem xs="1" Class="d-flex m-0 p-1 pt-2 pb-2 align-items-center justify-content-start">
                                 <MudText>
                                     @client.Broker.Port
                                 </MudText>
                             </MudItem>
-                            <MudItem xs="2" Class="d-flex align-items-center justify-content-center">
+                            <MudItem xs="2" Class="d-flex m-0 p-1 pt-2 pb-2 align-items-center justify-content-center">
                                 @if (client.IsConnected)
                                 {
                                     <MudButton Variant="Variant.Filled"
@@ -121,8 +121,7 @@ else
                                     </MudButton>
                                 }
                             </MudItem>
-                            <MudItem xs="2" 
-                                     Class="d-flex align-items-center justify-content-evenly">
+                            <MudItem xs="2" Class="d-flex m-0 p-1 pt-2 pb-2 align-items-center justify-content-evenly">
                                 <MudIconButton Class="z-10"
                                                Icon="@Icons.Material.Filled.Edit"
                                                OnClick="() => UpdateBroker(client)">

@@ -1,6 +1,7 @@
 ﻿@page "/brokers/{BrokerId}"
 @using MQTTnet.Client;
 @using Presentation.Models;
+@using global::Shared.Models.Devices;
 
 @inject IClientService _clientService
 @inject IStringLocalizer<BrokerPage> _localizer
@@ -17,10 +18,14 @@ else if (!LoadedSuccessfully)
         Failed to load... TODO: Refresh button
     </div>
 }
+else if (IsMobile)
+{
+    //TODO
+}
 else
 {
-    <MudGrid>
-        <MudItem xs="8" Class="fit-content p-5">
+    <MudGrid Class="m-0 p-3 w-100">
+        <MudItem xs="5" Class="fit-content">
             <MudPaper>
                 <MudGrid>
                     <MudItem xs="8">
@@ -42,31 +47,59 @@ else
             </MudPaper>
         </MudItem>
 
-        <MudGrid>
+        <MudItem xs="7" Class="fit-content p-5">
+            TODO: Simple console
+        </MudItem>
 
-            @foreach (var device in Client!.Devices)
-            {
-                <MudCard Elevation="25"
-                         Class="container container-fit-content p-2"
-                         style="border-radius: 1rem; max-width: 25rem;">
-                    <NavLink href="@($"devices/{device.Id}/{Client.Id}")">
-                        <MudPaper>
-                            <MudItem xs="12">
-                                <MudText Typo="Typo.h4" Class="text-center">@device.Name</MudText>
-                            </MudItem>
+        <MudItem xs="12">
+            <MudList Class="p-0 w-100"
+                     Dense="true" 
+                     Clickable="true">
 
-                            <MudItem xs="12">
-                                <MudText Typo="Typo.h4" Class="text-center">@device.Placing</MudText>
-                            </MudItem>
+                <MudListSubheader>
+                    <MudGrid Class="text-center">
+                        <MudItem xs="1">
 
-                            <MudItem xs="12">
-                                <MudText Typo="Typo.h4" Class="text-center">@device.EditedAt</MudText>
-                            </MudItem>
-                        </MudPaper>
-                    </NavLink>
-                </MudCard>
-            }
-        </MudGrid>
+                        </MudItem>
+                        <MudItem xs="2">
+                            <MudText Typo="Typo.button">
+                                @_localizer["Name"]
+                            </MudText>
+                        </MudItem>
+                        <MudItem xs="4">
+                            <MudText Typo="Typo.button">
+                                @_localizer["Placing"]
+                            </MudText>
+                        </MudItem>
+                        <MudItem xs="1">
+                            <MudText Typo="Typo.button">
+                                @_localizer["Port"]
+                            </MudText>
+                        </MudItem>
+                        <MudItem xs="2">
+                            <MudText Typo="Typo.button">
+                                @_localizer["Status"]
+                            </MudText>
+                        </MudItem>
+                        <MudItem> </MudItem>
+                    </MudGrid>
+
+                </MudListSubheader>
+
+                <MudProgressLinear Size="Size.Small" Color="Color.Primary" Rounded="true" Value="100" />
+
+                @foreach (var device in Client!.Devices)
+                {
+                    <MudListItem Class="d-flex align-items-center text-center"
+                                 OnClick="() => NavigateToDevice(device)">
+                       
+
+                    </MudListItem>
+
+                    <MudProgressLinear Size="Size.Small" Color="Color.Primary" Rounded="true" Value="0" />
+                }
+            </MudList>
+        </MudItem>
     </MudGrid>
 }
 
@@ -75,7 +108,7 @@ else
 {
     [Parameter] 
     public string BrokerId { get; set; } = string.Empty;
-
+    public bool IsMobile { get; set; }
     private bool LoadedSuccessfully { get; set; } = false;
     private Client? Client { get; set; }
 
@@ -85,6 +118,8 @@ else
             return;
 
         _loadingService.ShowLoading();
+
+        IsMobile = false; //TODO: Uncoment = await _runtime.IsMobile();
 
         var result = await _clientService.GetClient(BrokerId);
 
@@ -114,4 +149,14 @@ else
         StateHasChanged();
         return Task.CompletedTask;
     }
+
+
+    #region Devices Actions
+
+    public void NavigateToDevice(Device device)
+    {
+        _navigationManager.NavigateTo($"/devices/{device.Id}/{BrokerId}");
+    }
+
+    #endregion
 }

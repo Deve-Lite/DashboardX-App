@@ -21,6 +21,10 @@ else if (!LoadedSuccessfully)
         Failed to load... TODO: Refresh button
     </div>
 }
+else if (IsMobile)
+{
+    
+}
 else
 {
     <MudGrid Class="p-5">
@@ -201,6 +205,7 @@ else
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
 
+    public bool IsMobile { get; set; }
     public bool LoadedSuccessfully { get; set; } = true;
 
     public Client? Client { get; set; }
@@ -208,6 +213,8 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        IsMobile = false; //TODO: Uncoment = await _runtime.IsMobile();
+
         if (_loadingService.IsLoading)
             return;
 
