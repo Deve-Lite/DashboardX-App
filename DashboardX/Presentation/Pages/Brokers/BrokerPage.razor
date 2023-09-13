@@ -102,7 +102,7 @@ else
                         <MudText Class="hide-overlapping-text">
                             @Client!.Broker.KeepAlive
                         </MudText>
-                    </MudItem>
+                    </MudItem> 
                 </MudGrid>
             </MudPaper>
         </MudItem>
@@ -122,17 +122,17 @@ else
                                 @_localizer["Name"]
                             </MudText>
                         </MudItem>
-                        <MudItem xs="3" Class="d-flex p-1 m-0 align-items-center justify-content-start">
+                        <MudItem xs="2" Class="d-flex p-1 m-0 align-items-center justify-content-start">
                             <MudText Typo="Typo.h6">
                                 @_localizer["Placing"]
                             </MudText>
                         </MudItem>
-                        <MudItem xs="3" Class="d-flex p-1 m-0 align-items-center justify-content-start">
+                        <MudItem xs="2" Class="d-flex p-1 m-0 align-items-center justify-content-start">
                             <MudText Typo="Typo.h6">
                                 @_localizer["Base path"]
                             </MudText>
                         </MudItem>
-                        <MudItem xs="1" Class="d-flex p-1 m-0 align-items-center justify-content-center">
+                        <MudItem xs="3" Class="d-flex p-1 m-0 align-items-center justify-content-center">
                             <MudText Typo="Typo.h6">
                                 @_localizer["State"]
                             </MudText>
@@ -162,20 +162,19 @@ else
                                     @device.Name
                                 </MudText>
                             </MudItem>
-                            <MudItem xs="3" Class="d-flex m-0 p-0 align-items-center justify-content-start">
+                            <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-start">
                                 <MudText Class="hide-overlapping-text">
                                     @device.Placing
                                 </MudText>
                             </MudItem>
-                            <MudItem xs="3" Class="d-flex m-0 p-0 align-items-center justify-content-start">
+                            <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-start">
                                 <MudText Class="hide-overlapping-text">
                                     @device.BaseDevicePath
                                 </MudText>
                             </MudItem>
-                            <MudItem xs="1" Class="d-flex m-0 p-0 align-items-center justify-content-center">
-                                <MudText>
-                                    @_localizer["State"]
-                                </MudText>
+                            <MudItem xs="3" Class="d-flex m-0 p-0 align-items-center justify-content-center">
+                                <DeviceStateControl Client="Client" 
+                                                    Device="device"/>
                             </MudItem>
                             <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-evenly">
                                 <MudIconButton Class="z-10"
