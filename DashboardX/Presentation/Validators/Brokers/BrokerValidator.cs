@@ -5,7 +5,7 @@ namespace Presentation.Validators.Brokers;
 
 public class BrokerValidator : BaseValidator<Broker>
 {
-    public BrokerValidator()
+    public BrokerValidator() : base()
     {
         RuleFor(x => x.Name)
             .MinimumLength(3)

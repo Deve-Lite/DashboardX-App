@@ -37,7 +37,7 @@
                 </MudItem>
 
                 <MudItem xs="12"
-                         Class="p-0 m-0">
+                         Class="p-1 m-0">
                     <MudColorPicker @bind-Text="Broker.IconBackgroundColor"
                                     Label="@_localizer["Icon color"]"
                                     Class="p-0 m-0"
@@ -49,19 +49,6 @@
 
                 <MudItem xs="12"
                          Class="p-1 m-0">
-                    <MudTextField @bind-Value="Broker.Port"
-                                  T="int"
-                                  Label="@_localizer["Port"]"
-                                  Variant="Variant.Filled"
-                                  OnlyValidateIfDirty="true"
-                                  Clearable="true"
-                                  Class="p-0 m-0"
-                                  HelperText="@_localizer["Provide meaningful name."]"
-                                  For="@(() => Broker.Port)" />
-              
-                </MudItem>
-                <MudItem xs="12"
-                         Class="p-1 m-0">
                     <MudTextField @bind-Value="Broker.Server" T="string"
                                   Label="@_localizer["Server"]"
                                   Variant="Variant.Filled"
@@ -70,6 +57,20 @@
                                   Class="p-0 m-0"
                                   HelperText="@_localizer["Server url."]"
                                   For="@(() => Broker.Server)" />
+                </MudItem>
+
+                <MudItem xs="12"
+                         Class="p-1 m-0">
+                    <MudTextField @bind-Value="Broker.Port"
+                                  T="int"
+                                  Label="@_localizer["Port"]"
+                                  Variant="Variant.Filled"
+                                  OnlyValidateIfDirty="true"
+                                  Clearable="true"
+                                  Class="p-0 m-0"
+                                  HelperText="@_localizer["Provide secure websocket port."]"
+                                  For="@(() => Broker.Port)" />
+              
                 </MudItem>
                 <MudItem xs="12"
                          Class="p-1 m-0">
@@ -102,7 +103,7 @@
 
                 @if (ShowAuthorizationFields)
                 {
-                    <MudItem xs="6"
+                    <MudItem xs="12"
                              Class="p-1 m-0">
                         <MudTextField @bind-Value="Broker.Username"
                                       T="string"
@@ -115,7 +116,7 @@
                       
                     </MudItem>
 
-                    <MudItem xs="6"
+                    <MudItem xs="12"
                              Class="p-1 m-0">
                         <MudTextField @bind-Value="Broker.Password"
                                       Label="@_localizer["Password"]"
@@ -137,7 +138,6 @@
         <MudButton OnClick="Cancel" Variant="Variant.Filled">@_localizer["Cancel"]</MudButton>
         <MudButton form="upsertBrokerForm"
                    OnClick="SubmitAsync"
-                   ButtonType="ButtonType.Submit"
                    Variant="Variant.Filled"
                    Color="Color.Primary">@_localizer["Submit"] </MudButton>
     </DialogActions>

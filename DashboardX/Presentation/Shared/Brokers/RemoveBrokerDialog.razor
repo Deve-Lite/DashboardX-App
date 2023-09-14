@@ -12,11 +12,11 @@
         <MudText Class="hide-overlapping-text">@_localizer["Client id:"] @Broker.ClientId</MudText>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel" Variant="Variant.Filled">@_localizer["Cancel"]</MudButton>
+        <MudButton OnClick="Cancel">@_localizer["Cancel"]</MudButton>
         <MudButton OnClick="RemoveAsync"
                    ButtonType="ButtonType.Submit"
                    Variant="Variant.Filled"
-                   Color="Color.Warning">@_localizer["Remove"] </MudButton>
+                   Color="Color.Error">@_localizer["Remove"] </MudButton>
     </DialogActions>
 </MudDialog>
 

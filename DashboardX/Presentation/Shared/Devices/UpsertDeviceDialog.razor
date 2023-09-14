@@ -2,6 +2,7 @@
 @using Infrastructure;
 @using Presentation.Utils;
 @using System.Net;
+@using Presentation.Validators.Devices;
 @using global::Shared.Models.Brokers;
 @using global::Shared.Models.Devices;
 
@@ -11,83 +12,96 @@
 
 <MudDialog>
     <DialogContent>
-        <EditForm id="upsertBrokerForm" Model="@Device" OnValidSubmit="SubmitAsync">
-            <FluentValidationValidator @ref="_fluentValidationValidator" />
-            <MudGrid>
+        <MudForm @ref="@form"
+                 Model="@Device"
+                 Validation="@(DeviceValidator.ValidateValue)"
+                 ValidationDelay="0"
+                 Class="m-0 p-0 w-100">
+            <MudGrid Class="m-0 p-3 w-100">
 
-                <DataAnnotationsValidator />
-
-                <MudItem xs="12">
-                    <div class="d-flex justify-center">
-                        <MudTextField @bind-Value="Device.Name"
+                <MudItem xs="12"
+                         Class="p-1 m-0">
+                      
+                         <MudTextField @bind-Value="Device.Name"
                                       T="string"
                                       Label="@_localizer["Name"]"
-                                      Variant="Variant.Outlined"
+                                  Variant="Variant.Filled"
+                                  OnlyValidateIfDirty="true"
+                                  Clearable="true"
+                                  Class="p-0 m-0"
+                                  HelperText="@_localizer["Provide meaningful name."]"
                                       For="@(() => Device.Name)" />
-                    </div>
                 </MudItem>
 
-                <MudSelect @bind-Value="Device.BrokerId"
-                           xs="12"
-                           T ="string"
-                           Label="@_localizer["Broker"]"
-                           For="(() => Device.BrokerId)"
-                           Variant="Variant.Outlined" 
-                           AnchorOrigin="Origin.BottomCenter">
-                    @foreach (var data in AvaliableBrokers)
-                    {
-                        <MudSelectItem Value="@data.Id">@data.Name</MudSelectItem>
-                    }
-                </MudSelect>
-
-                <MudItem xs="12">
-                    <div class="d-flex justify-center">
-                        <MudTextField @bind-Value="Device.Icon"
-                                      T="string"
-                                      Label="@_localizer["Icon"]"
-                                      Variant="Variant.Outlined"
-                                      For="@(() => Device.Icon)" />
-                    </div>
+                <MudItem xs="12"
+                         Class="p-1 m-0">
+                    <MudSelect @bind-Value="Device.BrokerId"
+                               xs="12"
+                               T="string"
+                               Class="p-0 m-0"
+                               Label="@_localizer["Broker"]"
+                               For="(() => Device.BrokerId)"
+                               Variant="Variant.Filled"
+                               AnchorOrigin="Origin.BottomCenter">
+                        @foreach (var data in AvaliableBrokers)
+                        {
+                            <MudSelectItem Value="@data.Id">@data.Name</MudSelectItem>
+                        }
+                    </MudSelect>
                 </MudItem>
 
-                <MudItem xs="12">
-                    <div class="d-flex justify-center">
-                        <MudColorPicker @bind-Text="Device.IconBackgroundColor"
-                                        Label="@_localizer["Icon background color"]"
-                                        ColorPickerView="ColorPickerView.Palette" />
-
-                    </div>
+                <MudItem xs="12"
+                         Class="p-1 m-0">
+                    TODO Icon
                 </MudItem>
 
-                <MudItem xs="12">
-                    <div class="d-flex justify-center">
+                <MudItem xs="12"
+                         Class="p-1 m-0">
+                    <MudColorPicker @bind-Text="Device.IconBackgroundColor"
+                                    Label="@_localizer["Icon color"]"
+                                    Class="p-0 m-0"
+                                    Clearable="true"
+                                    HelperText="@_localizer["Color for icon."]"
+                                    Variant="Variant.Filled"
+                                    ColorPickerView="ColorPickerView.Palette" />
+                </MudItem>
+
+                <MudItem xs="12"
+                        Class="p-1 m-0">
+
                         <MudTextField @bind-Value="Device.Placing"
                                       T="string"
                                       Label="@_localizer["Placing"]"
-                                      Variant="Variant.Outlined"
-                                      For="@(() => Device.Placing)" />
-                    </div>
+                                  Variant="Variant.Filled"
+                                  OnlyValidateIfDirty="true"
+                                  Clearable="true"
+                                  Class="p-0 m-0"
+                                  For="@(() => Device.Placing)"
+                                  HelperText="@_localizer["Placing of device."]" />
+  
                 </MudItem>
 
-                <MudItem xs="12">
-                    <div class="d-flex justify-center">
+                <MudItem xs="12"
+                         Class="p-1 m-0">
                         <MudTextField @bind-Value="Device.BaseDevicePath"
                                       T="string"
                                       Label="@_localizer["Base device path"]"
-                                      Variant="Variant.Outlined"
+                                  Variant="Variant.Filled"
+                                  OnlyValidateIfDirty="true"
+                                  Clearable="true"
+                                  Class="p-0 m-0"
+                                  HelperText="@_localizer["Path combined with broker path {brokerPath}{DevicePath}."]"
                                       For="@(() => Device.BaseDevicePath)" />
-                    </div>
+               
                 </MudItem>
             </MudGrid>
-        </EditForm>
+        </MudForm>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">@_localizer["Cancel"]</MudButton>
         <MudButton form="upsertBrokerForm"
                    OnClick="SubmitAsync"
-                   ButtonType="ButtonType.Submit"
                    Variant="Variant.Filled"
-                   Disabled="@(!Validated)"
                    Color="Color.Primary">@_localizer["Submit"] </MudButton>
     </DialogActions>
 </MudDialog>
@@ -104,9 +118,11 @@
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
 
+    private DeviceValidator DeviceValidator = new();
+
+    MudForm? form;
+
     private List<Broker> AvaliableBrokers = new();
-    private FluentValidationValidator? _fluentValidationValidator;
-    private bool Validated => _fluentValidationValidator == null ? false : _fluentValidationValidator.Validate(options => { options.IncludeAllRuleSets(); });
 
     protected override async Task OnInitializedAsync()
     {
@@ -115,11 +131,6 @@
         if (result.Succeeded)
         {
             AvaliableBrokers = result.Data;
-
-            if (!string.IsNullOrEmpty(ClientId))
-            {
-                   
-            }
         }
         else
             Dialog!.Close(DialogResult.Ok(Result.Fail(result.Messages, result.StatusCode)));
@@ -129,7 +140,7 @@
 
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
-        if (Validated && firstRender)
+        if (form is not null && firstRender && form.IsValid)
             StateHasChanged();
 
         if (firstRender && !string.IsNullOrEmpty(Device.Id))
@@ -143,6 +154,11 @@
     private async Task SubmitAsync()
     {
         if (_loadingService.IsLoading)
+            return;
+
+        await form!.Validate();
+
+        if (!form.IsValid)
             return;
 
         _loadingService.ShowLoading();
