@@ -5,32 +5,29 @@
 
 @if (!HasStateControl)
 {
-
-
-              <MudButton Variant="Variant.Filled"
-                   StartIcon="@Icons.Material.Filled.HighlightOff"
-                   OnClick="NotAvaliableToast"
-                   Color="Color.Warning">
-                   Not Available
-              </MudButton>
+    <MudButton Variant="Variant.Filled"
+               OnClick="NotAvaliableToast"
+               Color="Color.Warning">
+               Not Available
+    </MudButton>
 }
 else if (IsOn)
 {
-        <MudButton Variant="Variant.Filled"
+    <MudButton Variant="Variant.Filled"
                StartIcon="@Icons.Material.Filled.CloudQueue"
-                   OnClick="NotAvaliableToast"
-                   Color="Color.Success">
-            On
-        </MudButton>
+               OnClick="NotAvaliableToast"
+               Color="Color.Success">
+               On
+    </MudButton>
 }
 else
 {
-        <MudButton Variant="Variant.Filled"
+    <MudButton Variant="Variant.Filled"
                StartIcon="@Icons.Material.Filled.CloudOff"
-                   OnClick="NotAvaliableToast"
-                   Color="Color.Error">
-            Off
-        </MudButton>
+               OnClick="NotAvaliableToast"
+               Color="Color.Error">
+               Off
+    </MudButton>
 }
 
 @code 

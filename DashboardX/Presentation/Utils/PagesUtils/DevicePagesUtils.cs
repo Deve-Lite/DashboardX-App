@@ -61,10 +61,9 @@ public class DevicePagesUtils
         }
     }
 
-    public static async Task AddDevice(string clientId,
-        Action refreshUI,
+    public static async Task AddDevice(Action refreshUI,
         IDialogService dialogService,
-        IStringLocalizer<object> localizer)
+        IStringLocalizer<object> localizer, string? clientId = null)
     {
         var parameters = new DialogParameters<RemoveDeviceDialog>
         {

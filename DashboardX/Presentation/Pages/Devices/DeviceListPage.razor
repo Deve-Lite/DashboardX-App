@@ -2,6 +2,7 @@
 @using Infrastructure;
 @using Presentation.Models;
 @using Presentation.Shared.Devices;
+@using Presentation.Utils.PagesUtils;
 @using global::Shared.Models.Devices;
 
 @inject IClientService _clientService
@@ -19,47 +20,114 @@ else if (!LoadedSuccessfully)
 }
 else
 {
-    <MudGrid Class="p-5">
-        @foreach (var client in Clients)
-            @foreach(var device in client.Devices)
-            {
-                <MudItem>
-                    <MudCard Elevation="25" Class="container container-fit-content p-2" style="border-radius: 1rem; max-width: 25rem;">
-                        <NavLink href="@($"devices/{device.Id}/{client.Id}")">
-                            <MudText Align="Align.Center"> @device.Name </MudText>
-                            <MudText>Placing: @device.Placing </MudText>
-                            <MudText>Path: @device.BaseDevicePath </MudText>
-                            <MudText Align="Align.End">Edited At: @device.EditedAt </MudText>
-                        </NavLink>
-                        <MudButton Variant="Variant.Filled"
-                                   Color="Color.Primary"
-                                   Style="z-index: 10;"
-                                   OnClick="(() => RemoveDevice(client, device))">
-                            Remove
-                        </MudButton>
-                        <MudButton Variant="Variant.Filled"
-                                   Color="Color.Primary"
-                                   Style="z-index: 10;"
-                                   OnClick="(() => UpdateDevice(client, device))">
-                            Update
-                        </MudButton>
+    <MudGrid Class="m-0 p-3 w-100">
 
-                    </MudCard>
-                </MudItem>
-            }
+        <MudItem xs="7" Class="p-0 pt-3 pb-3 m-0">
 
-        <MudItem>
-            <MudCard Elevation="25" Class="container container-fit-content p-5" style="border-radius: 1rem;">
-                <MudButton Variant="Variant.Filled"
-                           Color="Color.Primary"
-                           Class="container container-fit-content p-5"
-                           Style="border-radius: 1rem; max-width: 25rem"
-                           OnClick="AddDevice">
-                    Add new
-                </MudButton>
-            </MudCard>
         </MudItem>
 
+        <MudItem xs="5" Class="d-flex p-0 pt-3 pb-3 m-0 justify-content-end">
+
+            <MudButton OnClick="() => DevicePagesUtils.AddDevice(StateHasChanged, _dialogService, _localizer)"
+                       Color="Color.Primary"
+                       Variant="Variant.Filled"
+                       StartIcon="@Icons.Material.Filled.AddToQueue">
+                @_localizer["Add Device"]
+            </MudButton>
+
+        </MudItem>
+
+
+        <MudItem Class="p-0 pt-2" xs="12">
+            <MudList Class="p-0 w-100"
+                     Dense="true"
+                     Clickable="true">
+
+                <MudListSubheader Class="d-flex p-0 m-0">
+                    <MudGrid Class="p-0 m-0">
+                        <MudItem xs="1" Class="d-flex p-1 m-0">
+
+                        </MudItem>
+                        <MudItem xs="2" Class="d-flex p-1 m-0 align-items-center justify-content-start">
+                            <MudText Typo="Typo.h6">
+                                @_localizer["Name"]
+                            </MudText>
+                        </MudItem>
+                        <MudItem xs="2" Class="d-flex p-1 m-0 align-items-center justify-content-start">
+                            <MudText Typo="Typo.h6">
+                                @_localizer["Placing"]
+                            </MudText>
+                        </MudItem>
+                        <MudItem xs="2" Class="d-flex p-1 m-0 align-items-center justify-content-start">
+                            <MudText Typo="Typo.h6">
+                                @_localizer["Base path"]
+                            </MudText>
+                        </MudItem>
+                        <MudItem xs="3" Class="d-flex p-1 m-0 align-items-center justify-content-center">
+                            <MudText Typo="Typo.h6">
+                                @_localizer["State"]
+                            </MudText>
+                        </MudItem>
+                        <MudItem xs="2"> </MudItem>
+                    </MudGrid>
+
+                </MudListSubheader>
+
+                <MudProgressLinear Size="Size.Small" Color="Color.Primary" Rounded="true" Value="100" />
+
+                @foreach (var client in Clients)
+                    @foreach (var device in client.Devices)
+                    {
+                        <MudListItem Class="d-flex m-0 p-0 pt-1 pb-1 align-items-center justify-content-center"
+                                     Href="@($"/devices/{device.Id}/{client.Id}")">
+
+                            <MudGrid Class="w-100 p-0 m-0">
+                                <MudItem xs="1" Class="d-flex p-0 m-0 align-items-center justify-content-center">
+
+                                    <ModelIcon Icon="@device.Icon"
+                                               BackgroundColor="@device.IconBackgroundColor"
+                                               IconSize="Size.Medium" />
+
+                                </MudItem>
+                                <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-start">
+                                    <MudText Class="hide-overlapping-text">
+                                        @device.Name
+                                    </MudText>
+                                </MudItem>
+                                <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-start">
+                                    <MudText Class="hide-overlapping-text">
+                                        @device.Placing
+                                    </MudText>
+                                </MudItem>
+                                <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-start">
+                                    <MudText Class="hide-overlapping-text">
+                                        @device.BaseDevicePath
+                                    </MudText>
+                                </MudItem>
+                                <MudItem xs="3" Class="d-flex m-0 p-0 align-items-center justify-content-center">
+                                    <DeviceStateControl Client="client"
+                                                        Device="device" />
+                                </MudItem>
+                                <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-evenly">
+                                    <MudIconButton Class="z-10"
+                                                   Icon="@Icons.Material.Filled.Edit"
+                                                   OnClick="() => DevicePagesUtils.UpdateDevice(device, _dialogService, StateHasChanged, _localizer)">
+
+                                    </MudIconButton>
+
+                                    <MudIconButton Class="z-10"
+                                                   Icon="@Icons.Material.Filled.Delete"
+                                                   OnClick="() => DevicePagesUtils.RemoveDevice(device, _dialogService, _localizer, _navigationManager)">
+
+                                    </MudIconButton>
+                                </MudItem>
+                            </MudGrid>
+                        </MudListItem>
+
+                        <MudProgressLinear Size="Size.Small" Color="Color.Primary" Rounded="true" Value="0" />
+                    }
+            </MudList>
+        </MudItem>
     </MudGrid>
 }
 
@@ -91,51 +159,4 @@ else
 
         _loadingService.HideLoading();
     }
-
-    private async Task UpdateDevice(Client client, Device device)
-    {
-        var parameters = new DialogParameters<UpsertDeviceDialog> { { x => x.Device, device }, { x => x.ClientId, client.Id } };
-
-        var dialog = await _dialogService.ShowAsync<UpsertDeviceDialog>("Edit Device", parameters);
-        var result = await dialog.Result;
-
-        if (result.Canceled)
-            return;
-
-        var x = result.Data as Result<Client> ?? Result<Client>.Fail(message: "Couldn't parse response.");
-
-        if (x.Succeeded)
-            StateHasChanged();
-    }
-
-    private async Task AddDevice()
-    {
-        var dialog = await _dialogService.ShowAsync<UpsertDeviceDialog>("Create Device");
-        var result = await dialog.Result;
-
-        if (result.Canceled)
-            return;
-
-        var x = result.Data as Result<Client> ?? Result<Client>.Fail(message: "Couldn't parse response.");
-
-        if (x.Succeeded)
-            StateHasChanged();
-    }
-
-    private async Task RemoveDevice(Client client, Device device)
-    {
-        var parameters = new DialogParameters<UpsertDeviceDialog> { { x => x.Device, device }, { x => x.ClientId, client.Id } };
-
-        var dialog = await _dialogService.ShowAsync<RemoveDeviceDialog>("Remove Device", parameters);
-        var result = await dialog.Result;
-
-        if (result.Canceled)
-            return;
-
-        var x = result.Data as Result ?? Result.Fail(message: "Couldn't parse response.");
-
-        if (x.Succeeded)
-            StateHasChanged();
-    }
 }
-

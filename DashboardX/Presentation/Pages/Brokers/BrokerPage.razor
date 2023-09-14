@@ -3,6 +3,7 @@
 @using Presentation.Models;
 @using Presentation.Utils.PagesUtils;
 @using Presentation.Shared.Brokers;
+@using Presentation.Utils;
 @using global::Shared.Models.Devices;
 
 @inject IClientService _clientService
@@ -28,14 +29,33 @@ else
 {
     <MudGrid Class="m-0 p-3 w-100">
 
-        <MudItem xs="7">
+        <MudItem xs="7" Class="p-0 pt-3 pb-3 m-0">
 
-            <!-- Todo Breadcrumb -->
+            <MudButton OnClick="async() => await _runtime.GoBack()"
+                       Color="Color.Dark"
+                       Variant="Variant.Filled"
+                       StartIcon="@Icons.Material.Filled.ArrowBackIos">
+                @_localizer["Back"]
+            </MudButton>
+
+            <MudButton Class="z-10 ml-2"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       OnClick="() => BrokerPagesUtils.UpdateBroker(Client, _dialogService, StateHasChanged, _localizer)">
+                @_localizer["Edit"]
+            </MudButton>
+
+            <MudButton Class="z-10 ml-2 mr-2"
+                       Variant="Variant.Filled"
+                       Color="Color.Error"
+                       OnClick="() => BrokerPagesUtils.RemoveBroker(Client, _dialogService, StateHasChanged, _localizer)">
+                @_localizer["Delete"]
+            </MudButton>
 
         </MudItem>
-        <MudItem xs="5" Class="d-flex justify-content-end">
+        <MudItem xs="5" Class="d-flex p-0 pt-3 pb-3 m-0 justify-content-end">
 
-            <MudButton OnClick="() => DevicePagesUtils.AddDevice(Client!.Id, StateHasChanged, _dialogService, _localizer)"
+            <MudButton OnClick="() => DevicePagesUtils.AddDevice(StateHasChanged, _dialogService, _localizer, Client!.Id)"
                        Color="Color.Primary"
                        Variant="Variant.Filled"
                        StartIcon="@Icons.Material.Filled.AddToQueue">
@@ -147,13 +167,13 @@ else
                 @foreach (var device in Client!.Devices)
                 {
                     <MudListItem Class="d-flex m-0 p-0 pt-1 pb-1 align-items-center justify-content-center"
-                                 OnClick="() => NavigateToDevice(device)">
+                                 Href="@($"/devices/{device.Id}/{BrokerId}")">
 
                         <MudGrid Class="w-100 p-0 m-0">
                             <MudItem xs="1" Class="d-flex p-0 m-0 align-items-center justify-content-center">
 
-                                <ModelIcon Icon="@Client!.Broker.Icon"
-                                           BackgroundColor="@Client!.Broker.IconBackgroundColor"
+                                <ModelIcon Icon="@device.Icon"
+                                           BackgroundColor="@device.IconBackgroundColor"
                                            IconSize="Size.Medium" />
 
                             </MudItem>
