@@ -82,7 +82,7 @@ else
                 @foreach(var client in Clients)
                 {
                     <MudListItem Class="d-flex m-0 p-0 pt-1 pb-1"
-                                 OnClick="() => NavigateToBroker(client)">
+                                 Href="@($"/brokers/{client.Id}")">
                         <MudGrid Class="w-100 p-0 m-0">
                             <MudItem xs="1" Class="d-flex m-0 p-0 align-items-center justify-content-center">
                                 <ModelIcon Icon="@client!.Broker.Icon"
@@ -158,11 +158,6 @@ else
                 _snackbar.Add(message, result.Severity);
 
         _loadingService.HideLoading();
-    }
-
-    private void NavigateToBroker(Client clinet)
-    {
-        _navigationManager.NavigateTo($"/brokers/{clinet.Id}");
     }
 
     private async Task ConnectAsync(Client client)
