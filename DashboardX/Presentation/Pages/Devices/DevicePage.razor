@@ -3,11 +3,14 @@
 @using Presentation.Extensions;
 @using Presentation.Shared.Controls;
 @using Presentation.Shared.Devices;
+@using Presentation.Utils.PagesUtils;
+@using Presentation.Utils;
 @using global::Shared.Models.Controls;
 @using global::Shared.Models.Devices;
 
 @inject IClientService _clientService
 @inject NavigationManager _navigationManager
+@inject IStringLocalizer<DevicePage> _localizer
 
 @implements IDisposable
 
@@ -27,9 +30,42 @@ else if (IsMobile)
 }
 else
 {
-    <MudGrid Class="p-5">
+    <MudGrid Class="m-0 p-3 w-100">
+        <MudItem xs="7" Class="p-0 pt-3 pb-3 m-0">
+            <MudButton OnClick="async() => await _runtime.GoBack()"
+                       Color="Color.Dark"
+                       Variant="Variant.Filled"
+                       StartIcon="@Icons.Material.Filled.ArrowBackIos">
+                @_localizer["Back"]
+            </MudButton>
 
-        <MudItem>
+            <MudButton Class="z-10 ml-2"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       OnClick="() => DevicePagesUtils.UpdateDevice(Device, _dialogService, StateHasChanged, _localizer)">
+                @_localizer["Edit"]
+            </MudButton>
+
+            <MudButton Class="z-10 ml-2 mr-2"
+                       Variant="Variant.Filled"
+                       Color="Color.Error"
+                       OnClick="() => DevicePagesUtils.RemoveDevice(Device, _dialogService, _localizer, _navigationManager)">
+                @_localizer["Delete"]
+            </MudButton>
+        </MudItem>
+
+        <MudItem xs="5" Class="d-flex p-0 pt-3 pb-3 m-0 justify-content-end">
+
+            <MudButton 
+                       Color="Color.Primary"
+                       Variant="Variant.Filled"
+                       StartIcon="@Icons.Material.Filled.AddToQueue">
+                @_localizer["Add Control"]
+            </MudButton>
+
+        </MudItem>
+
+        <MudItem xs="12">
             <MudCard Elevation="25" Class="container container-fit-content p-2" style="border-radius: 1rem; max-width: 25rem;">
 
                 <MudText Align="Align.Center"> @Device.Name </MudText>
