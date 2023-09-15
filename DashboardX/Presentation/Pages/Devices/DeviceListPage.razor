@@ -60,7 +60,7 @@ else
                         </MudItem>
                         <MudItem xs="2" Class="d-flex p-1 m-0 align-items-center justify-content-start">
                             <MudText Typo="Typo.h6">
-                                @_localizer["Base path"]
+                                @_localizer["Path"]
                             </MudText>
                         </MudItem>
                         <MudItem xs="3" Class="d-flex p-1 m-0 align-items-center justify-content-center">
@@ -135,7 +135,7 @@ else
 @code
 {
 
-    public bool LoadedSuccessfully { get; set; } = true;
+    public bool LoadedSuccessfully { get; set; } = false;
     private List<Client> Clients { get; set; } = new();
 
     protected override async Task OnInitializedAsync()

@@ -36,16 +36,8 @@ public class ApplicationStateProvider : AuthenticationStateProvider
         {
             var rememberUser = await _localStorage.GetItemAsync<bool>(AuthConstraints.RememberMeName);
 
-            if(rememberUser)
-            {
-               AccessToken =  await _localStorage.GetItemAsync<string>(AuthConstraints.AccessToken);
-               RefreshToken = await _localStorage.GetItemAsync<string>(AuthConstraints.RefreshToken);
-            }
-            else
-            {
-                AccessToken =  await _sessionStorage.GetItemAsync<string>(AuthConstraints.AccessToken);
-                RefreshToken = await _sessionStorage.GetItemAsync<string>(AuthConstraints.RefreshToken);
-            }
+            AccessToken =  await _sessionStorage.GetItemAsync<string>(AuthConstraints.AccessToken);
+            RefreshToken = await _sessionStorage.GetItemAsync<string>(AuthConstraints.RefreshToken);
         }
 
         return AuthState(AccessToken);

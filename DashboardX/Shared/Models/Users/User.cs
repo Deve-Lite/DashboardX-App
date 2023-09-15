@@ -3,8 +3,7 @@ namespace Shared.Models.Users;
 
 public class User
 {
-    [JsonPropertyName("id")]
-    public string UserId { get; set; } = string.Empty;
+
     [JsonPropertyName("name")]
     public string Username { get; set; } = string.Empty;
     [JsonPropertyName("email")]
