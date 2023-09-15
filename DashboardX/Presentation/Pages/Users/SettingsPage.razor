@@ -1,5 +1,7 @@
 ﻿@page "/user/settings"
 @using Blazored.FluentValidation;
+@using Infrastructure;
+@using Presentation.Shared.Auth;
 @using global::Shared.Models.Users;
 
 @inject IStringLocalizer<SettingsPage> _localizer;
@@ -56,7 +58,7 @@ else
                     <MudCardContent Class="p-0 m-0">
                         <MudGrid Class="p-0 m-0 w-100">
                             <MudItem Class="p-0 m-0 d-flex justify-content-center" xs="6" md="4">
-                                <MudSelect @bind-Value="User.Theme"
+                                <MudSelect @bind-Value="Preferences.Theme"
                                            T="Theme"
                                            Label="Theme"
                                            Style="display: inline-block;"
@@ -73,7 +75,7 @@ else
 
 
                             <MudItem Class="p-0 m-0 d-flex justify-content-center" xs="6" md="4">
-                                <MudSelect @bind-Value="User.Language"
+                                <MudSelect @bind-Value="Preferences .Language"
                                            T="Language"
                                            Label="Language"
                                            Style="display: inline-block;"
@@ -121,12 +123,9 @@ else
 
 @code {
 
-    private readonly SettingsModel Settings = new();
-
-    public bool LoadedSuccessfully { get; set; } = false;
-    public string UserId { get; set; } = string.Empty;
-
     public User User { get; set; } = new();
+    private Preferences Preferences = new();
+    public bool LoadedSuccessfully { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -141,7 +140,7 @@ else
         if (result.Succeeded)
         {
             User = result.Data;
-            Settings = 
+            Preferences = User.GetPreferences();
             LoadedSuccessfully = true;
 
         }
@@ -157,32 +156,31 @@ else
 
         _loadingService.ShowLoading();
 
-        var result = await _userService.UpdateSettings();
+        var result = await _userService.UpdatePreferences(Preferences);
 
         _loadingService.HideLoading();
     }
 
     public async Task ChangePassword()
     {
-        if (_loadingService.IsLoading)
+
+        var dialog = await _dialogService.ShowAsync<ChangePasswordDialog>(_localizer["Delete Account"]);
+        var result = await dialog.Result;
+
+        if (result.Canceled)
             return;
 
-        _loadingService.ShowLoading();
-
-        //Todo dialog ??
-
-        _loadingService.HideLoading();
+        var x = result.Data as Result<Client> ?? Result<Client>.Fail(message: _localizer["Something went wrong..."]);
     }
 
     public async Task RemoveAccount()
     {
-        if (_loadingService.IsLoading)
+        var dialog = await _dialogService.ShowAsync<RemoveAccountDialog>(_localizer["Delete Account"]);
+        var result = await dialog.Result;
+
+        if (result.Canceled)
             return;
 
-        _loadingService.ShowLoading();
-
-        //Todo dialog ??
-
-        _loadingService.HideLoading();
+        var x = result.Data as Result<Client> ?? Result<Client>.Fail(message: _localizer["Something went wrong..."]);
     }
 }
