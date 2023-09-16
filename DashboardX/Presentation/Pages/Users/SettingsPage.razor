@@ -2,6 +2,7 @@
 @using Blazored.FluentValidation;
 @using Infrastructure;
 @using Presentation.Shared.Auth;
+@using Presentation.Utils;
 @using global::Shared.Models.Users;
 
 @inject IStringLocalizer<SettingsPage> _localizer;
@@ -158,29 +159,20 @@ else
 
         var result = await _userService.UpdatePreferences(Preferences);
 
+        RequestHelpers.InvokeAfterRequest(_snackbar, result, _localizer["Changed your settings."]);
+
         _loadingService.HideLoading();
     }
 
     public async Task ChangePassword()
     {
-
-        var dialog = await _dialogService.ShowAsync<ChangePasswordDialog>(_localizer["Delete Account"]);
+        var dialog = await _dialogService.ShowAsync<ChangePasswordDialog>(_localizer["Change password"]);
         var result = await dialog.Result;
-
-        if (result.Canceled)
-            return;
-
-        var x = result.Data as Result<Client> ?? Result<Client>.Fail(message: _localizer["Something went wrong..."]);
     }
 
     public async Task RemoveAccount()
     {
         var dialog = await _dialogService.ShowAsync<RemoveAccountDialog>(_localizer["Delete Account"]);
         var result = await dialog.Result;
-
-        if (result.Canceled)
-            return;
-
-        var x = result.Data as Result<Client> ?? Result<Client>.Fail(message: _localizer["Something went wrong..."]);
     }
 }

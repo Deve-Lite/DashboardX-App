@@ -11,16 +11,16 @@ public class DeviceValidator : BaseValidator<Device>
             .MinimumLength(3)
             .MaximumLength(32);
 
-        //TODO: Custom rule if field can be empty but not bigger than
-
         RuleFor(x => x.Placing)
-            .MaximumLength(64);
+            .MaximumLength(32);
 
         RuleFor(x => x.BaseDevicePath)
-            .MinimumLength(0)
             .MaximumLength(128);
 
         RuleFor(x => x.BrokerId)
+            .NotEmpty();
+
+        RuleFor(x => x.IconBackgroundColor)
             .NotEmpty();
     }
 }

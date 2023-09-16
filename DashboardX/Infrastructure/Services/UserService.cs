@@ -25,7 +25,7 @@ public class UserService : AuthorizedService, IUserService
         _prefrenceService = preferenceService;
     }
 
-    public async Task<IResult> DeleteUser(PasswordConfirm dto)
+    public async Task<IResult> RemoveAccount(PasswordConfirm dto)
     {
         var request = new Request<PasswordConfirm>
         {
@@ -64,9 +64,9 @@ public class UserService : AuthorizedService, IUserService
         return response;
     }
 
-    public async Task<IResult> UpdatePassword(NewPasswordModel dto)
+    public async Task<IResult> ChangePassword(ChangePasswordModel dto)
     {
-        var request = new Request<NewPasswordModel>
+        var request = new Request<ChangePasswordModel>
         {
             Method = HttpMethod.Patch,
             Route = "api/v1/users/me",

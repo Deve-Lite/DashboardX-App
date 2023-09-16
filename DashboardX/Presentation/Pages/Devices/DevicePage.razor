@@ -46,6 +46,13 @@ else
                 @_localizer["Edit"]
             </MudButton>
 
+            <MudButton Class="z-10 ml-2"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Href="@($"brokers/{Client!.Id}")">
+                @_localizer["Broker"]
+            </MudButton>
+
             <MudButton Class="z-10 ml-2 mr-2"
                        Variant="Variant.Filled"
                        Color="Color.Error"

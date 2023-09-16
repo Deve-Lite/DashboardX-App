@@ -19,8 +19,8 @@ else
     <MudCard Class="card p-5" style="border-radius: 1rem;">
         <MudGrid>
             <MudForm @ref="@form"
-                     Model="@RegisterData"
-                     Validation="@(RegisterValidator.ValidateValue)"
+                     Model="@Model"
+                     Validation="@(Validator.ValidateValue)"
                      ValidationDelay="0">
                 <MudGrid>
                     <MudItem xs="12">
@@ -38,9 +38,9 @@ else
                     </MudItem>
 
                     <MudItem xs="12">
-                        <MudTextField @bind-Value="RegisterData.Username"
+                        <MudTextField @bind-Value="Model.Username"
                                       T="string"
-                                      For="@(() => RegisterData.Username)"
+                                      For="@(() => Model.Username)"
                                       Variant="Variant.Filled"
                                       OnlyValidateIfDirty="true"
                                       Clearable="true"
@@ -48,9 +48,9 @@ else
                                       HelperText="@_localizer["Provide username for your account."]" />
                     </MudItem>
                     <MudItem xs="12">
-                        <MudTextField @bind-Value="RegisterData.Email"
+                        <MudTextField @bind-Value="Model.Email"
                                       T="string"
-                                      For="@(() => RegisterData.Email)"
+                                      For="@(() => Model.Email)"
                                       Variant="Variant.Filled"
                                       OnlyValidateIfDirty="true"
                                       Clearable="true"
@@ -58,9 +58,9 @@ else
                                       Label="@_localizer["Email"]" />
                     </MudItem>
                     <MudItem xs="12">
-                        <MudTextField @bind-Value="RegisterData.Password"
+                        <MudTextField @bind-Value="Model.Password"
                                       T="string"
-                                      For="@(() => RegisterData.Password)"
+                                      For="@(() => Model.Password)"
                                       InputType="@_passwordInput"
                                       Variant="Variant.Filled"
                                       Adornment="Adornment.End"
@@ -72,9 +72,9 @@ else
                                       HelperText="@_localizer["Provide password for your account."]" />
                     </MudItem>
                     <MudItem xs="12">
-                        <MudTextField @bind-Value="RegisterData.ConfirmPassword"
+                        <MudTextField @bind-Value="Model.ConfirmPassword"
                                       T="string"
-                                      For="@(() => RegisterData.ConfirmPassword)"
+                                      For="@(() => Model.ConfirmPassword)"
                                       Variant="Variant.Filled"
                                       Clearable="true"
                                       InputType="InputType.Password"
@@ -112,8 +112,8 @@ else
 }
 
 @code {
-    private RegisterModel RegisterData = new();
-    private RegisterValidator RegisterValidator = new();
+    private RegisterModel Model = new();
+    private RegisterValidator Validator = new();
 
     MudForm? form;
 
@@ -129,7 +129,7 @@ else
 
         _loadingService.ShowLoading();
 
-        var result = await _authenticationService.Register(RegisterData);
+        var result = await _authenticationService.Register(Model);
 
         await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnRegisteredSuccessfully);
 

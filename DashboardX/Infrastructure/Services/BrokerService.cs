@@ -26,6 +26,7 @@ public class BrokerService : AuthorizedService, IBrokerService
     {
     }
 
+    //TODO: Function retriving password and username for broker
     //TODO: Replace function to brokers
     public async Task<IResult<List<Device>>> GetBrokerDevices(string brokerId)
     {
