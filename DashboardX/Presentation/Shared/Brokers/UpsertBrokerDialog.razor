@@ -59,7 +59,7 @@
                                   For="@(() => Broker.Server)" />
                 </MudItem>
 
-                <MudItem xs="12"
+                <MudItem xs="6"
                          Class="p-1 m-0">
                     <MudTextField @bind-Value="Broker.Port"
                                   T="int"
@@ -72,6 +72,17 @@
                                   For="@(() => Broker.Port)" />
               
                 </MudItem>
+                <MudItem xs="6"
+                         Class="p-1 m-0">
+                    <MudTextField @bind-Value="Broker.KeepAlive" T="int"
+                                  Label="@_localizer["Keep Alive"]"
+                                  Variant="Variant.Filled"
+                                  OnlyValidateIfDirty="true"
+                                  Clearable="true"
+                                  Class="p-0 m-0"
+                                  HelperText="@_localizer["Ping interval time in seconds."]"
+                                  For="@(() => Broker.KeepAlive)" />
+                </MudItem>
                 <MudItem xs="12"
                          Class="p-1 m-0">
                     <MudTextField @bind-Value="Broker.ClientId" T="string"
@@ -83,17 +94,7 @@
                                   HelperText="@_localizer["Broker unique identifier."]"
                                   For="@(() => Broker.ClientId)" />
                 </MudItem>
-                <MudItem xs="12"
-                         Class="p-1 m-0">
-                    <MudTextField @bind-Value="Broker.KeepAlive" T="int"
-                                  Label="@_localizer["Keep Alive"]"
-                                  Variant="Variant.Filled"
-                                  OnlyValidateIfDirty="true"
-                                  Clearable="true"
-                                  Class="p-0 m-0"
-                                  HelperText="@_localizer["Ping interval time in seconds."]"
-                                  For="@(() => Broker.KeepAlive)" />
-                </MudItem>
+
                 <MudItem xs="12"
                          Class="p-1 m-0">
                     <MudSwitch @bind-Checked="ShowAuthorizationFields"
@@ -135,7 +136,7 @@
         </MudForm>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel" Variant="Variant.Filled">@_localizer["Cancel"]</MudButton>
+        <MudButton OnClick="Cancel">@_localizer["Cancel"]</MudButton>
         <MudButton form="upsertBrokerForm"
                    OnClick="SubmitAsync"
                    Variant="Variant.Filled"

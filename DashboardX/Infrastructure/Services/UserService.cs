@@ -73,7 +73,7 @@ public class UserService : AuthorizedService, IUserService
             Data = dto
         };
 
-        var response = await SendAsync(request);
+        var response = await SendAsync<ChangePasswordModel>(request);
 
         return response;
     }
@@ -87,7 +87,7 @@ public class UserService : AuthorizedService, IUserService
             Data = dto
         };
 
-        var response = await SendAsync(request);
+        var response = await SendAsync<Preferences>(request);
 
         if (response.Succeeded)
             await _prefrenceService.UpdatePreferences(dto);
