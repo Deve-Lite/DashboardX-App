@@ -39,7 +39,6 @@ else
 
 
         </MudItem>
-        <MudItem xs="5" Class="d-flex justify-content-end">
 
         <MudItem Class="p-0" xs="12">
             <MudList Class="p-0 m-0" 
@@ -173,14 +172,4 @@ else
     {
         _navigationManager.NavigateTo($"/brokers/{clinet.Id}");
     }
-
-    private async Task ConnectAsync(Client client)
-    {
-        var result = await client.ConnectAsync();
-
-        if (!result && result.ShowToast)
-            _snackbar.Add(result.Messages.First(), Severity.Error);
-    }
-
-    #endregion
 }
