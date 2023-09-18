@@ -25,14 +25,13 @@ public class UserService : AuthorizedService, IUserService
         _prefrenceService = preferenceService;
     }
 
-    public async Task<IResult> DeleteUser()
+    public async Task<IResult> RemoveAccount(PasswordConfirm dto)
     {
-        //TODO: Add password as a confirmation
-
-        var request = new Request<User>
+        var request = new Request<PasswordConfirm>
         {
             Method = HttpMethod.Delete,
-            Route = "api/v1/users/me"
+            Route = "api/v1/users/me",
+            Data = dto
         };
 
         var response = await SendAsync(request);
@@ -65,16 +64,33 @@ public class UserService : AuthorizedService, IUserService
         return response;
     }
 
-    public async Task<IResult> UpdateUser(User user)
+    public async Task<IResult> ChangePassword(ChangePasswordModel dto)
     {
-        var request = new Request<User>
+        var request = new Request<ChangePasswordModel>
         {
             Method = HttpMethod.Patch,
             Route = "api/v1/users/me",
-            Data = user
+            Data = dto
         };
 
-        var response = await SendAsync(request);
+        var response = await SendAsync<ChangePasswordModel>(request);
+
+        return response;
+    }
+
+    public async Task<IResult> UpdatePreferences(Preferences dto)
+    {
+        var request = new Request<Preferences>
+        {
+            Method = HttpMethod.Patch,
+            Route = "api/v1/users/me",
+            Data = dto
+        };
+
+        var response = await SendAsync<Preferences>(request);
+
+        if (response.Succeeded)
+            await _prefrenceService.UpdatePreferences(dto);
 
         if (response.Succeeded)
         {

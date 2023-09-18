@@ -18,7 +18,23 @@ public class RequestHelpers
                 return;
 
             foreach (var error in result.Messages)
-                snackbar.Add(error, MudBlazor.Severity.Error, config => { config.ShowCloseIcon = false; });
+                snackbar.Add(error, Severity.Error);
+        }
+    }
+
+    public static void InvokeAfterRequest(ISnackbar snackbar, IResult result, string successMessage = "", bool displayErrors = true)
+    {
+        if ((Result)result)
+        {
+            snackbar.Add(successMessage, Severity.Success);
+        }
+        else
+        {
+            if (!displayErrors)
+                return;
+
+            foreach (var error in result.Messages)
+                snackbar.Add(error, Severity.Error);
         }
     }
 }

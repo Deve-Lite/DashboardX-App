@@ -1,0 +1,45 @@
+﻿@using Presentation.Utils;
+
+@inject IStringLocalizer<ConfirmDialog> _localizer
+
+<MudDialog>
+    <DialogContent>
+        <MudGrid>
+
+            <MudItem xs="12">
+                <MudText Typo="Typo.body2"> 
+                    @_localizer["Click to select icon."]
+                </MudText>
+            </MudItem>
+
+            @foreach (var (key, value) in IconUtils.IconList)
+            {
+                <MudItem xs="2" Class="d-flex justify-content-center align-content-center">
+                    <MudIconButton Icon="@value" OnClick="() => IconSelected(key)" />
+                </MudItem>
+            }
+
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">@_localizer["Cancel"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+
+
+@code {
+    [CascadingParameter]
+    private MudDialogInstance? Dialog { get; set; }
+
+    [Parameter]
+    public string SelectedIcon { get; set; } = "0";
+
+    private void Cancel() => Dialog!.Cancel();
+
+    public void IconSelected(string icon)
+    {
+        Dialog!.Close(DialogResult.Ok(icon));
+    }
+}

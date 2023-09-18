@@ -5,10 +5,10 @@ namespace Shared.Models.Devices;
 
 public class Device : BaseModel
 {
-    [JsonPropertyName("name"), Required, MinLength(2), MaxLength(64)]
+    [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
 
-    [JsonPropertyName("placing"), Required, MinLength(2), MaxLength(64)]
+    [JsonPropertyName("placing")]
     public string Placing { get; set; } = string.Empty;
 
     [JsonPropertyName("icon")]
@@ -17,10 +17,10 @@ public class Device : BaseModel
     [JsonPropertyName("iconBackgroundColor")]
     public string IconBackgroundColor { get; set; } = string.Empty;
 
-    [JsonPropertyName("brokerId"), Required]
+    [JsonPropertyName("brokerId")]
     public string BrokerId { get; set; } = string.Empty;
 
-    [JsonPropertyName("baseDevicePath"), Required, MinLength(2), MaxLength(128)]
+    [JsonPropertyName("baseDevicePath")]
     public string BaseDevicePath { get; set; } = string.Empty;
 
     [JsonPropertyName("updatedAt")]
@@ -31,6 +31,16 @@ public class Device : BaseModel
 
     [JsonIgnore]
     public bool SuccessfullControlsFetch { get; set; } = true;
+
+    public DeviceDTO Dto() => new()
+    {
+        BaseDevicePath = BaseDevicePath,
+        BrokerId = BrokerId,
+        Icon = Icon,
+        IconBackgroundColor = IconBackgroundColor,
+        Name = Name,
+        Placing = Placing
+    };
 
     public Device Copy() => new()
     {

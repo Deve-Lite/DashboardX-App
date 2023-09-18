@@ -97,11 +97,13 @@ public class DeviceService : AuthorizedService, IDeviceService
 
     public async Task<IResult<Device>> UpdateDevice(Device device)
     {
-        var request = new Request<Device>
+        var dto = device.Dto();
+
+        var request = new Request<DeviceDTO>
         {
             Method = HttpMethod.Patch,
             Route = $"api/v1/devices/{device.Id}",
-            Data = device
+            Data = dto
         };
 
         var options = new JsonSerializerOptions
@@ -109,7 +111,7 @@ public class DeviceService : AuthorizedService, IDeviceService
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-        var response = await SendAsync<Device>(request, options);
+        var response = await SendAsync<DeviceDTO>(request, options);
 
         if (!response.Succeeded)
             return Result<Device>.Fail(response.Messages, response.StatusCode);

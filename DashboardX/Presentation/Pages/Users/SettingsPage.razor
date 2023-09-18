@@ -1,116 +1,178 @@
 ﻿@page "/user/settings"
 @using Blazored.FluentValidation;
+@using Infrastructure;
+@using Presentation.Shared.Auth;
+@using Presentation.Utils;
 @using global::Shared.Models.Users;
 
 @inject IStringLocalizer<SettingsPage> _localizer;
+@inject IUserService _userService
 
-<MudGrid>
-    <MudItem xs="12" sm="4" md="3">
-        <MudCard Elevation="25">
-            <MudCardContent>
-                <div class="d-flex justify-center mb-4">
-                    @if (!string.IsNullOrEmpty(@ImageDataUrl))
-                    {
-                        
-                    }
-                    else
-                    {
-                        <MudAvatar Color="Color.Secondary" Style="height:250px; width:250px;">@_firstLetterOfName</MudAvatar>
-                    }
-                </div>
-                <MudText Typo="Typo.h6" Align="Align.Center"> Last name first name</MudText>
-                <MudText Align="Align.Center"> settings </MudText>
-            </MudCardContent>
-            <MudCardActions Class="d-flex justify-center">
-                <InputFile id="fileInput" OnChange="UploadFiles" hidden />
-                <MudButton HtmlTag="label"
-                           Variant="Variant.Text"
-                           Color="Color.Primary"
-                           Size="Size.Small"
-                           for="fileInput">
-                    @_localizer["Upload Image"]
-                </MudButton>
-                @if (!string.IsNullOrEmpty(@ImageDataUrl))
-                {
-                    <MudButton Variant="Variant.Text"
-                               Color="Color.Error"
-                               Size="Size.Small"
-                               OnClick="DeleteAsync">
-                        @_localizer["Delete Image"]
-                    </MudButton>
-                }
-            </MudCardActions>
-        </MudCard>
-    </MudItem>
-    <MudItem xs="12" sm="8" md="9">
-        <EditForm Model="@SettingsModel" OnValidSubmit="UpdateProfileAsync">
-            <FluentValidationValidator @ref="_fluentValidationValidator" />
-            <MudCard Elevation="25">
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText>@_localizer["Profile Details"]</MudText>
-                    </CardHeaderContent>
-                </MudCardHeader>
+@if (_loadingService.IsLoading)
+{
+    <MudGrid Class="w-100 h-100 ">
+        <MudItem Class="d-flex justify-content-center align-content-center">
+            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+        </MudItem>
+    </MudGrid>
+}
+else if (!LoadedSuccessfully)
+{
+    <div>
+        Failed to load... TODO: Refresh button
+    </div>
+}
+else
+{
+    <MudGrid Class="m-0 p-3 w-100">
+        <MudItem xs="12" Class="d-flex p-0 m-0 justify-content-center">
+            <MudCard Elevation="5" Class="p-3" Style="display: inline-block;">
                 <MudCardContent>
-                    <MudGrid>
-                        <MudItem xs="12" md="6">
-                            <MudTextField @bind-Value="SettingsModel.Language" Label="@_localizer["First Name"]" Variant="Variant.Outlined" />
+                    <MudGrid Class="d-flex justify-center">
+                        <MudItem xs=12 Class="d-flex p-0 m-0 justify-content-center">
+                            <MudAvatar Color="Color.Tertiary"
+                                       Style="width:200px; height:200px;">
+                                <MudText Typo="Typo.h3">
+                                    @User.Username[0]
+                                </MudText>
+                            </MudAvatar>
                         </MudItem>
-                        <MudItem xs="12" md="6">
-                            <MudTextField @bind-Value="SettingsModel.Language"  Label="@_localizer["Last Name"]" Variant="Variant.Outlined" />
-                        </MudItem>
-                        <MudItem xs="12" md="6">
-                            <MudTextField @bind-Value="SettingsModel.Language" Label="@_localizer["Phone Number"]" Variant="Variant.Outlined" />
-                        </MudItem>
-                        <MudItem xs="12" md="6">
-                            <MudTextField @bind-Value="SettingsModel.Language" Label="@_localizer["Email"]" Variant="Variant.Outlined" InputType="InputType.Email" Disabled=true />
+
+                        <MudItem xs=12 Class="d-flex p-0 m-0 mt-2 justify-content-center">
+                            <MudText Typo="Typo.subtitle1">
+                                @User.Email
+                            </MudText>
                         </MudItem>
                     </MudGrid>
                 </MudCardContent>
-                <MudCardActions Class="pb-4 pl-4">
-                    <MudButton Variant="Variant.Filled" Disabled="@(!Validated)" Color="Color.Primary" Class="ml-auto" ButtonType="ButtonType.Submit">@_localizer["Save Changes"]</MudButton>
-                </MudCardActions>
             </MudCard>
-        </EditForm>
-    </MudItem>
-</MudGrid>
+        </MudItem>
+
+        <MudItem xs="12" Class="p-0 pt-4 pb-4 m-0">
+            <MudProgressLinear Size="Size.Small" Color="Color.Tertiary" Rounded="true" Value="100" />
+        </MudItem>
+
+        <MudItem xs="12" Class="p-0 m-0">
+
+            <MudForm>
+                <MudCard Elevation="5" Class="p-3 m-0">
+                    <MudCardContent Class="p-0 m-0">
+                        <MudGrid Class="p-0 m-0 w-100">
+                            <MudItem Class="p-0 m-0 d-flex justify-content-center" xs="6" md="4">
+                                <MudSelect @bind-Value="Preferences.Theme"
+                                           T="Theme"
+                                           Label="Theme"
+                                           Style="display: inline-block;"
+                                           Class="p-1 m-0"
+                                           For="(() => User.Theme)"
+                                           HelperText="Default theme of application."
+                                           Variant="Variant.Filled"
+                                           AnchorOrigin="Origin.BottomCenter">
+                                    <MudSelectItem Value="@Theme.Inherit">@_localizer["System preference"]</MudSelectItem>
+                                    <MudSelectItem Value="@Theme.Dark">@_localizer["Dark mode"]</MudSelectItem>
+                                    <MudSelectItem Value="@Theme.Light">@_localizer["Light mode"]</MudSelectItem>
+                                </MudSelect>
+                            </MudItem>
+
+
+                            <MudItem Class="p-0 m-0 d-flex justify-content-center" xs="6" md="4">
+                                <MudSelect @bind-Value="Preferences .Language"
+                                           T="Language"
+                                           Label="Language"
+                                           Style="display: inline-block;"
+                                           Class="p-1 m-0"
+                                           For="(() => User.Language)"
+                                           Variant="Variant.Filled"
+                                           HelperText="Default language of application."
+                                           AnchorOrigin="Origin.BottomCenter">
+
+                                    <MudSelectItem Value="@Language.English">@_localizer["English"]</MudSelectItem>
+                                    <MudSelectItem Value="@Language.Polish">@_localizer["Polski"]</MudSelectItem>
+                                </MudSelect>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                    <MudCardActions>
+
+
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   Class="m-0"
+                                   OnClick="UpdateSettings">
+                            @_localizer["Update Settings"]
+                        </MudButton>
+
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   Class="ml-2 m-0"
+                                   OnClick="ChangePassword">
+                            @_localizer["Change Password"]
+                        </MudButton>
+
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Error"
+                                   Class="ml-2 m-0"
+                                   OnClick="RemoveAccount">
+                            @_localizer["Remove Account"]
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudForm>
+        </MudItem>
+    </MudGrid>
+}
 
 @code {
-    private FluentValidationValidator _fluentValidationValidator;
-    private bool Validated => _fluentValidationValidator.Validate(options => { options.IncludeAllRuleSets(); });
-    private char _firstLetterOfName;
 
-    private readonly SettingsModel SettingsModel = new();
-
-    public string UserId { get; set; } = string.Empty;
-
-    private async Task UpdateProfileAsync()
-    {
-       
-    }
+    public User User { get; set; } = new();
+    private Preferences Preferences = new();
+    public bool LoadedSuccessfully { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadDataAsync();
+        if (_loadingService.IsLoading)
+            return;
+
+        _loadingService.ShowLoading();
+
+
+        var result = await _userService.GetUser();
+
+        if (result.Succeeded)
+        {
+            User = result.Data;
+            Preferences = User.GetPreferences();
+            LoadedSuccessfully = true;
+
+        }
+
+        _loadingService.HideLoading();
     }
 
-    private async Task LoadDataAsync()
+
+    public async Task UpdateSettings()
     {
-       
+        if (_loadingService.IsLoading)
+            return;
+
+        _loadingService.ShowLoading();
+
+        var result = await _userService.UpdatePreferences(Preferences);
+
+        RequestHelpers.InvokeAfterRequest(_snackbar, result, _localizer["Changed your settings."]);
+
+        _loadingService.HideLoading();
     }
 
-    private IBrowserFile _file;
-
-    [Parameter]
-    public string ImageDataUrl { get; set; }
-
-    private async Task UploadFiles(InputFileChangeEventArgs e)
+    public async Task ChangePassword()
     {
-       
+        var dialog = await _dialogService.ShowAsync<ChangePasswordDialog>(_localizer["Change password"]);
+        var result = await dialog.Result;
     }
 
-    private async Task DeleteAsync()
+    public async Task RemoveAccount()
     {
-        
+        var dialog = await _dialogService.ShowAsync<RemoveAccountDialog>(_localizer["Delete Account"]);
+        var result = await dialog.Result;
     }
 }

@@ -4,17 +4,9 @@ namespace Presentation.Validators
 {
     public class BaseValidator<T> : AbstractValidator<T>
     {
-        /// <summary>
-        /// Property terminates if submit button should be in disabled state.
-        /// </summary>
-        public bool Disabled => !Validated;
-        public bool Validated { get; protected set; }
         public BaseValidator()
         {
-            Validated = false;
         }
-
-        private DateTime lastChcek = DateTime.Now;
 
         public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>
         {
