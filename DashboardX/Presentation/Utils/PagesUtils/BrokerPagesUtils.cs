@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Localization;
 using MudBlazor;
 using Presentation.Models;
-using Presentation.Shared.Brokers;
+using Presentation.SharedComponents.Brokers;
 
 namespace Presentation.Utils.PagesUtils;
 

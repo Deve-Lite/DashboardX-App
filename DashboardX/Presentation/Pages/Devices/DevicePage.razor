@@ -1,13 +1,13 @@
 ﻿@page "/devices/{DeviceId}/{ClientId}"
 @using Infrastructure;
 @using Presentation.Extensions;
-@using Presentation.Shared.Brokers
-@using Presentation.Shared.Controls;
-@using Presentation.Shared.Devices;
+@using Presentation.SharedComponents.Brokers
+@using Presentation.SharedComponents.Controls;
+@using Presentation.SharedComponents.Devices;
 @using Presentation.Utils.PagesUtils;
 @using Presentation.Utils;
-@using global::Shared.Models.Controls;
-@using global::Shared.Models.Devices;
+@using Shared.Models.Controls;
+@using Shared.Models.Devices;
 
 @inject IClientService _clientService
 @inject NavigationManager _navigationManager

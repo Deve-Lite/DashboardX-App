@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
 using MudBlazor;
 using Presentation.Models;
-using Presentation.Shared.Devices;
+using Presentation.SharedComponents.Devices;
 using Shared.Models.Devices;
 
 namespace Presentation.Utils.PagesUtils;
