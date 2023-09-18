@@ -1,0 +1,84 @@
+﻿@using Infrastructure;
+@using Presentation.Utils;
+
+@inject IStringLocalizer<IconSelector> _localizer
+
+<MudGrid Class="p-0 m-0 w-100">
+
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <MudItem xs="12"
+                 Class="p-0 m-0">
+            <MudText>
+                @Label
+            </MudText>
+        </MudItem>    
+    }
+
+    <MudItem xs="12" 
+             Class="p-0 m-0 d-flex justify-content-center align-items-center">
+        <MudIconButton Icon="@CurrentIcon()"
+                       Size="@Size"
+                       OnClick="async() => await SelectIcon()" />
+    </MudItem>
+</MudGrid>
+
+@code 
+{
+    private string icon = string.Empty;
+
+    [Parameter]
+    public string Label { get; set; } = string.Empty;
+    [Parameter]
+    public Size Size { get; set; } = Size.Large;
+    [Parameter]
+    public string Icon
+    {
+        get => icon;
+        set
+        {
+            if (value == this.icon)
+                return;
+
+            this.icon = value;
+            if (IconChanged.HasDelegate)
+            {
+                IconChanged.InvokeAsync(this.icon);
+            }
+        }
+    }
+    [Parameter]
+    public EventCallback<string> IconChanged { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        if (!IconUtils.IconList.ContainsKey(Icon))
+            Icon = IconUtils.DefualtIcon;
+    }
+
+    public async Task SelectIcon()
+    {
+        var parameters = new DialogParameters<IconListDialog>
+        {
+            { x => x.SelectedIcon, Icon }
+        };
+
+        var dialog = await _dialogService.ShowAsync<IconListDialog>(_localizer["Select icon"], parameters);
+        var result = await dialog.Result;
+
+        if (result.Canceled)
+            return;
+
+        Icon = result.Data as string ?? IconUtils.DefualtIcon;
+    }
+
+    public string CurrentIcon()
+    {
+        if (!IconUtils.IconList.ContainsKey(Icon))
+            return IconUtils.DefualtIcon;
+
+        return IconUtils.IconList[Icon];
+    }
+}

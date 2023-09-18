@@ -4,6 +4,8 @@ namespace Presentation.Utils;
 
 public static class ThemeColors
 {
+    private static string colorPrimary = "9C27B0";
+    public static string ColorPrimary = $"#{colorPrimary}";
     public static MudTheme AppTheme => new MudTheme()
     {
         Palette = Palette,
@@ -12,7 +14,7 @@ public static class ThemeColors
 
     private static PaletteLight Palette => new PaletteLight
     {
-        Primary = new("9C27B0"),
+        Primary = new(colorPrimary),
         TextPrimary = new("121212"),
         PrimaryContrastText = new("F5F5F5"),
 

@@ -32,6 +32,16 @@ public class Device : BaseModel
     [JsonIgnore]
     public bool SuccessfullControlsFetch { get; set; } = true;
 
+    public DeviceDTO Dto() => new()
+    {
+        BaseDevicePath = BaseDevicePath,
+        BrokerId = BrokerId,
+        Icon = Icon,
+        IconBackgroundColor = IconBackgroundColor,
+        Name = Name,
+        Placing = Placing
+    };
+
     public Device Copy() => new()
     {
         BaseDevicePath = BaseDevicePath,

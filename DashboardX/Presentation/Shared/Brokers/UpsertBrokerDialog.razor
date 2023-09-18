@@ -16,6 +16,19 @@
                  ValidationDelay="0"
                  Class="m-0 p-0 w-100">
             <MudGrid Class="m-0 p-3 w-100">
+
+                <MudItem xs="3"
+                         Class="p-1 m-0">
+                    <IconSelector Label="Icon"
+                                  @bind-Icon="@Broker.Icon" />
+                </MudItem>
+
+                <MudItem xs="9"
+                         Class="p-1 m-0">
+                    <ColorSelector Label="Additional Theme"
+                                   @bind-Value="@Broker.IconBackgroundColor" />
+                </MudItem>
+
                 <MudItem xs="12"
                          Class="p-1 m-0">
                     <MudTextField @bind-Value="Broker.Name"
@@ -27,24 +40,6 @@
                                   Class="p-0 m-0"
                                   For="@(() => Broker.Name)"
                                   HelperText="@_localizer["Provide meaningful name."]" />
-                </MudItem>
-
-                <MudItem xs="12"
-                         Class="p-1 m-0">
-
-                    TODO ICONS
-                  
-                </MudItem>
-
-                <MudItem xs="12"
-                         Class="p-1 m-0">
-                    <MudColorPicker @bind-Text="Broker.IconBackgroundColor"
-                                    Label="@_localizer["Icon color"]"
-                                    Class="p-0 m-0"
-                                    Clearable="true"
-                                    HelperText="@_localizer["Color for icon"]"
-                                    Variant="Variant.Filled"
-                                    ColorPickerView="ColorPickerView.Palette" />
                 </MudItem>
 
                 <MudItem xs="12"
@@ -173,27 +168,6 @@
         return base.OnAfterRenderAsync(firstRender);
     }
 
-    private bool ShowAuthorizationFields { get; set; } = false;
-    private bool _passwordVisibility;
-    private InputType _passwordInput = InputType.Password;
-    private string _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
-
-    private void TogglePasswordVisibility()
-    {
-        if (_passwordVisibility)
-        {
-            _passwordVisibility = false;
-            _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
-            _passwordInput = InputType.Password;
-        }
-        else
-        {
-            _passwordVisibility = true;
-            _passwordInputIcon = Icons.Material.Filled.Visibility;
-            _passwordInput = InputType.Text;
-        }
-    }
-
     private void Cancel() => Dialog!.Cancel();
 
     private async Task SubmitAsync()
@@ -228,4 +202,28 @@
         return Task.CompletedTask;
     }
 
+    #region Form
+
+    private bool ShowAuthorizationFields { get; set; } = false;
+    private bool _passwordVisibility;
+    private InputType _passwordInput = InputType.Password;
+    private string _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
+
+    private void TogglePasswordVisibility()
+    {
+        if (_passwordVisibility)
+        {
+            _passwordVisibility = false;
+            _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
+            _passwordInput = InputType.Password;
+        }
+        else
+        {
+            _passwordVisibility = true;
+            _passwordInputIcon = Icons.Material.Filled.Visibility;
+            _passwordInput = InputType.Text;
+        }
+    }
+
+    #endregion
 }

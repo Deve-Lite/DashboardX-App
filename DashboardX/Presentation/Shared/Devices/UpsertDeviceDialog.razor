@@ -19,18 +19,29 @@
                  Class="m-0 p-0 w-100">
             <MudGrid Class="m-0 p-3 w-100">
 
+                <MudItem xs="3"
+                         Class="p-1 m-0">
+                    <IconSelector  @bind-Icon="@Device.Icon" 
+                                   Label="Icon" />
+                </MudItem>
+
+                <MudItem xs="9"
+                         Class="p-1 m-0">
+                    <ColorSelector @bind-Value="@Device.IconBackgroundColor"  
+                                   Label="Device Theme" />
+                </MudItem>
+
                 <MudItem xs="12"
                          Class="p-1 m-0">
-                      
                          <MudTextField @bind-Value="Device.Name"
-                                      T="string"
-                                      Label="@_localizer["Name"]"
-                                  Variant="Variant.Filled"
-                                  OnlyValidateIfDirty="true"
-                                  Clearable="true"
-                                  Class="p-0 m-0"
-                                  HelperText="@_localizer["Provide meaningful name."]"
-                                      For="@(() => Device.Name)" />
+                                       T="string"
+                                       Label="@_localizer["Name"]"
+                                       Variant="Variant.Filled"
+                                       OnlyValidateIfDirty="true"
+                                       Clearable="true"
+                                       Class="p-0 m-0"
+                                       HelperText="@_localizer["Provide meaningful name."]"
+                                       For="@(() => Device.Name)" />
                 </MudItem>
 
                 <MudItem xs="12"
@@ -48,22 +59,6 @@
                             <MudSelectItem Value="@data.Id">@data.Name</MudSelectItem>
                         }
                     </MudSelect>
-                </MudItem>
-
-                <MudItem xs="12"
-                         Class="p-1 m-0">
-                    TODO Icon
-                </MudItem>
-
-                <MudItem xs="12"
-                         Class="p-1 m-0">
-                    <MudColorPicker @bind-Text="Device.IconBackgroundColor"
-                                    Label="@_localizer["Icon color"]"
-                                    Class="p-0 m-0"
-                                    Clearable="true"
-                                    HelperText="@_localizer["Color for icon."]"
-                                    Variant="Variant.Filled"
-                                    ColorPickerView="ColorPickerView.Palette" />
                 </MudItem>
 
                 <MudItem xs="12"
