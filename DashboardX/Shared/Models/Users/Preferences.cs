@@ -1,4 +1,4 @@
-﻿namespace Shared.Models.Users;
+namespace Shared.Models.Users;
 
 public class Preferences
 {
@@ -41,5 +41,4 @@ public class Preferences
             _ => "en"
         };
     }
-
 }

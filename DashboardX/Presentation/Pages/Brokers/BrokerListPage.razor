@@ -27,11 +27,7 @@ else
 {
     <MudGrid Class="m-0 p-3 w-100">
 
-        <MudItem xs="7">
-
-            <!-- Todo Breadcrumb -->
-
-        </MudItem>
+        <MudItem xs="7"> </MudItem>
         <MudItem xs="5" Class="d-flex justify-content-end">
 
             <MudButton OnClick="() => BrokerPagesUtils.AddBroker(_dialogService, StateHasChanged, _localizer)"
@@ -41,7 +37,9 @@ else
                        @_localizer["Add Broker"]
             </MudButton>
 
+
         </MudItem>
+        <MudItem xs="5" Class="d-flex justify-content-end">
 
         <MudItem Class="p-0" xs="12">
             <MudList Class="p-0 m-0" 
@@ -94,16 +92,19 @@ else
                                     @client.Broker.Name
                                 </MudText>
                             </MudItem>
+                          
                             <MudItem xs="4" Class="d-flex m-0 p-0 align-items-center justify-content-start">
                                 <MudText Class="hide-overlapping-text">
                                     @client.Broker.Server
                                 </MudText>
                             </MudItem>
+
                             <MudItem xs="1" Class="d-flex m-0 p-0 align-items-center justify-content-start">
                                 <MudText>
                                     @client.Broker.Port
                                 </MudText>
                             </MudItem>
+                          
                             <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-center">
                                 <BrokerConnectionSwitch Client="client" />
                             </MudItem>
@@ -167,4 +168,19 @@ else
         if (!result && result.ShowToast)
             _snackbar.Add(result.Messages.First(), Severity.Error);
     }
+
+    private void NavigateToBroker(Client clinet)
+    {
+        _navigationManager.NavigateTo($"/brokers/{clinet.Id}");
+    }
+
+    private async Task ConnectAsync(Client client)
+    {
+        var result = await client.ConnectAsync();
+
+        if (!result && result.ShowToast)
+            _snackbar.Add(result.Messages.First(), Severity.Error);
+    }
+
+    #endregion
 }

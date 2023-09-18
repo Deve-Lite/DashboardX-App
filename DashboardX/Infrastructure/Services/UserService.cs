@@ -92,6 +92,12 @@ public class UserService : AuthorizedService, IUserService
         if (response.Succeeded)
             await _prefrenceService.UpdatePreferences(dto);
 
+        if (response.Succeeded)
+        {
+            var preferences = user.GetPreferences();
+            await _prefrenceService.UpdatePreferences(preferences);
+        }
+
         return response;
     }
 }

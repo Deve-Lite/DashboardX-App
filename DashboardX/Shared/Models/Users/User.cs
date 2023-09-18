@@ -1,4 +1,3 @@
-﻿
 namespace Shared.Models.Users;
 
 public class User : Preferences
@@ -10,7 +9,6 @@ public class User : Preferences
     public string Email { get; set; } = string.Empty;
     [JsonPropertyName("isAdmin")]
     public bool IsAdmin { get; set; } = false;
-
     
     // TODO: NEW FIELD
     [JsonPropertyName("avatar")]
