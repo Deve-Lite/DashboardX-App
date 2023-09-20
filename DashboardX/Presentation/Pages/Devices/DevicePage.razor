@@ -43,7 +43,7 @@ else
 
         <MudItem xs="6" Class="d-flex p-0 pt-3 pb-3 m-0 justify-content-end">
 
-            <MudButton OnClick="AddControl"
+            <MudButton OnClick="async() => await ControlPagesUtils.AddControl(_dialogService, DeviceId, StateHasChanged, _localizer)"
                        Color="Color.Primary"
                        Variant="Variant.Filled"
                        StartIcon="@Icons.Material.Filled.AddToQueue">
@@ -143,118 +143,11 @@ else
 
             @foreach (var control in Device.Controls)
             {
-                <MudItem>
-                    <MudCard Elevation="25" Class="container container-fit-content p-5" style="border-radius: 1rem;">
-
-                        @if (control.Type == ControlType.Button)
-                        {
-                            <MudButton Color="Color.Secondary"
-                                       Variant="Variant.Filled"
-                                       OnClick="(async() => await BaseSendAction(control, async() => await control.Send(Device, Client!)))">
-                                @control.Name
-                            </MudButton>
-                        }
-                        else if (control.Type == ControlType.Radio)
-                        {
-                            <MudButton Color="Color.Secondary"
-                                       Variant="Variant.Filled"
-                                       OnClick="(async() => {await RadioAction(control); })">
-                                @control.Name
-                            </MudButton>
-                        }
-                        else if (control.Type == ControlType.Text)
-                        {
-                            <MudItem>
-                                <MudText>Name: @control.Name </MudText>
-                                <MudText>Last value on topic:  @(Client?.TopicService?.LastMessageOnTopic(ClientId, Device, control) ?? "No message") </MudText>
-                            </MudItem>
-                        }
-                        else if (control.Type == ControlType.Slider)
-                        {
-                            <MudItem>
-                                <MudText>Name: @control.Name </MudText>
-                                <MudText>Last value on topic:  @GetSliderValue(control) </MudText>
-                            </MudItem>
-
-
-                            <MudButton OnClick="(async() => await SetSliderValue(control))">
-                                Slide value
-                            </MudButton>
-                        }
-                        else if (control.Type == ControlType.DateTime)
-                        {
-                            <MudItem>
-                                <MudText>Name: @control.Name </MudText>
-                                <MudText>Last value on topic:  @GetValue(control) </MudText>
-                            </MudItem>
-
-                            //TODO: Dialog
-                        }
-                        else if (control.Type == ControlType.Switch)
-                        {
-                            @if (OnStateSwitch(control))
-                            {
-                                <MudItem>
-                                    <MudText>Name: @control.Name </MudText>
-                                    <MudText>Last value on topic:  @GetValue(control) </MudText>
-                                    <MudText>Current State:  @GetValue(control) </MudText>
-                                </MudItem>
-
-                                <MudSwitch Checked="true" CheckedChanged="async (bool value) => { await SwitchStateChanged(value, control); }">
-                                    Switch
-                                </MudSwitch>
-                            }
-                            else
-                            {
-                                <MudItem>
-                                    <MudText>Name: @control.Name </MudText>
-                                    <MudText>Last value on topic:  @GetValue(control) </MudText>
-                                    <MudText>Current State:  @GetValue(control) </MudText>
-                                </MudItem>
-
-                                <MudSwitch Checked="false" CheckedChanged="async (bool value) => { await SwitchStateChanged(value, control); }">
-                                    Switch
-                                </MudSwitch>
-
-                            }
-                        }
-                        else if (control.Type == ControlType.Color)
-                        {
-                            <MudItem>
-                                <MudText>Name: @control.Name </MudText>
-                                <MudText>Last value on topic:  @GetValue(control) </MudText>
-                            </MudItem>
-
-                            //TODO: Dialog
-                        }
-                        else if (control.Type == ControlType.State)
-                        {
-                            <MudItem>
-                                <MudText>Name: @control.Name </MudText>
-                                <MudText>Last value on topic:  @GetValue(control) </MudText>
-                            </MudItem>
-
-                            <MudButton OnClick="(async() => await BaseSendAction(control, async() => await control.Send(Device, Client!)))">
-                                Send State Payload
-                            </MudButton>
-                        }
-
-                        <MudText>
-                            <MudButton Variant="Variant.Filled"
-                                       Color="Color.Primary"
-                                       Style="z-index: 10;"
-                                       OnClick="(() => RemoveControl(control))">
-                                Remove
-                            </MudButton>
-                            <MudButton Variant="Variant.Filled"
-                                       Color="Color.Primary"
-                                       Style="z-index: 10;"
-                                       OnClick="(() => UpdateControl(control))">
-                                Update
-                            </MudButton>
-                        </MudText>
-                    </MudCard>
-                </MudItem>
+               <MudItem xs="6" sm="6" md="5" lg="4" xl="3" xxl="2">
+                   <ControlFactory Client="@Client"  
+                       Device="@Device" 
+                       Control="@control"/>
+               </MudItem>
             }
         </MudItem>
     </MudGrid>
@@ -302,80 +195,10 @@ else
 
         await base.OnInitializedAsync();
     }
+
     public void Dispose()
     {
         Client!.RerenderPage -= Rerender;
-    }
-
-    private async Task AddControl()
-    {
-        var parameters = new DialogParameters<UpsertControlDialog>
-        {
-            {  x => x.DeviceId, DeviceId },
-            {  x => x.ClientId, ClientId }
-        };
-
-        var dialog = await _dialogService.ShowAsync<UpsertControlDialog>("Create Control", parameters);
-        var result = await dialog.Result;
-
-        if (result.Canceled)
-            return;
-
-        var x = result.Data as Result<Client> ?? Result<Client>.Fail(message: "Couldn't parse response.");
-
-        if (x.Succeeded)
-            StateHasChanged();
-    }
-    private async Task UpdateControl(Control control)
-    {
-        var parameters = new DialogParameters<UpsertControlDialog>
-        {
-            {  x => x.DeviceId, DeviceId },
-            {  x => x.ClientId, ClientId } ,
-            {  x => x.Control, control }
-        };
-
-        var dialog = await _dialogService.ShowAsync<UpsertControlDialog>("Edit Control", parameters);
-        var result = await dialog.Result;
-
-        if (result.Canceled)
-            return;
-
-        var x = result.Data as Result<Client> ?? Result<Client>.Fail(message: "Couldn't parse response.");
-
-        if (x.Succeeded)
-            StateHasChanged();
-    }
-    private async Task RemoveControl(Control control)
-    {
-        var parameters = new DialogParameters<RemoveControlDialog>
-        {
-            {  x => x.DeviceId, DeviceId },
-            {  x => x.ClientId, ClientId } ,
-            {  x => x.Control, control }
-        };
-
-        var dialog = await _dialogService.ShowAsync<RemoveControlDialog>("Remove Control", parameters);
-        var result = await dialog.Result;
-
-        if (result.Canceled)
-            return;
-
-        var x = result.Data as Result ?? Result.Fail(message: "Couldn't parse response.");
-
-        if (x.Succeeded)
-            StateHasChanged();
-    }
-
-    private async Task ConnectAsync()
-    {
-        await Client!.ConnectAsync();
-        StateHasChanged();
-    }
-    private async Task DisconnectAsync()
-    {
-        await Client!.DisconnectAsync();
-        StateHasChanged();
     }
 
     private Task Rerender()
@@ -383,141 +206,4 @@ else
         StateHasChanged();
         return Task.CompletedTask;
     }
-
-    #region Control Functions
-
-    #region Switch
-
-    private bool OnStateSwitch(Control control)
-    {
-        var value = GetValue(control);
-
-        var onPayload = control.Attributes.OnPayload;
-
-        if (value == onPayload)
-            return true;
-
-        return false;
-    }
-
-    private async Task SwitchStateChanged(bool state, Control control)
-    {
-
-        Client?.TopicService?.UpdateMessageOnTopic(ClientId, Device, control, state.ToString());
-
-        var action = (async () =>
-        {
-            await control.Send(Device, Client!, state);
-        });
-
-        await BaseSendAction(control, action);
-    }
-
-    #endregion
-
-    #region Slider
-
-    public double GetSliderValue(Control control)
-    {
-        var currentValue = Client?.TopicService?.LastMessageOnTopic(ClientId, Device, control);
-
-        if (currentValue is null)
-            return 0;
-
-        if (double.TryParse(currentValue, out var val))
-            return val;
-
-        return 0;
-    }
-
-    public async Task SetSliderValue(Control control)
-    {
-        var currentValue = GetSliderValue(control);
-
-        var parameters = new DialogParameters<SliderControlDialog>
-        {
-            { "SliderValue", currentValue },
-            { "MaxSliderValue", control.Attributes.MaxValue },
-            { "MinSliderValue", control.Attributes.MinValue },
-        };
-
-        var dialog = await _dialogService.ShowAsync<SliderControlDialog>("Slider Dialog", parameters);
-        var result = await dialog.Result;
-
-        if (result.Canceled)
-            return;
-
-        var value = Convert.ToDouble(result.Data);
-
-        Client?.TopicService?.UpdateMessageOnTopic(ClientId, Device, control, value.ToString());
-
-        var action = (async () =>
-        {
-            var stringValue = value.ToString();
-            await control.Send(Device, Client!, stringValue);
-        });
-
-        await BaseSendAction(control, action);
-    }
-
-    #endregion
-
-    #region Radio
-
-    public async Task RadioAction(Control control)
-    {
-        var parameters = new DialogParameters<RadioControlDialog>
-        {
-            { x => x.Payloads,  control.Attributes.Payloads }
-        };
-
-        var dialog = await _dialogService.ShowAsync<RadioControlDialog>("Confirmation", parameters);
-        var result = await dialog.Result;
-
-        if (result.Canceled)
-            return;
-
-        var key = result.Data as string ?? string.Empty;
-
-        if (!control.Attributes.Payloads.ContainsKey(key))
-            return;
-
-        var action = (async () =>
-        {
-            var payload = control.Attributes.Payloads[key];
-            await control.Send(Device, Client!, payload);
-        });
-
-        await BaseSendAction(control, action);
-    }
-
-    #endregion
-
-    public async Task BaseSendAction(Control control, Func<Task> action)
-    {
-        bool confirmed = true;
-        if (control.IsConfiramtionRequired)
-        {
-            var parameters = new DialogParameters<ConfirmDialog>
-            {
-                { x => x.Description, "Are you sure to invoke this action??" }
-            };
-
-            var dialog = await _dialogService.ShowAsync<ConfirmDialog>("Confirmation", parameters);
-            var result = await dialog.Result;
-            confirmed = Convert.ToBoolean(result.Data);
-        }
-
-        if (!confirmed)
-            return;
-
-        await action.Invoke();
-    }
-
-    public string GetValue(Control control)
-    {
-        return Client?.TopicService?.LastMessageOnTopic(ClientId, Device, control) ?? "No message";
-    }
-
-    #endregion
 }

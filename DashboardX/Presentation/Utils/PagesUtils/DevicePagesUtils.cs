@@ -57,6 +57,7 @@ public class DevicePagesUtils
 
         if (x.Succeeded)
         {
+            //TODO: If on devices do nothing if brokers/brokerid do nothing if on device go back!
             _navigationManager.NavigateTo("/devices");
         }
     }

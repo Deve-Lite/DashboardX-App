@@ -6,6 +6,10 @@ public class IconUtils
 {
     public static string DefualtIcon = Icons.Material.Filled.Home;
 
+    public static string DefaultEditIcon = Icons.Material.Filled.Edit;
+
+    public static string DefaultRemoveIcon = Icons.Material.Filled.Delete;
+
     public static Dictionary<string, string> IconList = new Dictionary<string, string>() 
     {
         { "Home", Icons.Material.Filled.Home },

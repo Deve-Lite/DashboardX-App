@@ -1,0 +1,56 @@
+﻿@using Presentation.Utils;
+@using Presentation.Utils.PagesUtils;
+@using Shared.Models.Controls;
+@using Shared.Models.Devices;
+
+@inject IStringLocalizer<ControlFactory> _localizer;
+
+
+
+<MudGrid Class="p-0 m-0">
+
+    <MudItem Class="p-1 m-0">
+
+        <MudIconButton Size="Size.Medium" 
+                       Icon="@IconUtils.DefaultEditIcon"
+                       OnClick="async() => await ControlPagesUtils.UpdateControl(_dialogService, Control!, Client!.Id, StateHasChanged, _localizer)" />
+
+        <MudIconButton Size="Size.Medium"
+                       Icon="@IconUtils.DefaultRemoveIcon" 
+                       OnClick="async() => await ControlPagesUtils.RemoveControl(_dialogService, Control!, Client!.Id, _localizer)" />
+
+    </MudItem>
+
+    @if (Control!.Type == ControlType.State)
+    {
+        <!--TODO: Thinkof state control placing -->
+    }
+    else if (Control!.Type == ControlType.Button)
+    {
+        <MudCard Elevation="5" Class="container container-fit-content p-5" Style="border-radius: 1rem;">
+
+        </MudCard>
+    }
+    else
+    {
+        <MudText>
+            @_localizer["Sorry this controll is not yet implemented."]
+        </MudText>
+    }
+</MudGrid>
+
+
+
+@code 
+{
+
+    [Parameter]
+    public Control? Control { get; set; }
+
+    [Parameter]
+    public Client? Client { get; set; }
+
+    [Parameter]
+    public Device? Device { get; set; }
+
+}

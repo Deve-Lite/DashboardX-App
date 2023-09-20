@@ -109,13 +109,13 @@ else
                             </MudItem>
                             <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-evenly">
                                 <MudIconButton Class="z-10"
-                                               Icon="@Icons.Material.Filled.Edit"
+                                               Icon="@IconUtils.DefaultEditIcon"
                                                OnClick="() => BrokerPagesUtils.UpdateBroker(client, _dialogService, StateHasChanged, _localizer)">
 
                                 </MudIconButton>
 
                                 <MudIconButton Class="z-10"
-                                               Icon="@Icons.Material.Filled.Delete"
+                                               Icon="@IconUtils.DefaultRemoveIcon"
                                                OnClick="() => BrokerPagesUtils.RemoveBroker(client, _dialogService, StateHasChanged, _localizer)">
 
                                 </MudIconButton>

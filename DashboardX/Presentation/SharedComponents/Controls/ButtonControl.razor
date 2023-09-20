@@ -1,0 +1,34 @@
+﻿@using Shared.Models.Controls;
+@using Shared.Models.Devices;
+
+<MudCard Elevation="5" Class="container container-fit-content p-3 m-2 rounded-2">
+
+    <MudGrid Class="p-0 m-0 w-100">
+
+        <MudItem xs="12" Class="">
+                         
+
+        </MudItem>
+
+        <MudItem xs="12">
+
+            <MudText Typo="Typo.button">
+                @Control!.Name
+            </MudText>
+
+        </MudItem>
+    </MudGrid>
+</MudCard>
+
+@code {
+
+    [Parameter]
+    public Control? Control { get; set; }
+
+    [Parameter]
+    public Client? Client { get; set; }
+
+    [Parameter]
+    public Device? Device { get; set; }
+
+}
