@@ -6,30 +6,33 @@ public class Control : BaseModel
 {
     #region Constructors
 
-    public Control() { }
+    public Control() 
+    {
+        Type = ControlType.Button;
+    }
 
-    public Control(string deviceId)
+    public Control(string deviceId) 
     {
         DeviceId = deviceId;
+        Type = ControlType.Button;
     }
 
     #endregion
 
-
     #region Foreign Keys
 
-    [JsonPropertyName("deviceId"), Required]
+    [JsonPropertyName("deviceId")]
     public string DeviceId { get; set; } = string.Empty;
 
     #endregion
 
-    [JsonPropertyName("name"), Required, MinLength(1), MaxLength(16)]
+    [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
-    [JsonPropertyName("icon"), Required]
+    [JsonPropertyName("icon")]
     public string Icon { get; set; } = string.Empty;
-    [JsonPropertyName("iconBackgroundColor"), Required]
+    [JsonPropertyName("iconBackgroundColor")]
     public string IconBackgroundColor { get; set; } = string.Empty;
-    [JsonPropertyName("topic"), Required, MinLength(1), MaxLength(64)]
+    [JsonPropertyName("topic")]
     public string Topic { get; set; } = string.Empty;
 
     [JsonPropertyName("type"), Required]

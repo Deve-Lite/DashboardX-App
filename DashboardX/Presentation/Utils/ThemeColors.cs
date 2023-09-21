@@ -4,6 +4,7 @@ namespace Presentation.Utils;
 
 public static class ThemeColors
 {
+    public static int ControlColorOpacity = 128;
 
     private static string colorPrimary = "9C27B0";
     public static string ColorPrimary = $"#{colorPrimary}";

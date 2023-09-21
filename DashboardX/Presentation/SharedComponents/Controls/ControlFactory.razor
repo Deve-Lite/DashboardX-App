@@ -9,7 +9,7 @@
 
 <MudGrid Class="p-0 m-0">
 
-    <MudItem Class="p-1 m-0">
+    <MudItem xs="3" Class="p-1 m-0">
 
         <MudIconButton Size="Size.Medium" 
                        Icon="@IconUtils.DefaultEditIcon"
@@ -21,22 +21,22 @@
 
     </MudItem>
 
-    @if (Control!.Type == ControlType.State)
-    {
-        <!--TODO: Thinkof state control placing -->
-    }
-    else if (Control!.Type == ControlType.Button)
-    {
-        <MudCard Elevation="5" Class="container container-fit-content p-5" Style="border-radius: 1rem;">
-
-        </MudCard>
-    }
-    else
-    {
-        <MudText>
-            @_localizer["Sorry this controll is not yet implemented."]
-        </MudText>
-    }
+    <MudItem xs="9" Class="p-1 m-0">
+        @if (Control!.Type == ControlType.State)
+        {
+            <!--TODO: Thinkof state control placing -->
+        }
+        else if (Control!.Type == ControlType.Button)
+        {
+            <ButtonControl Client="@Client" Device="@Device" Control="@Control" />
+        }
+        else
+        {
+            <MudText>
+                @_localizer["Sorry this control is not yet implemented."]
+            </MudText>
+        }
+    </MudItem>
 </MudGrid>
 
 

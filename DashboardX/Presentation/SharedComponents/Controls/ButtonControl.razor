@@ -1,26 +1,27 @@
-﻿@using Shared.Models.Controls;
+﻿@using Presentation.Utils;
+@using Shared.Models.Controls;
 @using Shared.Models.Devices;
 
-<MudCard Elevation="5" Class="container container-fit-content p-3 m-2 rounded-2">
+<MudCard Elevation="5" 
+         Class="container container-fit-content p-0 m-2 rounded-4"
+         Style="@($"border: 1px solid {Control!.IconBackgroundColor}; background-color: {BackgroundColor};")">
 
-    <MudGrid Class="p-0 m-0 w-100">
+    <MudGrid Class="p-0 m-1 w-100">
 
-        <MudItem xs="12" Class="">
-                         
-
+        <MudItem xs="12" Class="p-0 m-0 pb-3">
+            <MudIcon Icon="@Control.Icon" Size="Size.Medium"/>
         </MudItem>
 
         <MudItem xs="12">
-
-            <MudText Typo="Typo.button">
+            <MudText Typo="Typo.body1">
                 @Control!.Name
             </MudText>
-
         </MudItem>
     </MudGrid>
 </MudCard>
 
-@code {
+@code 
+{
 
     [Parameter]
     public Control? Control { get; set; }
@@ -30,5 +31,15 @@
 
     [Parameter]
     public Device? Device { get; set; }
+
+    private string BackgroundColor { get; set; } = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        System.Drawing.Color color = System.Drawing.ColorTranslator.FromHtml(Control!.IconBackgroundColor);
+        BackgroundColor = $"rgba({color.R}, {color.G}, {color.B}, {ThemeColors.ControlColorOpacity / 255})";
+    }
 
 }

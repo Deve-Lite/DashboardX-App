@@ -50,6 +50,7 @@
                                xs="12"
                                T="string"
                                Class="p-0 m-0"
+                               HelperText="@_localizer["Select device broker"]"
                                Label="@_localizer["Broker"]"
                                For="(() => Device.BrokerId)"
                                Variant="Variant.Filled"
@@ -114,8 +115,7 @@
     public string ClientId { get; set; } = string.Empty;
 
     private DeviceValidator DeviceValidator = new();
-
-    MudForm? form;
+    private MudForm? form;
 
     private List<Broker> AvaliableBrokers = new();
 
@@ -128,7 +128,7 @@
             AvaliableBrokers = result.Data;
         }
         else
-            Dialog!.Close(DialogResult.Ok(Result.Fail(result.Messages, result.StatusCode)));
+            Dialog!.Close(DialogResult.Ok(Result.Fail(result.StatusCode, _localizer["Failed to load brokers."])));
 
         await base.OnInitializedAsync();
     }
