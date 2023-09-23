@@ -1,0 +1,32 @@
+﻿@inject IStringLocalizer<ConfirmDialog> _localizer;
+@inject IClientService _clientService;
+
+<MudDialog>
+    <DialogContent>
+        <MudText>@Description</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel"
+                   Variant="Variant.Filled"
+                   Color="Color.Error">@_localizer["Cancel"]</MudButton>
+        <MudButton OnClick="Remove"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary">@_localizer["Continue"] </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code
+{
+    [CascadingParameter]
+    private MudDialogInstance? Dialog { get; set; }
+
+    [Parameter]
+    public string Description { get; set; } = string.Empty;
+
+    private void Cancel() => Dialog!.Cancel();
+
+    private void Remove()
+    {
+        Dialog!.Close(DialogResult.Ok(true));
+    }
+}

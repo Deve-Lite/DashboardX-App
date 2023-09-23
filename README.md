@@ -31,13 +31,21 @@ Our main goal is to create product that will allow do-it-yourselfers to freely u
 ![C#](https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=c-sharp&logoColor=white&style=flat)
 ![Blazor](https://img.shields.io/badge/Blazor-8B008B?style=for-the-badge&logo=blazor&logoColor=white&style=flat)
 
-### Api and Datbase
+### Api and Database
 
 Will be added when api will be public.
 
 ### Local Setup
 
-Will be added when docker image will be created.
+You can run app using visual stuido or docker
+
+When using docker compose you should check 
+- `API_URL` - and adjust to local api configuration
+
+In order to run app:
+- `docker-compose up -d`
+
+Now you can acess app at `http://localhost:8080/`.
 
 ### Contributing 
 

@@ -1,0 +1,57 @@
+﻿@inject IStringLocalizer<RemoveControlDialog> _localizer;
+@inject IClientService _clientService;
+
+
+<MudDialog Title="Removing Control">
+    <DialogContent>
+        <MudText>@_localizer["Are you sure you want to remove following control?"]</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">@_localizer["Cancel"]</MudButton>
+        <MudButton OnClick="RemoveAsync"
+                   ButtonType="ButtonType.Submit"
+                   Variant="Variant.Filled"
+                   Color="Color.Warning">@_localizer["Remove"] </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code
+{
+    [CascadingParameter]
+    private MudDialogInstance? Dialog { get; set; }
+
+    [Parameter]
+    public Control Control { get; set; } = new();
+    [Parameter]
+    public string DeviceId { get; set; } = string.Empty;
+    [Parameter]
+    public string ClientId { get; set; } = string.Empty;
+
+    private void Cancel() => Dialog!.Cancel();
+
+    private async Task RemoveAsync()
+    {
+        if (string.IsNullOrEmpty(DeviceId) || string.IsNullOrEmpty(ClientId))
+            return;
+
+        if (_loadingService.IsLoading)
+            return;
+
+        _loadingService.ShowLoading();
+
+        var result = await _clientService.RemoveControlFromDevice(ClientId, DeviceId, Control);
+
+        _loadingService.HideLoading();
+
+        await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnRemoved);
+
+        Dialog!.Close(DialogResult.Ok(result));
+    }
+
+    private Task OnRemoved()
+    {
+        _snackbar.Add("Successfully removed device.", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
+        return Task.CompletedTask;
+    }
+
+}

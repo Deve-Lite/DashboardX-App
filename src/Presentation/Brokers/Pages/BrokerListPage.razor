@@ -1,0 +1,169 @@
+@page "/brokers"
+
+@inject IClientService _clientService
+@inject IStringLocalizer<BrokerListPage> _localizer
+
+@if (_loadingService.IsLoading)
+{
+    <div> Loading... </div>
+}
+else if (!LoadedSuccessfully)
+{
+    <div>
+        Failed to load... TODO: Refresh button
+    </div>
+}
+else if(IsMobile)
+{
+    //TODO: Implement
+}
+else
+{
+    <MudGrid Class="m-0 p-3 w-100">
+
+        <MudItem xs="7"> </MudItem>
+        <MudItem xs="5" Class="d-flex justify-content-end">
+
+            <MudButton OnClick="() => BrokerPagesUtils.AddBroker(_dialogService, StateHasChanged, _localizer)"
+                       Color="Color.Primary"
+                       Variant="Variant.Filled"
+                       StartIcon="@Icons.Material.Filled.AddToQueue">
+                       @_localizer["Add Broker"]
+            </MudButton>
+
+
+        </MudItem>
+
+        <MudItem Class="p-0" xs="12">
+            <MudList Class="p-0 m-0" 
+                     Dense="true" 
+                     Clickable="true">
+                <MudListSubheader Class="d-flex p-0 m-0">
+                    <MudGrid Class="p-0 m-0">
+                        <MudItem xs="1" Class="p-1 m-0">
+
+                        </MudItem>
+                        <MudItem xs="2" Class="d-flex p-1 m-0 align-items-center justify-content-start">
+                            <MudText Typo="Typo.h6">
+                                @_localizer["Name"]
+                            </MudText>
+                        </MudItem>
+                        <MudItem xs="4" Class="d-flex p-1 m-0 align-items-center justify-content-start">
+                            <MudText Typo="Typo.h6">
+                                @_localizer["Server"]
+                            </MudText>
+                        </MudItem>
+                        <MudItem xs="1" Class="d-flex p-1 m-0 align-items-center justify-content-start">
+                            <MudText Typo="Typo.h6">
+                                @_localizer["Port"]
+                            </MudText>
+                        </MudItem>
+                        <MudItem xs="2" Class="d-flex p-1 m-0 align-items-center justify-content-center">
+                            <MudText Typo="Typo.h6">
+                                @_localizer["Status"]
+                            </MudText>
+                        </MudItem xs="2">
+                        <MudItem Class="p-1 m-0"> </MudItem>
+                    </MudGrid>
+
+                </MudListSubheader>
+
+                <MudProgressLinear Size="Size.Small" Color="Color.Primary" Rounded="true" Value="100" />
+
+                @foreach(var client in Clients)
+                {
+                    <MudListItem Class="d-flex m-0 p-0 pt-1 pb-1"
+                                 Href="@($"/brokers/{client.Id}")">
+                        <MudGrid Class="w-100 p-0 m-0">
+                            <MudItem xs="1" Class="d-flex m-0 p-0 align-items-center justify-content-center">
+                                <IconForList Icon="@client!.Broker.Icon"
+                                           BackgroundColor="@client!.Broker.IconBackgroundColor"
+                                           IconSize="Size.Medium" />
+                            </MudItem>
+                            <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-start">
+                                <MudText >
+                                    @client.Broker.Name
+                                </MudText>
+                            </MudItem>
+                          
+                            <MudItem xs="4" Class="d-flex m-0 p-0 align-items-center justify-content-start">
+                                <MudText Class="hide-overlapping-text">
+                                    @client.Broker.Server
+                                </MudText>
+                            </MudItem>
+
+                            <MudItem xs="1" Class="d-flex m-0 p-0 align-items-center justify-content-start">
+                                <MudText>
+                                    @client.Broker.Port
+                                </MudText>
+                            </MudItem>
+                          
+                            <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-center">
+                                <BrokerConnectionSwitch Client="client" />
+                            </MudItem>
+                            <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-evenly">
+                                <MudIconButton Class="z-10"
+                                               Icon="@IconUtils.DefaultEditIcon"
+                                               OnClick="() => BrokerPagesUtils.UpdateBroker(client, _dialogService, StateHasChanged, _localizer)">
+
+                                </MudIconButton>
+
+                                <MudIconButton Class="z-10"
+                                               Icon="@IconUtils.DefaultRemoveIcon"
+                                               OnClick="() => BrokerPagesUtils.RemoveBroker(client, _dialogService, StateHasChanged, _localizer)">
+
+                                </MudIconButton>
+                            </MudItem>
+                        </MudGrid>
+
+                    </MudListItem>
+
+                    <MudProgressLinear Size="Size.Small" Color="Color.Primary" Rounded="true" Value="0"/>
+                }
+            </MudList>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+
+    public bool IsMobile { get; set; }
+    public bool LoadedSuccessfully { get; set; } = true;
+    private List<Client> Clients { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (_loadingService.IsLoading)
+            return;
+
+        _loadingService.ShowLoading();
+
+        IsMobile = false; //TODO: Uncoment = await _runtime.IsMobile();
+
+        var result = await _clientService.GetClients();
+        if (result.Succeeded)
+        {
+            Clients = result.Data;
+            LoadedSuccessfully = true;
+        }
+
+        if (result.ShowToast)
+            foreach (var message in result.Messages)
+                _snackbar.Add(message, result.Severity);
+
+        _loadingService.HideLoading();
+    }
+
+    private async Task ConnectAsync(Client client)
+    {
+        var result = await client.ConnectAsync();
+
+        if (!result && result.ShowToast)
+            _snackbar.Add(result.Messages.First(), Severity.Error);
+    }
+
+    private void NavigateToBroker(Client clinet)
+    {
+        _navigationManager.NavigateTo($"/brokers/{clinet.Id}");
+    }
+}
