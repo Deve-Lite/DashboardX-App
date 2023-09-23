@@ -3,6 +3,8 @@
 @using MQTTnet.Protocol;
 @using Presentation.Utils;
 @using System.Net;
+@using Presentation.Validators.Controls;
+@using Presentation.Validators;
 @using global::Shared.Models.Brokers;
 @using global::Shared.Models.Controls;
 @using global::Shared.Models.Devices;
@@ -13,124 +15,151 @@
 
 <MudDialog>
     <DialogContent>
-        <EditForm id="upsertBrokerForm" Model="@Control" OnValidSubmit="SubmitAsync">
-            <FluentValidationValidator @ref="_fluentValidationValidator" />
-            <MudGrid>
-                <DataAnnotationsValidator />
+        <MudForm @ref="Form"
+                 Model="@Control"
+                 Validation="@(Validator.ValidateValue)"
+                 ValidationDelay="0"
+                 Class="m-0 p-0 w-100">
 
-                <MudItem xs="12">
-                    <div class="d-flex justify-center">
-                        <MudTextField @bind-Value="Control.Name"
-                                      T="string"
-                                      Label="@_localizer["Name"]"
-                                      Variant="Variant.Outlined"
-                                      For="@(() => Control.Name)" />
-                    </div>
+            <MudGrid Class="m-0 p-3 w-100">
+
+                <MudItem xs="3"
+                         Class="p-1 m-0">
+                    <IconSelector @bind-Icon="@Control.Icon"
+                                  Label="Icon" />
+                </MudItem>
+
+                <MudItem xs="9"
+                         Class="p-1 m-0">
+                    <ColorSelector @bind-Value="@Control.IconBackgroundColor"
+                                   Label="Device Theme" />
                 </MudItem>
 
                 <MudItem xs="12">
-                    <div class="d-flex justify-center">
-                        <MudTextField @bind-Value="Control.Topic"
-                                      T="string"
-                                      Label="@_localizer["Topic Path"]"
-                                      Variant="Variant.Outlined"
-                                      For="@(() => Control.Topic)" />
-                    </div>
+                    <MudTextField @bind-Value="Control.Name"
+                                  T="string"
+                                  Label="@_localizer["Name"]"
+                                  Variant="Variant.Filled"
+                                  OnlyValidateIfDirty="true"
+                                  Clearable="true"
+                                  Class="p-0 m-0"
+                                  HelperText="@_localizer["Provide meaningful name."]"
+                                  For="@(() => Control.Name)" />
                 </MudItem>
 
                 <MudItem xs="12">
-                    <div class="d-flex justify-center">
-                        <MudTextField @bind-Value="Control.Icon"
-                                      T="string"
-                                      Label="@_localizer["Icon"]"
-                                      Variant="Variant.Outlined"
-                                      For="@(() => Control.Icon)" />
-                    </div>
+                    <MudTextField @bind-Value="Control.Topic"
+                                  T="string"
+                                  Label="@_localizer["Topic"]"
+                                  Variant="Variant.Filled"
+                                  OnlyValidateIfDirty="true"
+                                  Clearable="true"
+                                  Class="p-0 m-0"
+                                  HelperText="@_localizer["Provide topic ({deviceBaseTopic}{controlTopic})."]"
+                                  For="@(() => Control.Topic)" />
                 </MudItem>
 
                 <MudItem xs="12">
-                    <div class="d-flex justify-center">
-                        <MudColorPicker @bind-Text="Control.IconBackgroundColor"
-                                        Label="@_localizer["Icon background color"]"
-                                        ColorPickerView="ColorPickerView.Palette" />
+                    <MudSelect @bind-Value="Control.QualityOfService"
+                               Label="@_localizer["Quality of service"]"
+                               For="(() => Control.QualityOfService)"
+                               Variant="Variant.Filled"
+                               AnchorOrigin="Origin.BottomCenter">
 
-                    </div>
+                        <MudSelectItem Value="MqttQualityOfServiceLevel.AtMostOnce">@_localizer["At most once - 0"]</MudSelectItem>
+                        <MudSelectItem Value="MqttQualityOfServiceLevel.AtLeastOnce">@_localizer["At least once - 1"]</MudSelectItem>
+                        <MudSelectItem Value="MqttQualityOfServiceLevel.ExactlyOnce">@_localizer["Exactly once - 2"]</MudSelectItem>
+                    </MudSelect>
                 </MudItem>
 
-                <MudSelect @bind-Value="Control.QualityOfService"
-                           xs="12"
-                           Label="@_localizer["Quality of service"]"
-                           For="(() => Control.QualityOfService)"
-                           Variant="Variant.Outlined"
-                           AnchorOrigin="Origin.BottomCenter">
-
-                    <MudSelectItem Value="MqttQualityOfServiceLevel.AtMostOnce">@_localizer["At most once - 0"]</MudSelectItem>
-                    <MudSelectItem Value="MqttQualityOfServiceLevel.AtLeastOnce">@_localizer["At least once - 1"]</MudSelectItem>
-                    <MudSelectItem Value="MqttQualityOfServiceLevel.ExactlyOnce">@_localizer["Exactly once - 2"]</MudSelectItem>
-                </MudSelect>
-
-                <MudItem xs="12">
-                    <div class="d-flex justify-start">
-                        <MudSwitch @bind-Checked="Control.IsConfiramtionRequired"
-                                   Label="@_localizer["Sending data requires confirmation"]"
-                                   Color="Color.Primary" />
-                    </div>
-                </MudItem>
-
-                <MudItem xs="12">
-                    <div class="d-flex justify-start">
+                <MudItem xs="12" sm="6">
                         <MudSwitch @bind-Checked="Control.IsAvailable"
                                    Label="@_localizer["Is Avaliable"]"
                                    Color="Color.Primary" />
-                    </div>
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                        <MudSwitch @bind-Checked="Control.DisplayName"
+                                   Label="@_localizer["Display Name"]"
+                                   LabelPosition="LabelPosition.End"
+                                   Color="Color.Primary" />
                 </MudItem>
 
                 <MudItem xs="12">
-                    <div class="d-flex justify-start">
-                        <MudSwitch @bind-Checked="Control.DisplayName"
-                                   Label="@_localizer["Display Name"]"
-                                   Color="Color.Primary" />
-                    </div>
+                    <MudSwitch @bind-Checked="Control.IsConfiramtionRequired"
+                               Label="@_localizer["Sending data requires confirmation"]"
+                               Color="Color.Primary" />
+
                 </MudItem>
 
-                <MudSelect xs="12"
-                           Label="Broker"
-                           For="(() => Control.Type)"
-                           Variant="Variant.Outlined"
-                           AnchorOrigin="Origin.BottomCenter"
-                           T="ControlType"
-                           ValueChanged="TypeChanged">
+                <MudItem xs="12">
+                    <MudSelect Label="Broker"
+                               For="(() => Control.Type)"
+                               Variant="Variant.Outlined"
+                               AnchorOrigin="Origin.BottomCenter"
+                               T="ControlType"
+                               ValueChanged="TypeChanged">
 
 
-                    <MudSelectItem Value="ControlType.Button">@_localizer["Button"]</MudSelectItem>
-                    <MudSelectItem Value="ControlType.Radio">@_localizer["Radio"]</MudSelectItem>
-                    <MudSelectItem Value="ControlType.Text">@_localizer["Text Display"]</MudSelectItem>
-                    <MudSelectItem Value="ControlType.Slider">@_localizer["Slider"]</MudSelectItem>
+                        <MudSelectItem Value="ControlType.Button">@_localizer["Button"]</MudSelectItem>
+                        <MudSelectItem Value="ControlType.Slider">@_localizer["Slider"]</MudSelectItem>
 
-                    <!--
-                    <MudSelectItem Value="ControlType.Switch">@_localizer["Switch"]</MudSelectItem>
-                    <MudSelectItem Value="ControlType.Color">@_localizer["Color"]</MudSelectItem>
-                    <MudSelectItem Value="ControlType.DateTime">@_localizer["DateTime"]</MudSelectItem>
-                    <MudSelectItem Value="ControlType.State">@_localizer["State"]</MudSelectItem>
-                    -->
+                        <!--
+                        <MudSelectItem Value="ControlType.Radio">@_localizer["Radio"]</MudSelectItem>
+                        <MudSelectItem Value="ControlType.Text">@_localizer["Text Display"]</MudSelectItem>
+                        <MudSelectItem Value="ControlType.Slider">@_localizer["Slider"]</MudSelectItem>
+                        <MudSelectItem Value="ControlType.Switch">@_localizer["Switch"]</MudSelectItem>
+                        <MudSelectItem Value="ControlType.Color">@_localizer["Color"]</MudSelectItem>
+                        <MudSelectItem Value="ControlType.DateTime">@_localizer["DateTime"]</MudSelectItem>
+                        <MudSelectItem Value="ControlType.State">@_localizer["State"]</MudSelectItem>
+                        -->
 
-                </MudSelect>
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" Class="p-0 pt-3 pb-3 m-0">
+                    <MudProgressLinear Size="Size.Small" Color="Color.Tertiary" Rounded="true" Value="100" />
+                </MudItem>
 
                 @if (Control.Type == ControlType.Button)
                 {
                     <MudItem xs="12">
-                        <MudText> Button is simplest control sending payload to broker when clicked </MudText>
+                        <MudText> @_localizer["Button is simplest control sending payload to broker when clicked."] </MudText>
                     </MudItem>
 
                     <MudItem xs="12">
-                        <div class="d-flex justify-start">
-                            <MudTextField @bind-Value="Control.Attributes.Payload"
-                                          T="string"
-                                          Lines="4"
-                                          Required="true"
-                                          Variant="Variant.Outlined"/>
-                        </div>
+                        <MudTextField @bind-Value="Control.Attributes.Payload"
+                                      T="string"
+                                      Lines="5"
+                                      OnlyValidateIfDirty="true"
+                                      Class="p-0 m-0"
+                                      Variant="Variant.Outlined"
+                                      HelperText="@_localizer["Provide payload to be send on click."]"
+                                      For="@(() => Control.Attributes.Payload)" />
                     </MudItem>
+
+                }
+                else if (Control.Type == ControlType.Slider)
+                {
+                    <MudItem xs="12">
+                        <MudText>
+                            @_localizer["Slider control sending payload is to broker when slided. Current slided value will be matched to !value! field."]
+                        </MudText>
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="Control.Attributes.PayloadTemplate"
+                                      T="string"
+                                      Lines="5"
+                                      Label="@_localizer["Payload Template"]"
+                                      Variant="Variant.Outlined"
+                                      OnlyValidateIfDirty="true"
+                                      Class="p-0 m-0"
+                                      HelperText="@_localizer["Provide payload to be send on click with inserted value."]"
+                                      For="@(() => Control.Attributes.PayloadTemplate)" />
+                    </MudItem>
+
+                    <!-- TODO: Insert value button-->
 
                 }
                 else if (Control.Type == ControlType.Radio)
@@ -180,22 +209,6 @@
                 else if (Control.Type == ControlType.Text)
                 {
                     <MudText>Text just displays last data received on certain topic.</MudText>
-                }
-                else if (Control.Type == ControlType.Slider)
-                {
-                    <MudItem xs="12">
-                        <MudText> Slider control sending payload is to broker when slided. Current slided value will be matched to !value! field.</MudText>
-                    </MudItem>
-
-                    <MudItem xs="12">
-                        <div class="d-flex justify-start">
-                            <MudTextField @bind-Value="Control.Attributes.PayloadTemplate"
-                                          T="string"
-                                          Lines="4"
-                                          Label="@_localizer["Payload Template"]"
-                                          Variant="Variant.Outlined" />
-                        </div>
-                    </MudItem>
                 }
                 else if (Control.Type == ControlType.Color)
                 {
@@ -290,15 +303,13 @@
                 }
 
             </MudGrid>
-        </EditForm>
+        </MudForm>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">@_localizer["Cancel"]</MudButton>
-        <MudButton form="upsertBrokerForm"
-                   OnClick="SubmitAsync"
+        <MudButton OnClick="SubmitAsync"
                    ButtonType="ButtonType.Submit"
                    Variant="Variant.Filled"
-                   Disabled="@(!Validated)"
                    Color="Color.Primary">@_localizer["Submit"] </MudButton>
     </DialogActions>
 </MudDialog>
@@ -306,42 +317,20 @@
 
 @code
 {
-    //TODO: Rethink validation
 
     [CascadingParameter]
     private MudDialogInstance? Dialog { get; set; }
 
     [Parameter]
-    public Control Control { get; set; }
-
-    public UpsertControlDialog()
-    {
-        Control = new();
-        Control.Type = ControlType.Button;
-    }
-
+    public Control Control { get; set; } = new();
     [Parameter]
     public string DeviceId { get; set; } = string.Empty;
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
 
-    private FluentValidationValidator? _fluentValidationValidator;
-    private bool Validated
-    {
-        get
-        {
-            if(_fluentValidationValidator == null)
-                return false;
+    private MudForm Form = new();
+    public ControlValidator Validator = new();
 
-            if (!_fluentValidationValidator.Validate(options => { options.IncludeAllRuleSets(); }))
-                return false;
-
-            if (Control.Type == ControlType.Button)
-                return true;
-
-            return false;
-        }
-    }
 
     protected override void OnInitialized()
     {
@@ -349,24 +338,38 @@
         base.OnInitialized();
     }
 
-    protected override Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (Validated && firstRender)
+        var validationResult = await Validator.ValidateAsync(Control);
+
+        if (validationResult.IsValid && firstRender)
             StateHasChanged();
 
         if (firstRender && !string.IsNullOrEmpty(Control.Id))
             Control = Control.Copy();
 
-        return base.OnAfterRenderAsync(firstRender);
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     private void Cancel() => Dialog!.Cancel();
 
+
+    private void TypeChanged(ControlType typeSelected)
+    {
+        Control.Type = typeSelected;
+        Control.Attributes = new();
+    }
+
     private async Task SubmitAsync()
     {
-        //Add additional validation for specific control types
+        Control.DeviceId = DeviceId;
 
         if (_loadingService.IsLoading)
+            return;
+
+        await Form.Validate();
+
+        if (!Form.IsValid)
             return;
 
         _loadingService.ShowLoading();
@@ -387,7 +390,7 @@
 
     private Task OnAdded()
     {
-        _snackbar.Add("Success", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
+        _snackbar.Add(_localizer["Success"], MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
         return Task.CompletedTask;
     }
 
@@ -424,12 +427,6 @@
             return true;
 
         return false;
-    }
-
-    private void TypeChanged(ControlType typeSelected)
-    {
-        Control.Type = typeSelected;
-        Control.Attributes = new();
     }
 
     private string Key { get; set; } = string.Empty;
