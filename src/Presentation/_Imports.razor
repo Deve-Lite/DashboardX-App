@@ -1,0 +1,56 @@
+﻿@using MudBlazor
+
+@using Blazored.LocalStorage;
+@using Blazored.SessionStorage;
+
+@using System.Net.Http
+@using System.Net.Http.Json
+
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.AspNetCore.Components.WebAssembly.Http
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.Extensions.Localization;
+@using Microsoft.JSInterop
+
+@using Common;
+@using Common.App;
+@using Common.Auth;
+@using Common.Auth.Models;
+@using Common.Auth.Validators;
+@using Common.Users;
+@using Common.Users.Models;
+@using Common.Brokers;
+@using Common.Brokers.Models;
+@using Common.Brokers.Validators;
+@using Common.Controls;
+@using Common.Controls.Models;
+@using Common.Controls.Validators;
+@using Common.Devices;
+@using Common.Devices.Models;
+@using Common.Devices.Validators;
+
+@using Core;
+@using Core.App;
+@using Core.Auth;
+@using Core.Brokers;
+@using Core.Devices;
+@using Core.Models;
+@using Core.Users;
+
+@using Presentation.Application;
+@using Presentation.Shared;
+@using Presentation.Shared.ColorSelectorComponent;
+@using Presentation.Shared.IconSelectorComponent;
+@using Presentation.Clients;
+@using Presentation.Extensions;
+
+@attribute [Authorize]
+@inject ISnackbar _snackbar
+@inject IDialogService _dialogService
+@inject ILoadingService _loadingService
+@inject IJSRuntime _runtime
+@inject NavigationManager _navigationManager

@@ -1,0 +1,17 @@
+﻿@inject NavigationManager navigationManager
+
+@inject IJSRuntime JSRuntime
+
+@inject ILocalStorageService _localStorage
+@inject ISessionStorageService _sessionStorage
+@inject IAuthenticationService _authenticationService
+@inject AuthenticationStateProvider _authenticationStateProvider
+
+@code
+{
+    protected override async Task OnInitializedAsync()
+    {
+        navigationManager.NavigateTo("/auth/login");
+    }
+
+}

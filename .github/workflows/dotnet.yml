@@ -18,23 +18,17 @@ jobs:
         with:
           dotnet-version: '6.x' 
 
+      - name: Restore Common NuGet packages
+        run: dotnet restore DashboardX/Common/Common.csproj 
+
+      - name: Build Common
+        run: dotnet build DashboardX/Common/Common.csproj 
+
       - name: Restore Core NuGet packages
         run: dotnet restore DashboardX/Core/Core.csproj 
 
       - name: Build Core
         run: dotnet build DashboardX/Core/Core.csproj 
-
-      - name: Restore Infrastructure NuGet packages
-        run: dotnet restore DashboardX/Infrastructure/Infrastructure.csproj 
-
-      - name: Build Infrastructure
-        run: dotnet build DashboardX/Infrastructure/Infrastructure.csproj 
-
-      - name: Restore Shared NuGet packages
-        run: dotnet restore DashboardX/Shared/Shared.csproj 
-
-      - name: Build Shared
-        run: dotnet build DashboardX/Shared/Shared.csproj 
 
       - name: Restore Presentation NuGet packages
         run: dotnet restore DashboardX/Presentation/Presentation.csproj 

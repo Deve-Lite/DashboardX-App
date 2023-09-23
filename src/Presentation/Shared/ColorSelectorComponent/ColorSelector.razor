@@ -1,0 +1,65 @@
+﻿@inject IStringLocalizer<IconSelector> _localizer
+
+<MudGrid Class="p-0 m-0 w-100">
+
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <MudItem xs="12"
+                 Class="p-0 m-0">
+            <MudText>
+                @Label
+            </MudText>
+        </MudItem>
+    }
+
+    <MudItem xs="12"
+             Class="p-0 m-0 w-100">
+        <MudCard @onclick="async() => await GetHex()"
+                 Elevation="5"
+                 Class="m-0 mt-2 mb-2 p-0"
+                 Style="@($"height: 44px; background-color: {Value};")">
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+@code
+{
+    private string value = string.Empty;
+
+    [Parameter]
+    public string Label { get; set; } = string.Empty;
+    [Parameter]
+    public string Value
+    {
+        get => value;
+        set
+        {
+            if (value == this.value)
+                return;
+
+            this.value = value;
+            if (ValueChanged.HasDelegate)
+            {
+                ValueChanged.InvokeAsync(this.value);
+            }
+        }
+    }
+    [Parameter]
+    public EventCallback<string> ValueChanged { get; set; }
+
+    public async Task GetHex()
+    {
+        var parameters = new DialogParameters<ColorSelectorDialog>
+        {
+            { x => x.BackgroundColor, Value }
+        };
+
+        var dialog = await _dialogService.ShowAsync<ColorSelectorDialog>(_localizer["Select color"], parameters);
+        var result = await dialog.Result;
+
+        if (result.Canceled)
+            return;
+
+        Value = result.Data as string ?? ThemeColors.ColorPrimary;
+    }
+}

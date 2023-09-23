@@ -1,0 +1,58 @@
+﻿@inject IStringLocalizer<ConfirmDialog> _localizer
+
+<MudDialog>
+    <DialogContent>
+        <MudGrid>
+            <MudItem md="12" Class="d-flex justify-center">
+                <MudColorPicker @bind-Text="@BackgroundColor"
+                                DisableToolbar ="false"
+                                DisableAlpha="true"
+                                DisableColorField="false"
+                                DisablePreview="false"
+                                DisableSliders="false"
+                                DisableInputs="false"
+                                DisableModeSwitch="true"
+                                ColorPickerMode="ColorPickerMode.HEX"
+                                PickerVariant="PickerVariant.Static" />
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">@_localizer["Cancel"]</MudButton>
+        <MudButton OnClick="ColorSelected"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary">@_localizer["Save"] </MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+
+
+@code {
+    [CascadingParameter]
+    private MudDialogInstance? Dialog { get; set; }
+
+    [CascadingParameter]
+    protected MudTheme? MudTheme { get; set; }
+
+    [Parameter]
+    public string BackgroundColor { get; set; } = ThemeColors.ColorPrimary;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        if (MudTheme is not null)
+            BackgroundColor = MudTheme!.Palette.Primary.Value;
+    }
+
+
+    private void Cancel() => Dialog!.Cancel();
+
+    public void ColorSelected()
+    {
+        // TODO: Convert to hex is DisableModeSwitch Changed
+
+        Dialog!.Close(DialogResult.Ok(BackgroundColor));
+    }
+}
