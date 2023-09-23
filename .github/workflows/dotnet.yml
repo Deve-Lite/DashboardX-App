@@ -19,20 +19,20 @@ jobs:
           dotnet-version: '6.x' 
 
       - name: Restore Common NuGet packages
-        run: dotnet restore DashboardX/Common/Common.csproj 
+        run: dotnet restore src/Common/Common.csproj 
 
       - name: Build Common
-        run: dotnet build DashboardX/Common/Common.csproj 
+        run: dotnet build src/Common/Common.csproj 
 
       - name: Restore Core NuGet packages
-        run: dotnet restore DashboardX/Core/Core.csproj 
+        run: dotnet restore src/Core/Core.csproj 
 
       - name: Build Core
-        run: dotnet build DashboardX/Core/Core.csproj 
+        run: dotnet build src/Core/Core.csproj 
 
       - name: Restore Presentation NuGet packages
-        run: dotnet restore DashboardX/Presentation/Presentation.csproj 
+        run: dotnet restore src/Presentation/Presentation.csproj 
 
       - name: Build Presentation
-        run: dotnet build DashboardX/Presentation/Presentation.csproj 
+        run: dotnet build src/Presentation/Presentation.csproj 
 
