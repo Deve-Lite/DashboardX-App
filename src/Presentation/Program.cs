@@ -9,10 +9,16 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
+var isProduction = builder.Configuration.GetValue<string>("ASPNETCORE_ENVIRONMENT") == "Production";
+
+var apiUrl = builder.Configuration.GetValue<string>("Api:Url");
+if (isProduction)
+    apiUrl = builder.Configuration.GetValue<string>("API_URL");
+
 builder.Services.AddSingleton(sp => new HttpClient
 {
     Timeout = TimeSpan.FromSeconds(Convert.ToDouble(builder.Configuration.GetValue<string>("Api:MaxRequestTimeSeconds")!)),
-    BaseAddress = new Uri(builder.Configuration.GetValue<string>("Api:Url"))
+    BaseAddress = new Uri(apiUrl)
 });
 
 builder.Services.AddMudServices(config =>

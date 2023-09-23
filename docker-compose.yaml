@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  dashboard-x:
+    build:
+      context: ./src
+      dockerfile: dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - API_URL=http://localhost:3000
+    ports:
+      - "8080:80"
