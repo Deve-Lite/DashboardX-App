@@ -24,5 +24,13 @@ public class ControlValidator : BaseValidator<Control>
         RuleFor(x => x.Topic)
             .NotEmpty()
             .MaximumLength(64);
+
+        RuleFor(x => x.Attributes.Payload)
+            .Length(1, 256)
+            .When(x => x.Type == ControlType.Button);
+
+        RuleFor(x => x.Attributes.PayloadTemplate)
+            .Length(1, 256)
+            .When(x => x.Type == ControlType.Slider);
     }
 }

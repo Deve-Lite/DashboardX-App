@@ -15,7 +15,7 @@
 
 <MudDialog>
     <DialogContent>
-        <MudForm @ref="@form"
+        <MudForm @ref="Form"
                  Model="@Control"
                  Validation="@(Validator.ValidateValue)"
                  ValidationDelay="0"
@@ -59,7 +59,7 @@
                                   For="@(() => Control.Topic)" />
                 </MudItem>
 
-                <MudItem  xs="12">
+                <MudItem xs="12">
                     <MudSelect @bind-Value="Control.QualityOfService"
                                Label="@_localizer["Quality of service"]"
                                For="(() => Control.QualityOfService)"
@@ -72,26 +72,24 @@
                     </MudSelect>
                 </MudItem>
 
-                <MudItem xs="12">
-
-                    <MudSwitch @bind-Checked="Control.IsConfiramtionRequired"
-                                   Label="@_localizer["Sending data requires confirmation"]"
-                                   Color="Color.Primary" />
-
-                </MudItem>
-
-                <MudItem xs="12">
+                <MudItem xs="12" sm="6">
                         <MudSwitch @bind-Checked="Control.IsAvailable"
                                    Label="@_localizer["Is Avaliable"]"
                                    Color="Color.Primary" />
-
                 </MudItem>
 
-                <MudItem xs="12">
+                <MudItem xs="12" sm="6">
                         <MudSwitch @bind-Checked="Control.DisplayName"
                                    Label="@_localizer["Display Name"]"
                                    LabelPosition="LabelPosition.End"
                                    Color="Color.Primary" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudSwitch @bind-Checked="Control.IsConfiramtionRequired"
+                               Label="@_localizer["Sending data requires confirmation"]"
+                               Color="Color.Primary" />
+
                 </MudItem>
 
                 <MudItem xs="12">
@@ -134,10 +132,10 @@
                                       T="string"
                                       Lines="5"
                                       OnlyValidateIfDirty="true"
-                                      Clearable="true"
                                       Class="p-0 m-0"
-                                      Required="true"
-                                      Variant="Variant.Outlined"/>
+                                      Variant="Variant.Outlined"
+                                      HelperText="@_localizer["Provide payload to be send on click."]"
+                                      For="@(() => Control.Attributes.Payload)" />
                     </MudItem>
 
                 }
@@ -152,12 +150,16 @@
                     <MudItem xs="12">
                         <MudTextField @bind-Value="Control.Attributes.PayloadTemplate"
                                       T="string"
-                                      Lines="4"
+                                      Lines="5"
                                       Label="@_localizer["Payload Template"]"
-                                      Variant="Variant.Outlined" />
+                                      Variant="Variant.Outlined"
+                                      OnlyValidateIfDirty="true"
+                                      Class="p-0 m-0"
+                                      HelperText="@_localizer["Provide payload to be send on click with inserted value."]"
+                                      For="@(() => Control.Attributes.PayloadTemplate)" />
                     </MudItem>
 
-                    <!-- TODO: Insert value -->
+                    <!-- TODO: Insert value button-->
 
                 }
                 else if (Control.Type == ControlType.Radio)
@@ -305,8 +307,7 @@
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">@_localizer["Cancel"]</MudButton>
-        <MudButton form="upsertBrokerForm"
-                   OnClick="SubmitAsync"
+        <MudButton OnClick="SubmitAsync"
                    ButtonType="ButtonType.Submit"
                    Variant="Variant.Filled"
                    Color="Color.Primary">@_localizer["Submit"] </MudButton>
@@ -321,24 +322,15 @@
     private MudDialogInstance? Dialog { get; set; }
 
     [Parameter]
-    public Control Control { get; set; }
-
+    public Control Control { get; set; } = new();
     [Parameter]
     public string DeviceId { get; set; } = string.Empty;
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
 
-    MudForm? form;
-
+    private MudForm Form = new();
     public ControlValidator Validator = new();
 
-    public BaseValidator<Control> TypeValidator = new ButtonValidator();
-
-    public UpsertControlDialog()
-    {
-        Control = new();
-        Control.Type = ControlType.Button;
-    }
 
     protected override void OnInitialized()
     {
@@ -346,18 +338,27 @@
         base.OnInitialized();
     }
 
-    protected override Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (form is not null && firstRender && form.IsValid)
+        var validationResult = await Validator.ValidateAsync(Control);
+
+        if (validationResult.IsValid && firstRender)
             StateHasChanged();
 
         if (firstRender && !string.IsNullOrEmpty(Control.Id))
             Control = Control.Copy();
 
-        return base.OnAfterRenderAsync(firstRender);
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     private void Cancel() => Dialog!.Cancel();
+
+
+    private void TypeChanged(ControlType typeSelected)
+    {
+        Control.Type = typeSelected;
+        Control.Attributes = new();
+    }
 
     private async Task SubmitAsync()
     {
@@ -366,14 +367,10 @@
         if (_loadingService.IsLoading)
             return;
 
-        await form!.Validate();
-       
+        await Form.Validate();
 
-        if (!form.IsValid)
+        if (!Form.IsValid)
             return;
-
-
-        //TODO: Additional validation
 
         _loadingService.ShowLoading();
 
@@ -393,7 +390,7 @@
 
     private Task OnAdded()
     {
-        _snackbar.Add("Success", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
+        _snackbar.Add(_localizer["Success"], MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
         return Task.CompletedTask;
     }
 
@@ -430,14 +427,6 @@
             return true;
 
         return false;
-    }
-
-    private void TypeChanged(ControlType typeSelected)
-    {
-        Control.Type = typeSelected;
-        Control.Attributes = new();
-
-
     }
 
     private string Key { get; set; } = string.Empty;
