@@ -1,8 +1,6 @@
 ﻿@inject IStringLocalizer<RemoveDeviceDialog> _localizer;
 @inject IClientService _clientService;
 
-
-
 <MudDialog>
     <DialogContent>
         <DialogLoading IsLoading="IsLoading">
@@ -22,7 +20,9 @@
                    Disabled="IsLoading"
                    ButtonType="ButtonType.Submit"
                    Variant="Variant.Filled"
-                   Color="Color.Error">@_localizer["Remove"] </MudButton>
+                   Color="Color.Error">
+                   @_localizer["Remove"] 
+        </MudButton>
     </DialogActions>
 </MudDialog>
 

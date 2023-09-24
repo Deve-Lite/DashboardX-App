@@ -1,5 +1,5 @@
 ﻿<MudPaper Elevation="5" 
-          Class="p-2 m-0 rounded-circle"
+          Class="@($"{Padding} m-0 rounded-circle")"
           Style="@($"background-color: {GetBackgroundColor()};")">
     <MudIcon Class="p-0 m-0"
              Size="IconSize"
@@ -16,6 +16,7 @@
     [Parameter]
     public Size IconSize { get; set; } = Size.Medium;
 
+    public string Padding { get; set; } = "p-2";
     public string DefaultColor { get; set; } = string.Empty;
 
     public string GetIcon()

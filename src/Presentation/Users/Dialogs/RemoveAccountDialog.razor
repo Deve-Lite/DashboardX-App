@@ -9,8 +9,7 @@
                          Model="@Model"
                          Validation="@(Validator.ValidateValue)"
                          ValidationDelay="0">
-
-                    <MudItem xs="12">
+                    <MudGrid Class="p-0 m-0 w-100">
                         <MudItem xs="12">
                             <MudTextField @bind-Value="Model.Password"
                                           T="string"
@@ -25,7 +24,7 @@
                                           Label="@_localizer["Password"]"
                                           HelperText="@_localizer["Provide password for your account."]" />
                         </MudItem>
-                    </MudItem>
+                    </MudGrid>
                 </MudForm>
             </LoadedContent>
         </DialogLoading>
@@ -80,7 +79,7 @@
             _navigationManager.NavigateTo("/");
         }
 
-        _snackbar.Add(_localizer["Failed to remove your account."], Severity.Error)
+        _snackbar.Add(_localizer["Failed to remove your account."], Severity.Error);
 
         IsLoading = false;
     }
