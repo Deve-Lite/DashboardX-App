@@ -1,4 +1,5 @@
 ﻿@page "/devices/{DeviceId}/{ClientId}"
+@using Presentation.Brokers
 @using Presentation.Controls.Dialogs
 @using Presentation.Controls;
 
@@ -191,7 +192,8 @@ else
 
     public void Dispose()
     {
-        Client!.RerenderPage -= Rerender;
+#pragma warning disable CS8601
+        Client!.RerenderPage -= Rerender!;
     }
 
     private Task Rerender()

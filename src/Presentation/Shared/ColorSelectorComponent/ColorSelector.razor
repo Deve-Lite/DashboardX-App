@@ -24,10 +24,11 @@
 
 @code
 {
-    private string value = string.Empty;
+    private string value = ThemeColors.ColorPrimary;
 
     [Parameter]
     public string Label { get; set; } = string.Empty;
+#pragma warning disable BL0007
     [Parameter]
     public string Value
     {

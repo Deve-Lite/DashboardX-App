@@ -22,12 +22,13 @@
 
 @code 
 {
-    private string icon = string.Empty;
+    private string icon = IconUtils.DefualtIcon;
 
     [Parameter]
     public string Label { get; set; } = string.Empty;
     [Parameter]
     public Size Size { get; set; } = Size.Large;
+#pragma warning disable BL0007
     [Parameter]
     public string Icon
     {
