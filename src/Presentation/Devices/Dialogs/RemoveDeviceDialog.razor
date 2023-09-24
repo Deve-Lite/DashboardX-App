@@ -2,15 +2,24 @@
 @inject IClientService _clientService;
 
 
-<MudDialog Title="Removing Device">
+
+<MudDialog>
     <DialogContent>
-        <MudText>@_localizer["Are you sure you want to remove this device?"]</MudText>
-        <MudText>@_localizer["Name:"] @Device.Name</MudText>
-        <MudText>@_localizer["Placing:"] @Device.Placing</MudText>
+        <DialogLoading IsLoading="IsLoading">
+            <LoadedContent>
+                <MudText>@_localizer["Are you sure you want to remove this device?"]</MudText>
+                <MudText>@_localizer["Name:"] @Device.Name</MudText>
+                <MudText>@_localizer["Placing:"] @Device.Placing</MudText>
+            </LoadedContent>
+        </DialogLoading>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">@_localizer["Cancel"]</MudButton>
-        <MudButton OnClick="RemoveAsync"
+        <MudButton OnClick="Cancel" 
+                   Disabled="IsLoading">
+            @_localizer["Cancel"]
+        </MudButton>
+        <MudButton OnClick="RemoveAsync" 
+                   Disabled="IsLoading"
                    ButtonType="ButtonType.Submit"
                    Variant="Variant.Filled"
                    Color="Color.Error">@_localizer["Remove"] </MudButton>
@@ -24,9 +33,10 @@
 
     [Parameter]
     public Device Device { get; set; } = new();
-
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
+
+    public bool IsLoading { get; set; }
 
     private void Cancel() => Dialog!.Cancel();
 
@@ -35,24 +45,20 @@
         if (string.IsNullOrEmpty(Device.Id))
             return;
 
-        if (_loadingService.IsLoading)
+        if (IsLoading)
             return;
 
-        _loadingService.ShowLoading();
+        IsLoading = true;
 
         var result = await _clientService.RemoveDeviceFromClient(ClientId, Device);
 
-        _loadingService.HideLoading();
+        var success = RequestHelpers.InvokeAfterRequest(_snackbar, result, _localizer["Successfully removed device."]);
 
-        await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnRemoved);
+        IsLoading = false;
+
+        if (!success)
+            return;
 
         Dialog!.Close(DialogResult.Ok(result));
     }
-
-    private Task OnRemoved()
-    {
-        _snackbar.Add("Successfully removed device.", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
-        return Task.CompletedTask;
-    }
-
 }

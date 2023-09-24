@@ -3,130 +3,137 @@
 
 <MudDialog>
     <DialogContent>
-        <MudForm @ref="@form"
-                 Model="@Broker"
-                 Validation="@(BrokerValidator.ValidateValue)"
-                 ValidationDelay="0"
-                 Class="m-0 p-0 w-100">
-            <MudGrid Class="m-0 p-3 w-100">
+        <DialogLoading IsLoading="IsLoading">
+            <LoadedContent>
+                <MudForm @ref="@form"
+                         Model="@Broker"
+                         Validation="@(BrokerValidator.ValidateValue)"
+                         ValidationDelay="0"
+                         Class="m-0 p-0 w-100">
+                    <MudGrid Class="m-0 p-3 w-100">
 
-                <MudItem xs="3"
-                         Class="p-1 m-0">
-                    <IconSelector Label="Icon"
-                                  @bind-Icon="@Broker.Icon" />
-                </MudItem>
+                        <MudItem xs="3"
+                                 Class="p-1 m-0">
+                            <IconSelector Label="Icon"
+                            @bind-Icon="@Broker.Icon" />
+                        </MudItem>
 
-                <MudItem xs="9"
-                         Class="p-1 m-0">
-                    <ColorSelector Label="Additional Theme"
-                                   @bind-Value="@Broker.IconBackgroundColor" />
-                </MudItem>
+                        <MudItem xs="9"
+                                 Class="p-1 m-0">
+                            <ColorSelector Label="Additional Theme"
+                            @bind-Value="@Broker.IconBackgroundColor" />
+                        </MudItem>
 
-                <MudItem xs="12"
-                         Class="p-1 m-0">
-                    <MudTextField @bind-Value="Broker.Name"
-                                  T="string"
-                                  Label="@_localizer["Name"]"
-                                  Variant="Variant.Filled"
-                                  OnlyValidateIfDirty="true"
-                                  Clearable="true"
-                                  Class="p-0 m-0"
-                                  For="@(() => Broker.Name)"
-                                  HelperText="@_localizer["Provide meaningful name."]" />
-                </MudItem>
+                        <MudItem xs="12"
+                                 Class="p-1 m-0">
+                            <MudTextField @bind-Value="Broker.Name"
+                                          T="string"
+                                          Label="@_localizer["Name"]"
+                                          Variant="Variant.Filled"
+                                          OnlyValidateIfDirty="true"
+                                          Clearable="true"
+                                          Class="p-0 m-0"
+                                          For="@(() => Broker.Name)"
+                                          HelperText="@_localizer["Provide meaningful name."]" />
+                        </MudItem>
 
-                <MudItem xs="12"
-                         Class="p-1 m-0">
-                    <MudTextField @bind-Value="Broker.Server" T="string"
-                                  Label="@_localizer["Server"]"
-                                  Variant="Variant.Filled"
-                                  OnlyValidateIfDirty="true"
-                                  Clearable="true"
-                                  Class="p-0 m-0"
-                                  HelperText="@_localizer["Server url."]"
-                                  For="@(() => Broker.Server)" />
-                </MudItem>
+                        <MudItem xs="12"
+                                 Class="p-1 m-0">
+                            <MudTextField @bind-Value="Broker.Server" T="string"
+                                          Label="@_localizer["Server"]"
+                                          Variant="Variant.Filled"
+                                          OnlyValidateIfDirty="true"
+                                          Clearable="true"
+                                          Class="p-0 m-0"
+                                          HelperText="@_localizer["Server url."]"
+                                          For="@(() => Broker.Server)" />
+                        </MudItem>
 
-                <MudItem xs="6"
-                         Class="p-1 m-0">
-                    <MudTextField @bind-Value="Broker.Port"
-                                  T="int"
-                                  Label="@_localizer["Port"]"
-                                  Variant="Variant.Filled"
-                                  OnlyValidateIfDirty="true"
-                                  Clearable="true"
-                                  Class="p-0 m-0"
-                                  HelperText="@_localizer["Provide secure websocket port."]"
-                                  For="@(() => Broker.Port)" />
-              
-                </MudItem>
-                <MudItem xs="6"
-                         Class="p-1 m-0">
-                    <MudTextField @bind-Value="Broker.KeepAlive" T="int"
-                                  Label="@_localizer["Keep Alive"]"
-                                  Variant="Variant.Filled"
-                                  OnlyValidateIfDirty="true"
-                                  Clearable="true"
-                                  Class="p-0 m-0"
-                                  HelperText="@_localizer["Ping interval time in seconds."]"
-                                  For="@(() => Broker.KeepAlive)" />
-                </MudItem>
-                <MudItem xs="12"
-                         Class="p-1 m-0">
-                    <MudTextField @bind-Value="Broker.ClientId" T="string"
-                                  Label="@_localizer["Client Id"]"
-                                  Variant="Variant.Filled"
-                                  OnlyValidateIfDirty="true"
-                                  Clearable="true"
-                                  Class="p-0 m-0"
-                                  HelperText="@_localizer["Broker unique identifier."]"
-                                  For="@(() => Broker.ClientId)" />
-                </MudItem>
+                        <MudItem xs="6"
+                                 Class="p-1 m-0">
+                            <MudTextField @bind-Value="Broker.Port"
+                                          T="int"
+                                          Label="@_localizer["Port"]"
+                                          Variant="Variant.Filled"
+                                          OnlyValidateIfDirty="true"
+                                          Clearable="true"
+                                          Class="p-0 m-0"
+                                          HelperText="@_localizer["Provide secure websocket port."]"
+                                          For="@(() => Broker.Port)" />
 
-                <MudItem xs="12"
-                         Class="p-1 m-0">
-                    <MudSwitch @bind-Checked="ShowAuthorizationFields"
-                               Label="@_localizer["Is secured with password and username"]"
-                               Color="Color.Primary" />
-                </MudItem>
+                        </MudItem>
+                        <MudItem xs="6"
+                                 Class="p-1 m-0">
+                            <MudTextField @bind-Value="Broker.KeepAlive" T="int"
+                                          Label="@_localizer["Keep Alive"]"
+                                          Variant="Variant.Filled"
+                                          OnlyValidateIfDirty="true"
+                                          Clearable="true"
+                                          Class="p-0 m-0"
+                                          HelperText="@_localizer["Ping interval time in seconds."]"
+                                          For="@(() => Broker.KeepAlive)" />
+                        </MudItem>
+                        <MudItem xs="12"
+                                 Class="p-1 m-0">
+                            <MudTextField @bind-Value="Broker.ClientId" T="string"
+                                          Label="@_localizer["Client Id"]"
+                                          Variant="Variant.Filled"
+                                          OnlyValidateIfDirty="true"
+                                          Clearable="true"
+                                          Class="p-0 m-0"
+                                          HelperText="@_localizer["Broker unique identifier."]"
+                                          For="@(() => Broker.ClientId)" />
+                        </MudItem>
 
-                @if (ShowAuthorizationFields)
-                {
-                    <MudItem xs="12"
-                             Class="p-1 m-0">
-                        <MudTextField @bind-Value="Broker.Username"
-                                      T="string"
-                                      Label="@_localizer["Username"]"
-                                      Variant="Variant.Filled"
-                                      OnlyValidateIfDirty="true"
-                                      Clearable="true"
-                                      Class="p-0 m-0"
-                                      For="@(() => Broker.Username)" />
-                      
-                    </MudItem>
+                        <MudItem xs="12"
+                                 Class="p-1 m-0">
+                            <MudSwitch @bind-Checked="ShowAuthorizationFields"
+                                       Label="@_localizer["Is secured with password and username"]"
+                                       Color="Color.Primary" />
+                        </MudItem>
 
-                    <MudItem xs="12"
-                             Class="p-1 m-0">
-                        <MudTextField @bind-Value="Broker.Password"
-                                      Label="@_localizer["Password"]"
-                                      Variant="Variant.Filled"
-                                      OnlyValidateIfDirty="true"
-                                      Clearable="true"
-                                      Class="p-0 m-0"
-                                      For="@(() => Broker.Password)"
-                                      InputType="@_passwordInput"
-                                      Adornment="Adornment.End"
-                                      AdornmentIcon="@_passwordInputIcon"
-                                      OnAdornmentClick="TogglePasswordVisibility" />
-                    </MudItem>
-                }
-            </MudGrid>
-        </MudForm>
+                        @if (ShowAuthorizationFields)
+                        {
+                            <MudItem xs="12"
+                                     Class="p-1 m-0">
+                                <MudTextField @bind-Value="Broker.Username"
+                                              T="string"
+                                              Label="@_localizer["Username"]"
+                                              Variant="Variant.Filled"
+                                              OnlyValidateIfDirty="true"
+                                              Clearable="true"
+                                              Class="p-0 m-0"
+                                              For="@(() => Broker.Username)" />
+
+                            </MudItem>
+
+                            <MudItem xs="12"
+                                     Class="p-1 m-0">
+                                <MudTextField @bind-Value="Broker.Password"
+                                              Label="@_localizer["Password"]"
+                                              Variant="Variant.Filled"
+                                              OnlyValidateIfDirty="true"
+                                              Clearable="true"
+                                              Class="p-0 m-0"
+                                              For="@(() => Broker.Password)"
+                                              InputType="@_passwordInput"
+                                              Adornment="Adornment.End"
+                                              AdornmentIcon="@_passwordInputIcon"
+                                              OnAdornmentClick="TogglePasswordVisibility" />
+                            </MudItem>
+                        }
+                    </MudGrid>
+                </MudForm>
+            </LoadedContent>
+        </DialogLoading>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">@_localizer["Cancel"]</MudButton>
-        <MudButton form="upsertBrokerForm"
-                   OnClick="SubmitAsync"
+        <MudButton OnClick="Cancel"
+                   Disabled="IsLoading">
+            @_localizer["Cancel"]
+        </MudButton>
+        <MudButton OnClick="SubmitAsync"
+                   Disabled="IsLoading"
                    Variant="Variant.Filled"
                    Color="Color.Primary">@_localizer["Submit"] </MudButton>
     </DialogActions>
@@ -142,8 +149,9 @@
     public Broker Broker { get; set; } = new();
 
     private BrokerValidator BrokerValidator = new();
+    private MudForm? form;
 
-    MudForm? form;
+    public bool IsLoading { get; set; }
 
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
@@ -165,7 +173,7 @@
 
     private async Task SubmitAsync()
     {
-        if (_loadingService.IsLoading)
+        if (IsLoading)
             return;
 
         await form!.Validate();
@@ -173,7 +181,7 @@
         if (!form.IsValid)
             return;
 
-        _loadingService.ShowLoading();
+        IsLoading = true;
 
         var result = Result<Client>.Fail();
 
@@ -182,17 +190,14 @@
         else
             result = await _clientService.UpdateClient(Broker);
 
-        await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnAdded);
+        var success = RequestHelpers.InvokeAfterRequest(_snackbar, result, _localizer["Successfully updated broker."]);
 
-        _loadingService.HideLoading();
+        IsLoading = false;
+
+        if (!success)
+            return;
 
         Dialog!.Close(DialogResult.Ok(result));
-    }
-
-    private Task OnAdded()
-    {
-        _snackbar.Add("Success", MudBlazor.Severity.Success);
-        return Task.CompletedTask;
     }
 
     #region Form

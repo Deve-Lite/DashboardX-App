@@ -4,86 +4,90 @@
 
 <MudDialog>
     <DialogContent>
-        <MudForm @ref="@form"
-                 Model="@Device"
-                 Validation="@(DeviceValidator.ValidateValue)"
-                 ValidationDelay="0"
-                 Class="m-0 p-0 w-100">
-            <MudGrid Class="m-0 p-3 w-100">
+        <DialogLoading IsLoading="IsLoading">
+            <LoadedContent>
+                <MudForm @ref="@form"
+                         Model="@Device"
+                         Validation="@(DeviceValidator.ValidateValue)"
+                         ValidationDelay="0"
+                         Class="m-0 p-0 w-100">
+                    <MudGrid Class="m-0 p-3 w-100">
 
-                <MudItem xs="3"
-                         Class="p-1 m-0">
-                    <IconSelector  @bind-Icon="@Device.Icon" 
-                                   Label="Icon" />
-                </MudItem>
+                        <MudItem xs="3"
+                                 Class="p-1 m-0">
+                            <IconSelector @bind-Icon="@Device.Icon"
+                                          Label="Icon" />
+                        </MudItem>
 
-                <MudItem xs="9"
-                         Class="p-1 m-0">
-                    <ColorSelector @bind-Value="@Device.IconBackgroundColor"  
-                                   Label="Device Theme" />
-                </MudItem>
+                        <MudItem xs="9"
+                                 Class="p-1 m-0">
+                            <ColorSelector @bind-Value="@Device.IconBackgroundColor"
+                                           Label="Device Theme" />
+                        </MudItem>
 
-                <MudItem xs="12"
-                         Class="p-1 m-0">
-                         <MudTextField @bind-Value="Device.Name"
+                        <MudItem xs="12"
+                                 Class="p-1 m-0">
+                            <MudTextField @bind-Value="Device.Name"
+                                          T="string"
+                                          Label="@_localizer["Name"]"
+                                          Variant="Variant.Filled"
+                                          OnlyValidateIfDirty="true"
+                                          Clearable="true"
+                                          Class="p-0 m-0"
+                                          HelperText="@_localizer["Provide meaningful name."]"
+                                          For="@(() => Device.Name)" />
+                        </MudItem>
+
+                        <MudItem xs="12"
+                                 Class="p-1 m-0">
+                            <MudSelect @bind-Value="Device.BrokerId"
+                                       xs="12"
                                        T="string"
-                                       Label="@_localizer["Name"]"
-                                       Variant="Variant.Filled"
-                                       OnlyValidateIfDirty="true"
-                                       Clearable="true"
                                        Class="p-0 m-0"
-                                       HelperText="@_localizer["Provide meaningful name."]"
-                                       For="@(() => Device.Name)" />
-                </MudItem>
+                                       HelperText="@_localizer["Select device broker"]"
+                                       Label="@_localizer["Broker"]"
+                                       For="(() => Device.BrokerId)"
+                                       Variant="Variant.Filled"
+                                       AnchorOrigin="Origin.BottomCenter">
+                                @foreach (var data in AvaliableBrokers)
+                                {
+                                    <MudSelectItem Value="@data.Id">@data.Name</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
 
-                <MudItem xs="12"
-                         Class="p-1 m-0">
-                    <MudSelect @bind-Value="Device.BrokerId"
-                               xs="12"
-                               T="string"
-                               Class="p-0 m-0"
-                               HelperText="@_localizer["Select device broker"]"
-                               Label="@_localizer["Broker"]"
-                               For="(() => Device.BrokerId)"
-                               Variant="Variant.Filled"
-                               AnchorOrigin="Origin.BottomCenter">
-                        @foreach (var data in AvaliableBrokers)
-                        {
-                            <MudSelectItem Value="@data.Id">@data.Name</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
+                        <MudItem xs="12"
+                                 Class="p-1 m-0">
 
-                <MudItem xs="12"
-                        Class="p-1 m-0">
+                            <MudTextField @bind-Value="Device.Placing"
+                                          T="string"
+                                          Label="@_localizer["Placing"]"
+                                          Variant="Variant.Filled"
+                                          OnlyValidateIfDirty="true"
+                                          Clearable="true"
+                                          Class="p-0 m-0"
+                                          For="@(() => Device.Placing)"
+                                          HelperText="@_localizer["Placing of device."]" />
 
-                        <MudTextField @bind-Value="Device.Placing"
-                                      T="string"
-                                      Label="@_localizer["Placing"]"
-                                  Variant="Variant.Filled"
-                                  OnlyValidateIfDirty="true"
-                                  Clearable="true"
-                                  Class="p-0 m-0"
-                                  For="@(() => Device.Placing)"
-                                  HelperText="@_localizer["Placing of device."]" />
-  
-                </MudItem>
+                        </MudItem>
 
-                <MudItem xs="12"
-                         Class="p-1 m-0">
-                        <MudTextField @bind-Value="Device.BaseDevicePath"
-                                      T="string"
-                                      Label="@_localizer["Base device path"]"
-                                  Variant="Variant.Filled"
-                                  OnlyValidateIfDirty="true"
-                                  Clearable="true"
-                                  Class="p-0 m-0"
-                                  HelperText="@_localizer["Path combined with broker path {brokerPath}{DevicePath}."]"
-                                      For="@(() => Device.BaseDevicePath)" />
-               
-                </MudItem>
-            </MudGrid>
-        </MudForm>
+                        <MudItem xs="12"
+                                 Class="p-1 m-0">
+                            <MudTextField @bind-Value="Device.BaseDevicePath"
+                                          T="string"
+                                          Label="@_localizer["Base device path"]"
+                                          Variant="Variant.Filled"
+                                          OnlyValidateIfDirty="true"
+                                          Clearable="true"
+                                          Class="p-0 m-0"
+                                          HelperText="@_localizer["Path combined with broker path {brokerPath}{DevicePath}."]"
+                                          For="@(() => Device.BaseDevicePath)" />
+
+                        </MudItem>
+                    </MudGrid>
+                </MudForm>
+            </LoadedContent>
+        </DialogLoading>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">@_localizer["Cancel"]</MudButton>
@@ -102,14 +106,14 @@
 
     [Parameter]
     public Device Device { get; set; } = new();
-
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
 
     private DeviceValidator DeviceValidator = new();
+    private List<Broker> AvaliableBrokers = new();
     private MudForm? form;
 
-    private List<Broker> AvaliableBrokers = new();
+    public bool IsLoading { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -136,11 +140,9 @@
         return base.OnAfterRenderAsync(firstRender);
     }
 
-    private void Cancel() => Dialog!.Cancel();
-
     private async Task SubmitAsync()
     {
-        if (_loadingService.IsLoading)
+        if (IsLoading)
             return;
 
         await form!.Validate();
@@ -148,7 +150,7 @@
         if (!form.IsValid)
             return;
 
-        _loadingService.ShowLoading();
+        IsLoading = true;
 
         var result = Result<Device>.Fail();
 
@@ -157,17 +159,20 @@
         else
             result = await _clientService.UpdateDeviceForClient(Device);
 
-        await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnAdded);
+        var success = RequestHelpers.InvokeAfterRequest(_snackbar, result, OnAdded);
 
-        _loadingService.HideLoading();
+        IsLoading = false;
+
+        if (!success)
+            return;
 
         Dialog!.Close(DialogResult.Ok(result));
     }
 
-    private Task OnAdded()
-    {
-        _snackbar.Add("Success", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
-        return Task.CompletedTask;
-    }
+    private void Cancel() 
+        => Dialog!.Cancel();
 
+    private void OnAdded() 
+        => _snackbar.Add(_localizer["Success"], MudBlazor.Severity.Success);
+    
 }
