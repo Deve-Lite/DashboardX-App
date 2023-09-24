@@ -2,41 +2,33 @@
 
 @inject IClientService _clientService
 
-@if (_loadingService.IsLoading)
-{
-    <div> Loading... </div>
-}
-else if (!LoadedSuccessfully)
-{
-    <div>
-        Failed to load... TODO: Refresh button
-    </div>
-}
-else
-{
-
-
-    <MudSimpleTable>
-        <MudTr>
-            <MudTd>Topic FIX IT</MudTd>
-            <MudTd>Value</MudTd>
-        </MudTr>
-        @foreach (var client in Clients)
-        {
-            @foreach (var topic in client.TopicService.Topics)
+<PageLoading FailedToLoad="!LoadedSuccessfully">
+    <FailedToLoadContent>
+        <div>
+            Failed to load... TODO: Refresh button
+        </div>
+    </FailedToLoadContent>
+    <LoadedContent>
+        <MudSimpleTable>
+            <MudTr>
+                <MudTd>Topic</MudTd>
+                <MudTd>Value</MudTd>
+            </MudTr>
+            @foreach (var client in Clients)
             {
+                @foreach (var topic in client.TopicService.Topics)
+                {
 
-                <MudTr>
-                    <MudTd>@topic.Item1</MudTd>
-                    <MudTd>@topic.Item2</MudTd>
-                </MudTr>
+                    <MudTr>
+                        <MudTd>@topic.Item1</MudTd>
+                        <MudTd>@topic.Item2</MudTd>
+                    </MudTr>
 
+                }
             }
-        }
-
-    </MudSimpleTable>
-}
-
+        </MudSimpleTable>
+    </LoadedContent>
+</PageLoading>
 
 @code {
 

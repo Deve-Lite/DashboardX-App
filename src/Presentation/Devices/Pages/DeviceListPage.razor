@@ -3,128 +3,122 @@
 @inject IClientService _clientService
 @inject IStringLocalizer<DeviceListPage> _localizer
 
-@if (_loadingService.IsLoading)
-{
-    <div> Loading... </div>
-}
-else if (!LoadedSuccessfully)
-{
-    <div>
-        Failed to load... TODO: Refresh button
-    </div>
-}
-else
-{
-    <MudGrid Class="m-0 p-3 w-100">
+<PageLoading FailedToLoad="!LoadedSuccessfully">
+    <FailedToLoadContent>
+        <div>
+            Failed to load... TODO: Refresh button
+        </div>
+    </FailedToLoadContent>
+    <LoadedContent>
+        <MudGrid Class="m-0 p-3 w-100">
 
-        <MudItem xs="7" Class="p-0 pt-3 pb-3 m-0">
+            <MudItem xs="7" Class="p-0 pt-3 pb-3 m-0">
 
-        </MudItem>
+            </MudItem>
 
-        <MudItem xs="5" Class="d-flex p-0 pt-3 pb-3 m-0 justify-content-end">
+            <MudItem xs="5" Class="d-flex p-0 pt-3 pb-3 m-0 justify-content-end">
 
-            <MudButton OnClick="() => DevicePagesUtils.AddDevice(StateHasChanged, _dialogService, _localizer)"
-                       Color="Color.Primary"
-                       Variant="Variant.Filled"
-                       StartIcon="@Icons.Material.Filled.AddToQueue">
-                @_localizer["Add Device"]
-            </MudButton>
+                <MudButton OnClick="() => DevicePagesUtils.AddDevice(StateHasChanged, _dialogService, _localizer)"
+                           Color="Color.Primary"
+                           Variant="Variant.Filled"
+                           StartIcon="@Icons.Material.Filled.AddToQueue">
+                    @_localizer["Add Device"]
+                </MudButton>
 
-        </MudItem>
+            </MudItem>
 
+            <MudItem Class="p-0 pt-2" xs="12">
+                <MudList Class="p-0 w-100"
+                         Dense="true"
+                         Clickable="true">
 
-        <MudItem Class="p-0 pt-2" xs="12">
-            <MudList Class="p-0 w-100"
-                     Dense="true"
-                     Clickable="true">
+                    <MudListSubheader Class="d-flex p-0 m-0">
+                        <MudGrid Class="p-0 m-0">
+                            <MudItem xs="1" Class="d-flex p-1 m-0">
 
-                <MudListSubheader Class="d-flex p-0 m-0">
-                    <MudGrid Class="p-0 m-0">
-                        <MudItem xs="1" Class="d-flex p-1 m-0">
+                            </MudItem>
+                            <MudItem xs="2" Class="d-flex p-1 m-0 align-items-center justify-content-start">
+                                <MudText Typo="Typo.h6">
+                                    @_localizer["Name"]
+                                </MudText>
+                            </MudItem>
+                            <MudItem xs="2" Class="d-flex p-1 m-0 align-items-center justify-content-start">
+                                <MudText Typo="Typo.h6">
+                                    @_localizer["Placing"]
+                                </MudText>
+                            </MudItem>
+                            <MudItem xs="2" Class="d-flex p-1 m-0 align-items-center justify-content-start">
+                                <MudText Typo="Typo.h6">
+                                    @_localizer["Path"]
+                                </MudText>
+                            </MudItem>
+                            <MudItem xs="3" Class="d-flex p-1 m-0 align-items-center justify-content-center">
+                                <MudText Typo="Typo.h6">
+                                    @_localizer["State"]
+                                </MudText>
+                            </MudItem>
+                            <MudItem xs="2"> </MudItem>
+                        </MudGrid>
 
-                        </MudItem>
-                        <MudItem xs="2" Class="d-flex p-1 m-0 align-items-center justify-content-start">
-                            <MudText Typo="Typo.h6">
-                                @_localizer["Name"]
-                            </MudText>
-                        </MudItem>
-                        <MudItem xs="2" Class="d-flex p-1 m-0 align-items-center justify-content-start">
-                            <MudText Typo="Typo.h6">
-                                @_localizer["Placing"]
-                            </MudText>
-                        </MudItem>
-                        <MudItem xs="2" Class="d-flex p-1 m-0 align-items-center justify-content-start">
-                            <MudText Typo="Typo.h6">
-                                @_localizer["Path"]
-                            </MudText>
-                        </MudItem>
-                        <MudItem xs="3" Class="d-flex p-1 m-0 align-items-center justify-content-center">
-                            <MudText Typo="Typo.h6">
-                                @_localizer["State"]
-                            </MudText>
-                        </MudItem>
-                        <MudItem xs="2"> </MudItem>
-                    </MudGrid>
+                    </MudListSubheader>
 
-                </MudListSubheader>
+                    <MudProgressLinear Size="Size.Small" Color="Color.Primary" Rounded="true" Value="100" />
 
-                <MudProgressLinear Size="Size.Small" Color="Color.Primary" Rounded="true" Value="100" />
+                    @foreach (var client in Clients)
+                        @foreach (var device in client.Devices)
+                        {
+                            <MudListItem Class="d-flex m-0 p-0 pt-1 pb-1 align-items-center justify-content-center"
+                                         Href="@($"/devices/{device.Id}/{client.Id}")">
 
-                @foreach (var client in Clients)
-                    @foreach (var device in client.Devices)
-                    {
-                        <MudListItem Class="d-flex m-0 p-0 pt-1 pb-1 align-items-center justify-content-center"
-                                     Href="@($"/devices/{device.Id}/{client.Id}")">
+                                <MudGrid Class="w-100 p-0 m-0">
+                                    <MudItem xs="1" Class="d-flex p-0 m-0 align-items-center justify-content-center">
 
-                            <MudGrid Class="w-100 p-0 m-0">
-                                <MudItem xs="1" Class="d-flex p-0 m-0 align-items-center justify-content-center">
+                                        <IconForList Icon="@device.Icon"
+                                                     BackgroundColor="@device.IconBackgroundColor"
+                                                     IconSize="Size.Medium" />
+                                    </MudItem>
+                                    <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-start">
+                                        <MudText Class="hide-overlapping-text">
+                                            @device.Name
+                                        </MudText>
+                                    </MudItem>
+                                    <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-start">
+                                        <MudText Class="hide-overlapping-text">
+                                            @device.Placing
+                                        </MudText>
+                                    </MudItem>
+                                    <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-start">
+                                        <MudText Class="hide-overlapping-text">
+                                            @device.BaseDevicePath
+                                        </MudText>
+                                    </MudItem>
+                                    <MudItem xs="3" Class="d-flex m-0 p-0 align-items-center justify-content-center">
+                                        <DeviceStateControl Client="client"
+                                                            Device="device" />
+                                    </MudItem>
+                                    <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-evenly">
+                                        <MudIconButton Class="z-10"
+                                                       Icon="@IconUtils.DefaultEditIcon"
+                                                       OnClick="() => DevicePagesUtils.UpdateDevice(device, _dialogService, StateHasChanged, _localizer)">
 
-                                    <IconForList Icon="@device.Icon"
-                                                 BackgroundColor="@device.IconBackgroundColor"
-                                                 IconSize="Size.Medium" />
-                                </MudItem>
-                                <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-start">
-                                    <MudText Class="hide-overlapping-text">
-                                        @device.Name
-                                    </MudText>
-                                </MudItem>
-                                <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-start">
-                                    <MudText Class="hide-overlapping-text">
-                                        @device.Placing
-                                    </MudText>
-                                </MudItem>
-                                <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-start">
-                                    <MudText Class="hide-overlapping-text">
-                                        @device.BaseDevicePath
-                                    </MudText>
-                                </MudItem>
-                                <MudItem xs="3" Class="d-flex m-0 p-0 align-items-center justify-content-center">
-                                    <DeviceStateControl Client="client"
-                                                        Device="device" />
-                                </MudItem>
-                                <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-evenly">
-                                    <MudIconButton Class="z-10"
-                                                   Icon="@IconUtils.DefaultEditIcon"
-                                                   OnClick="() => DevicePagesUtils.UpdateDevice(device, _dialogService, StateHasChanged, _localizer)">
+                                        </MudIconButton>
 
-                                    </MudIconButton>
+                                        <MudIconButton Class="z-10"
+                                                       Icon="@IconUtils.DefaultRemoveIcon"
+                                                       OnClick="() => DevicePagesUtils.RemoveDevice(device, _dialogService, _localizer, _navigationManager)">
 
-                                    <MudIconButton Class="z-10"
-                                                   Icon="@IconUtils.DefaultRemoveIcon"
-                                                   OnClick="() => DevicePagesUtils.RemoveDevice(device, _dialogService, _localizer, _navigationManager)">
+                                        </MudIconButton>
+                                    </MudItem>
+                                </MudGrid>
+                            </MudListItem>
 
-                                    </MudIconButton>
-                                </MudItem>
-                            </MudGrid>
-                        </MudListItem>
-
-                        <MudProgressLinear Size="Size.Small" Color="Color.Primary" Rounded="true" Value="0" />
-                    }
-            </MudList>
-        </MudItem>
-    </MudGrid>
-}
-
+                            <MudProgressLinear Size="Size.Small" Color="Color.Primary" Rounded="true" Value="0" />
+                        }
+                </MudList>
+            </MudItem>
+        </MudGrid>
+    </LoadedContent>
+</PageLoading>
 
 @code
 {

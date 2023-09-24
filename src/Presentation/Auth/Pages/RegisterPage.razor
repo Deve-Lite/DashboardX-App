@@ -5,106 +5,103 @@
 @inject IAuthenticationService _authenticationService
 @inject IStringLocalizer<RegisterPage> _localizer
 
-@if (_loadingService.IsLoading)
-{
-    
-}
-else
-{
-    <MudCard Class="card p-5" style="border-radius: 1rem;">
-        <MudGrid>
-            <MudForm @ref="@form"
-                     Model="@Model"
-                     Validation="@(Validator.ValidateValue)"
-                     ValidationDelay="0">
-                <MudGrid>
-                    <MudItem xs="12">
-                        <MudText Class="text-center"
-                                 Color="Color.Primary"
-                                 Typo="Typo.h4">
-                            @_localizer["DashboardX"]
-                        </MudText>
-                    </MudItem>
+<PageLoading>
+    <LoadedContent>
+        <MudCard Class="card p-5" style="border-radius: 1rem;">
+            <MudGrid>
+                <MudForm @ref="@form"
+                         Model="@Model"
+                         Validation="@(Validator.ValidateValue)"
+                         ValidationDelay="0">
+                    <MudGrid>
+                        <MudItem xs="12">
+                            <MudText Class="text-center"
+                                     Color="Color.Primary"
+                                     Typo="Typo.h4">
+                                @_localizer["DashboardX"]
+                            </MudText>
+                        </MudItem>
 
-                    <MudItem xs="12">
-                        <MudText Class="text-center">
-                            @_localizer["Ready for consuming you custom device functionalities?"]
-                        </MudText>
-                    </MudItem>
+                        <MudItem xs="12">
+                            <MudText Class="text-center">
+                                @_localizer["Ready for consuming you custom device functionalities?"]
+                            </MudText>
+                        </MudItem>
 
-                    <MudItem xs="12">
-                        <MudTextField @bind-Value="Model.Username"
-                                      T="string"
-                                      For="@(() => Model.Username)"
-                                      Variant="Variant.Filled"
-                                      OnlyValidateIfDirty="true"
-                                      Clearable="true"
-                                      Label="@_localizer["Username"]"
-                                      HelperText="@_localizer["Provide username for your account."]" />
-                    </MudItem>
-                    <MudItem xs="12">
-                        <MudTextField @bind-Value="Model.Email"
-                                      T="string"
-                                      For="@(() => Model.Email)"
-                                      Variant="Variant.Filled"
-                                      OnlyValidateIfDirty="true"
-                                      Clearable="true"
-                                      HelperText="@_localizer["Provide email for your account."]"
-                                      Label="@_localizer["Email"]" />
-                    </MudItem>
-                    <MudItem xs="12">
-                        <MudTextField @bind-Value="Model.Password"
-                                      T="string"
-                                      For="@(() => Model.Password)"
-                                      InputType="@_passwordInput"
-                                      Variant="Variant.Filled"
-                                      Adornment="Adornment.End"
-                                      OnlyValidateIfDirty="true"
-                                      Clearable="true"
-                                      AdornmentIcon="@_passwordInputIcon"
-                                      OnAdornmentClick="TogglePasswordVisibility"
-                                      Label="@_localizer["Password"]"
-                                      HelperText="@_localizer["Provide password for your account."]" />
-                    </MudItem>
-                    <MudItem xs="12">
-                        <MudTextField @bind-Value="Model.ConfirmPassword"
-                                      T="string"
-                                      For="@(() => Model.ConfirmPassword)"
-                                      Variant="Variant.Filled"
-                                      Clearable="true"
-                                      InputType="InputType.Password"
-                                      Label="@_localizer["Confirm Password"]"
-                                      HelperText="@_localizer["Please repeat password."]" />
-                    </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="Model.Username"
+                                          T="string"
+                                          For="@(() => Model.Username)"
+                                          Variant="Variant.Filled"
+                                          OnlyValidateIfDirty="true"
+                                          Clearable="true"
+                                          Label="@_localizer["Username"]"
+                                          HelperText="@_localizer["Provide username for your account."]" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="Model.Email"
+                                          T="string"
+                                          For="@(() => Model.Email)"
+                                          Variant="Variant.Filled"
+                                          OnlyValidateIfDirty="true"
+                                          Clearable="true"
+                                          HelperText="@_localizer["Provide email for your account."]"
+                                          Label="@_localizer["Email"]" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="Model.Password"
+                                          T="string"
+                                          For="@(() => Model.Password)"
+                                          InputType="@_passwordInput"
+                                          Variant="Variant.Filled"
+                                          Adornment="Adornment.End"
+                                          OnlyValidateIfDirty="true"
+                                          Clearable="true"
+                                          AdornmentIcon="@_passwordInputIcon"
+                                          OnAdornmentClick="TogglePasswordVisibility"
+                                          Label="@_localizer["Password"]"
+                                          HelperText="@_localizer["Provide password for your account."]" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="Model.ConfirmPassword"
+                                          T="string"
+                                          For="@(() => Model.ConfirmPassword)"
+                                          Variant="Variant.Filled"
+                                          Clearable="true"
+                                          InputType="InputType.Password"
+                                          Label="@_localizer["Confirm Password"]"
+                                          HelperText="@_localizer["Please repeat password."]" />
+                        </MudItem>
 
-                    <MudItem xs="12"
-                             Class="d-flex justify-content-center">
-                        <MudButton Class="w-100"
-                                   Variant="Variant.Filled"
-                                   Color="Color.Primary"
-                                   OnClick="RegisterAsync"
-                                   EndIcon="@Icons.Material.Filled.AssignmentInd"
-                                   Size="Size.Large">
-                            @_localizer["Register"]
-                        </MudButton>
-                    </MudItem>
+                        <MudItem xs="12"
+                                 Class="d-flex justify-content-center">
+                            <MudButton Class="w-100"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       OnClick="RegisterAsync"
+                                       EndIcon="@Icons.Material.Filled.AssignmentInd"
+                                       Size="Size.Large">
+                                @_localizer["Register"]
+                            </MudButton>
+                        </MudItem>
 
-                    <MudItem xs="6"
-                             Class="d-flex justify-content-center">
-                        <MudButton Variant="Variant.Filled"
-                                   Class="w-100"
-                                   Color="Color.Dark"
-                                   Size="Size.Large"
-                                   StartIcon="@Icons.Material.Filled.ArrowBackIos"
-                                   OnClick="BackToLoginPage">
-                            @_localizer["Go Back"]
-                        </MudButton>
-                    </MudItem>
-                </MudGrid>
-            </MudForm>
-        </MudGrid>
-    </MudCard>
-}
+                        <MudItem xs="6"
+                                 Class="d-flex justify-content-center">
+                            <MudButton Variant="Variant.Filled"
+                                       Class="w-100"
+                                       Color="Color.Dark"
+                                       Size="Size.Large"
+                                       StartIcon="@Icons.Material.Filled.ArrowBackIos"
+                                       OnClick="BackToLoginPage">
+                                @_localizer["Go Back"]
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudForm>
+            </MudGrid>
+        </MudCard>
+    </LoadedContent>
+</PageLoading>
 
 @code {
     private RegisterModel Model = new();

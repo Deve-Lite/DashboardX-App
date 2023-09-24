@@ -1,0 +1,33 @@
+﻿@if (_loadingService.IsLoading)
+{
+    <MudGrid Class="p-0 m-0 w-100 h-100">
+        <MudItem xs="12" Class="p-0 m-0 d-flex justify-content-center align-items-center">
+            <MudPaper Class="p-4 m-0" Elevation="5" Outlined="true">
+                <MudProgressCircular Class="p-0 m-0" 
+                Color="Color.Primary" 
+                Size="Size.Large"
+                Indeterminate="true" />
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+}
+else if (FailedToLoad)
+{
+    @FailedToLoadContent
+}
+else
+{
+    @LoadedContent
+}
+
+@code 
+{
+    [Parameter]
+    public RenderFragment? LoadedContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? FailedToLoadContent { get; set; }
+
+    [Parameter]
+    public bool FailedToLoad { get; set; } = false;
+}
