@@ -1,5 +1,4 @@
-﻿
-using Core.Models;
+﻿using Core.Models;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text;
@@ -47,6 +46,7 @@ public abstract class BaseService
 
 #if DEBUG
             await Task.Delay(RequestDebugDelay);
+            _logger.LogInformation($"Sending request to: {message.RequestUri} with {message.Method}, {message.Version}");
 #endif
 
             var response = await _client.SendAsync(message);
@@ -90,7 +90,8 @@ public abstract class BaseService
         try
         {
 #if DEBUG
-            await Task.Delay(RequestDebugDelay);
+            await Task.Delay(RequestDebugDelay); 
+            _logger.LogInformation($"Sending request to: {message.RequestUri} with {message.Method}, {message.Version}");
 #endif
 
             var response = await _client.SendAsync(message);
