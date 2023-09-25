@@ -2,7 +2,7 @@
 
 public static class ThemeColors
 {
-    public static int ControlColorOpacity = 128;
+    public static double ControlColorOpacity = 128.0;
 
     private static string colorPrimary = "9C27B0";
     public static string ColorPrimary = $"#{colorPrimary}";
