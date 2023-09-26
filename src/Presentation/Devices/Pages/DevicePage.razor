@@ -123,16 +123,18 @@
                 <MudProgressLinear Size="Size.Small" Color="Color.Tertiary" Rounded="true" Value="100" />
             </MudItem>
 
-            <MudItem xs="12" Class="p-0 pt-4 pb-4 m-0">
+            <MudItem xs="12" Class="p-0 pt-4 pb-4 m-0 d-flex">
 
-                @foreach (var control in Device.Controls)
-                {
-                    <MudItem xs="6" sm="5" md="4" lg="3" xl="2" xxl="1">
-                        <ControlFactory Client="@Client"
-                                        Device="@Device"
-                                        Control="@control" />
-                    </MudItem>
-                }
+                <MudElement Class="p-1 m-0 d-flex w-100 flex-animate flex-list-justify">
+                    @foreach (var control in Device.Controls)
+                    {
+                        <MudItem Class="p-1 m-0">
+                            <ControlFactory Client="@Client"
+                                            Device="@Device"
+                                            Control="@control" />
+                        </MudItem>
+                    }
+                </MudElement>
             </MudItem>
         </MudGrid>
     </LoadedContent>

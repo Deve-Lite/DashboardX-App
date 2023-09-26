@@ -1,10 +1,10 @@
 ﻿<MudButton Class="p-0 m-0 w-100 bg-transparent" OnClick="ActionAsync">
     <MudCard Elevation="5"
              Class="container container-fit-content p-0 m-0 w-100 h-100"
-             Style="@($"border: 1px solid {Control!.IconBackgroundColor}; background-color: {BackgroundColor};")">
+             Style="@($"border: 1px solid {Control!.IconBackgroundColor}; border-radius: 1rem; background-color: {BackgroundColor};")">
         <MudGrid Class="p-0 m-0 w-100 h-100 d-flex flex-column">
 
-            <MudItem xs="12" Class="p-2 m-0 pt-4 pb-3 d-flex justify-content-center align-items-center">
+            <MudItem xs="12" Class="pl-3 pr-3 m-0 pt-4 pb-3 d-flex justify-content-center align-items-center">
                 <MudIcon Icon="@Icon" Size="Size.Large" />
             </MudItem>
 
@@ -15,8 +15,8 @@
             </MudItem>
         </MudGrid>
     </MudCard>
-
 </MudButton>
+
 @code 
 {
 

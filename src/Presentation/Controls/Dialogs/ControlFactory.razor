@@ -1,9 +1,8 @@
 ﻿@inject IStringLocalizer<ControlFactory> _localizer;
 
+<MudPaper Class="p-0 m-0 w-100 d-flex" Style="border-radius: 1rem;">
 
-<MudGrid Class="p-0 m-0 w-100 d-flex" Style="max-width:16rem;">
-
-    <MudItem xs="3"  Class="p-0 m-0 d-flex flex-column justify-content-center align-items-center" >
+    <MudElement Class="p-0 m-0 d-flex flex-column justify-content-center align-items-center" Style="width:80px;">
 
         <MudIconButton Size="Size.Medium"
                        Icon="@IconUtils.DefaultEditIcon"
@@ -15,9 +14,9 @@
                        Class="m-0"
                        OnClick="async() => await ControlPagesUtils.RemoveControl(_dialogService, Control!, Client!.Id, _localizer)" />
 
-    </MudItem>
+    </MudElement>
 
-    <MudItem xs="9" Class="p-0 m-0 w-100 h-100">
+    <MudElement Class="p-0 m-0 w-100 h-100">
         @if (Control!.Type == ControlType.State)
         {
             <!--TODO: Thinkof state control placing -->
@@ -32,9 +31,8 @@
                 @_localizer["Sorry this control is not yet implemented."]
             </MudText>
         }
-    </MudItem>
-</MudGrid>
-
+    </MudElement>
+</MudPaper>
 
 @code
 {
