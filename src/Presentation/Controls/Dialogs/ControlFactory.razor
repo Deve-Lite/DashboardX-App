@@ -1,8 +1,10 @@
-﻿@inject IStringLocalizer<ControlFactory> _localizer;
+﻿@using Presentation.Controls.Implementations
+@using Presentation.Controls.Implementations.SliderComponents
+@inject IStringLocalizer<ControlFactory> _localizer;
 
 <MudPaper Class="p-0 m-0 w-100 d-flex" Style="border-radius: 1rem;">
 
-    <MudElement Class="p-0 m-0 d-flex flex-column justify-content-center align-items-center" Style="width:80px;">
+    <MudElement Class="p-0 m-0 d-flex flex-column flex-wrap justify-content-center align-items-center" Style="width:80px;">
 
         <MudIconButton Size="Size.Medium"
                        Icon="@IconUtils.DefaultEditIcon"
@@ -24,6 +26,10 @@
         else if (Control!.Type == ControlType.Button)
         {
             <ButtonControl Client="@Client" Device="@Device" Control="@Control" />
+        }
+        else if (Control!.Type == ControlType.Slider)
+        {
+            <SliderControl Client="@Client" Device="@Device" Control="@Control" />
         }
         else
         {

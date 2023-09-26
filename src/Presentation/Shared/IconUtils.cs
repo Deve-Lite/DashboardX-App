@@ -2,13 +2,13 @@
 
 public class IconUtils
 {
-    public static string DefualtIcon = Icons.Material.Filled.Home;
+    public const string DefualtIcon = Icons.Material.Filled.Home;
 
-    public static string DefaultEditIcon = Icons.Material.Filled.Edit;
+    public const string DefaultEditIcon = Icons.Material.Filled.Edit;
 
-    public static string DefaultRemoveIcon = Icons.Material.Filled.Delete;
+    public const string DefaultRemoveIcon = Icons.Material.Filled.Delete;
 
-    public static Dictionary<string, string> IconList = new Dictionary<string, string>()
+    public static Dictionary<string, string> IconList = new()
     {
         { "Home", Icons.Material.Filled.Home },
         { "HomeMini", Icons.Material.Filled.HomeMini },

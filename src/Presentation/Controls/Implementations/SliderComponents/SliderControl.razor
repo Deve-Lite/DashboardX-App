@@ -1,0 +1,74 @@
+﻿@inherits BaseControl
+
+<MudButton Class="p-0 m-0 w-100 bg-transparent" OnClick="ActionAsync">
+    <MudCard Elevation="5"
+             Class="container container-fit-content p-0 m-0 w-100 h-100"
+             Style="@($"border: 1px solid {Control!.IconBackgroundColor}; border-radius: 1rem; background-color: {BackgroundColor};")">
+        <MudGrid Class="p-0 m-0 w-100 h-100 d-flex flex-column">
+
+            <MudItem xs="12" Class="pl-3 pr-3 m-0 pt-4 pb-3 d-flex justify-content-center align-items-center">
+                <MudIcon Icon="@Icon" Size="Size.Large" />
+            </MudItem>
+
+            <MudItem xs="12" Class="p-1 d-flex justify-content-center align-items-center hide-overlapping-text">
+                <MudText Typo="Typo.body1">
+                    @Name
+                </MudText>
+            </MudItem>
+        </MudGrid>
+    </MudCard>
+</MudButton>
+
+@code
+{
+    public double Value { get; set; }
+
+    protected override async void OnInitialized()
+    {
+        base.OnInitialized();
+
+        if (Control!.IsAvailable)
+        {
+            var value = await Client!.TopicService!.LastMessageOnTopicAsync(Client!.Id, Device!, Control!) ?? "empty";
+
+            if (double.TryParse(value, out double current))
+                Value = current;
+            else
+            {
+                //TODO: sygnalise invalid value
+            }
+        }
+    }
+
+#pragma warning disable CS0108
+    public async Task ActionAsync()
+    {
+        var parameters = new DialogParameters<SliderControlDialog>
+        {
+            { x => x.SliderValue, Value },
+            { x => x.MinSliderValue, Control!.Attributes.MaxValue },
+            { x => x.MaxSliderValue, Control!.Attributes.MaxValue },
+        };
+
+        //TODO: Fix dialog
+
+        var options = new DialogOptions { NoHeader=true };
+
+        var dialog = await DialogService!.ShowAsync<SliderControlDialog>("No header", parameters, options);
+        var result = await dialog.Result;
+
+        if (result.Canceled)
+            return;
+
+        var current = Convert.ToDouble(result.Data);
+
+        if (!await ConfirmationDialog())
+            return;
+
+        var topic = Control!.GetTopic(Device!);
+
+        var payload = Control!.Attributes.PayloadTemplate.Replace("<<value>>", $"{current}");
+
+        await Client!.PublishAsync(topic, Control!.Attributes.Payload, Control!.QualityOfService);
+    }
+}

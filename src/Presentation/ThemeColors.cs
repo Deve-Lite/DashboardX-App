@@ -2,18 +2,16 @@
 
 public static class ThemeColors
 {
-    public static double ControlColorOpacity = 128.0;
+    private const string colorPrimary = "9C27B0";
+    public const string ColorPrimary = $"#{colorPrimary}";
 
-    private static string colorPrimary = "9C27B0";
-    public static string ColorPrimary = $"#{colorPrimary}";
-
-    public static MudTheme AppTheme => new MudTheme()
+    public static MudTheme AppTheme => new()
     {
         Palette = Palette,
         PaletteDark = PaletteDark
     };
 
-    private static PaletteLight Palette => new PaletteLight
+    private static PaletteLight Palette => new()
     {
         Primary = new(colorPrimary),
 
@@ -33,7 +31,7 @@ public static class ThemeColors
         Error = new("C62828")
     };
 
-    private static PaletteDark PaletteDark => new PaletteDark
+    private static PaletteDark PaletteDark => new()
     {
 
     };

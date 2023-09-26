@@ -1,0 +1,35 @@
+﻿@inherits BaseControl
+
+<MudButton Class="p-0 m-0 w-100 bg-transparent" OnClick="ActionAsync">
+    <MudCard Elevation="5"
+             Class="container container-fit-content p-0 m-0 w-100 h-100"
+             Style="@($"border: 1px solid {Control!.IconBackgroundColor}; border-radius: 1rem; background-color: {BackgroundColor};")">
+        <MudGrid Class="p-0 m-0 w-100 h-100 d-flex flex-column">
+
+            <MudItem xs="12" Class="pl-3 pr-3 m-0 pt-4 pb-3 d-flex justify-content-center align-items-center">
+                <MudIcon Icon="@Icon" Size="Size.Large" />
+            </MudItem>
+
+            <MudItem xs="12" Class="p-1 d-flex justify-content-center align-items-center hide-overlapping-text">
+                <MudText Typo="Typo.body1">
+                    @Name
+                </MudText>
+            </MudItem>
+        </MudGrid>
+    </MudCard>
+</MudButton>
+
+@code
+{
+    #pragma warning disable CS0108
+    public async Task ActionAsync()
+    {
+        if (!await ConfirmationDialog())
+            return;
+
+        var topic = Control!.GetTopic(Device!);
+
+        await Client!.PublishAsync(topic, Control!.Attributes.Payload, Control!.QualityOfService);
+    }
+}
+
