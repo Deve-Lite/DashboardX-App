@@ -3,9 +3,7 @@
 public class Broker : BaseModel
 {
     [JsonPropertyName("icon")]
-    public string Icon { get; set; } = string.Empty;
-    [JsonPropertyName("iconBackgroundColor")]
-    public string IconBackgroundColor { get; set; } = string.Empty;
+    public Icon Icon { get; set; } = new();
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
     [JsonPropertyName("port")]
@@ -32,7 +30,7 @@ public class Broker : BaseModel
     {
         ClientId = ClientId,
         EditedAt = EditedAt,
-        Icon = Icon,
+        Icon = Icon.Copy(),
         Id = Id,
         IsSSL = IsSSL,
         KeepAlive = KeepAlive,

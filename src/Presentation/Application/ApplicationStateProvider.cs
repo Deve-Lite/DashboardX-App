@@ -31,8 +31,14 @@ public class ApplicationStateProvider : AuthenticationStateProvider
         {
             var rememberUser = await _localStorage.GetItemAsync<bool>(AuthConstraints.RememberMeName);
 
-            AccessToken =  await _sessionStorage.GetItemAsync<string>(AuthConstraints.AccessToken);
+            AccessToken = await _sessionStorage.GetItemAsync<string>(AuthConstraints.AccessToken);
             RefreshToken = await _sessionStorage.GetItemAsync<string>(AuthConstraints.RefreshToken);
+
+            if (rememberUser)
+            {
+                AccessToken = await _localStorage.GetItemAsync<string>(AuthConstraints.AccessToken);
+                RefreshToken = await _localStorage.GetItemAsync<string>(AuthConstraints.RefreshToken);
+            }
         }
 
         return AuthState(AccessToken);
@@ -82,7 +88,6 @@ public class ApplicationStateProvider : AuthenticationStateProvider
         
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
     }
-    private AuthenticationState NoAuthState() => new(new ClaimsPrincipal(new ClaimsIdentity()));
     private AuthenticationState AuthState(string token)
     {
         if (string.IsNullOrWhiteSpace(token))
@@ -110,9 +115,13 @@ public class ApplicationStateProvider : AuthenticationStateProvider
             return new AuthenticationState(new ClaimsPrincipal());
         }
     }
-    private Claim UserRole(IEnumerable<Claim> claims)
+
+    private static AuthenticationState NoAuthState() => new(new ClaimsPrincipal(new ClaimsIdentity()));
+
+    private static Claim UserRole(IEnumerable<Claim> claims)
     {
-        if(claims.FirstOrDefault(c => c.Type == "isAdmin")?.Value == "true")
+        //TODO: skips admin role! 
+        if(claims.FirstOrDefault(c => c.Type.ToString() == "is_admin")?.Value == "true")
             return new Claim(ClaimTypes.Role, RolesConstraints.Admin);
 
         return new Claim(ClaimTypes.Role, RolesConstraints.User);

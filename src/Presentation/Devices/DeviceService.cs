@@ -17,6 +17,58 @@ public class DeviceService : AuthorizedService, IDeviceService
     {
     }
 
+    public async Task<IResult<List<Device>>> GetDevices(string brokerId)
+    {
+        var request = new Request
+        {
+            Method = HttpMethod.Get,
+            Route = $"api/v1/devices?brokerId={brokerId}"
+        };
+
+        var response = await SendAsync<List<Device>>(request);
+
+        if (response.StatusCode == HttpStatusCode.OK)
+        {
+            var list = await _localStorage.GetItemAsync<List<Device>>(DeviceConstants.DevicesListName);
+
+            try
+            {
+                foreach (var device in response.Data)
+                {
+                    if (list.Any())
+                    {
+                        int index = list.FindIndex(x => x.BrokerId == device.BrokerId);
+
+                        if (index != -1)
+                            list[index] = device;
+                        else
+                            list.Add(device);
+                    }
+                    else
+                        list.Add(device);
+                }
+            }
+            catch (Exception e)
+            {
+                //TODO: Investigate error.
+                Console.WriteLine(e);
+                _logger.LogError($"Failed to update cache.{e.Message}");
+            }
+
+            var data = JsonSerializer.Serialize(list);
+
+            await _localStorage.SetItemAsync(DeviceConstants.DevicesListName, data);
+        }
+
+        if (response.StatusCode == HttpStatusCode.NotModified)
+        {
+            var list = await _localStorage.GetItemAsync<List<Device>>(DeviceConstants.DevicesListName);
+            response.Data = list.Where(x => x.BrokerId == brokerId).ToList();
+        }
+
+        return response;
+    }
+
     public async Task<IResult<Device>> GetDevice(string id)
     {
         var request = new Request

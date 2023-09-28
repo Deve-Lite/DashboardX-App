@@ -9,10 +9,7 @@ public class DeviceDTO
     public string Placing { get; set; } = string.Empty;
 
     [JsonPropertyName("icon")]
-    public string Icon { get; set; } = "default.png";
-
-    [JsonPropertyName("iconBackgroundColor")]
-    public string IconBackgroundColor { get; set; } = string.Empty;
+    public Icon Icon { get; set; } = new();
 
     [JsonPropertyName("brokerId")]
     public string BrokerId { get; set; } = string.Empty;

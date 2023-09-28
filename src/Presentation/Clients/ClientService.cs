@@ -137,7 +137,7 @@ public class ClientService : IClientService
     public async Task<Result<Client>> GetClient(string brokerId)
     {
         var brokerTask = _brokerService.GetBroker(brokerId);
-        var deviceTask = _brokerService.GetBrokerDevices(brokerId);
+        var deviceTask = _deviceService.GetDevices(brokerId);
 
         await Task.WhenAll(brokerTask, deviceTask);
 

@@ -14,14 +14,14 @@
 
                         <MudItem xs="3"
                                  Class="p-1 m-0">
-                            <IconSelector Label="Icon"
-                            @bind-Icon="@Broker.Icon" />
+                            <IconSelector @bind-Icon="@Broker.Icon.Name"
+                                          Label="Icon" />
                         </MudItem>
 
                         <MudItem xs="9"
                                  Class="p-1 m-0">
-                            <ColorSelector Label="Additional Theme"
-                            @bind-Value="@Broker.IconBackgroundColor" />
+                            <ColorSelector @bind-Value="@Broker.Icon.BackgroundHex"
+                                           Label="Additional Theme" />
                         </MudItem>
 
                         <MudItem xs="12"

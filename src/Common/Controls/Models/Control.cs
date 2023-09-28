@@ -28,10 +28,10 @@ public class Control : BaseModel
 
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
+
     [JsonPropertyName("icon")]
-    public string Icon { get; set; } = string.Empty;
-    [JsonPropertyName("iconBackgroundColor")]
-    public string IconBackgroundColor { get; set; } = string.Empty;
+    public Icon Icon { get; set; } = new();
+
     [JsonPropertyName("topic")]
     public string Topic { get; set; } = string.Empty;
 
@@ -99,8 +99,7 @@ public class Control : BaseModel
             Topic = dto.Topic,
             DeviceId = dto.DeviceId,
             StringType = dto.StringType,
-            Icon = dto.Icon,
-            IconBackgroundColor = dto.IconBackgroundColor,
+            Icon = dto.Icon.Copy(),
             IsAvailable = dto.IsAvailable,
             IsConfiramtionRequired = dto.IsConfiramtionRequired,
         };
@@ -112,8 +111,8 @@ public class Control : BaseModel
         return Id == control.Id &&
                DeviceId == control.DeviceId &&
                StringType == control.StringType &&
-               Icon == control.Icon &&
-               IconBackgroundColor == control.IconBackgroundColor &&
+               Icon.Name == control.Icon.Name &&
+               Icon.BackgroundHex == control.Icon.BackgroundHex &&
                IsAvailable == control.IsAvailable &&
                IsConfiramtionRequired == control.IsConfiramtionRequired &&
                QualityOfService == control.QualityOfService &&
@@ -128,8 +127,7 @@ public class Control : BaseModel
             Id = Id,
             DeviceId = DeviceId,
             StringType = StringType,
-            Icon = Icon,
-            IconBackgroundColor = IconBackgroundColor,
+            Icon = Icon.Copy(),
             IsAvailable = IsAvailable,
             IsConfiramtionRequired = IsConfiramtionRequired,
             QualityOfService = QualityOfService,

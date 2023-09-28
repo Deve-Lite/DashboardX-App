@@ -68,7 +68,7 @@ public abstract class BaseService
             if (!string.IsNullOrEmpty(payload))
             {
                 var errorResponse = JsonSerializer.Deserialize<ErrorMessage>(payload)!;
-                return Result<T>.Fail(statusCode:response.StatusCode, errorResponse.Message);
+                return Result<T>.Fail(statusCode: response.StatusCode, errorResponse.Message);
             }
 
             return Result<T>.Fail(response.StatusCode);
@@ -81,7 +81,7 @@ public abstract class BaseService
         catch (Exception e)
         {
             _logger.LogError($"Unexpected error occured. {e.Message}");
-            return Result<T>.Fail(message:"Failed to fetch data");
+            return Result<T>.Fail(message: "Failed to fetch data");
         }
     }
 
@@ -90,7 +90,7 @@ public abstract class BaseService
         try
         {
 #if DEBUG
-            await Task.Delay(RequestDebugDelay); 
+            await Task.Delay(RequestDebugDelay);
             _logger.LogInformation($"Sending request to: {message.RequestUri} with {message.Method}, {message.Version}");
 #endif
 
@@ -100,7 +100,7 @@ public abstract class BaseService
 
             if (response.IsSuccessStatusCode)
                 return Result.Success(response.StatusCode);
-            
+
             if (!string.IsNullOrEmpty(payload))
             {
                 var error = JsonSerializer.Deserialize<ErrorMessage>(payload)!;

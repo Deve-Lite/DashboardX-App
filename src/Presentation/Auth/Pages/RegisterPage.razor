@@ -136,6 +136,7 @@
     private Task OnRegisteredSuccessfully()
     {
         _snackbar.Add(_localizer["Registered successfully!"], MudBlazor.Severity.Success);
+        _loadingService.HideLoading();
         _navigationManager.NavigateTo("/auth/login");
         return Task.CompletedTask;
     }

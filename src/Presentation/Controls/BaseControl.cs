@@ -25,8 +25,8 @@ public partial class BaseControl : ComponentBase
     protected override Task OnInitializedAsync()
     {
 
-        BackgroundColor = $"{Control!.IconBackgroundColor}AA";
-        Icon = IconUtils.IconList.GetValueOrDefault(Control.Icon, "");
+        BackgroundColor = $"{Control!.Icon.BackgroundHex}AA";
+        Icon = IconUtils.IconList.GetValueOrDefault(Control.Icon.Name, "");
         Name = string.IsNullOrEmpty(Control.Name) ? Localizer!["No name"] : Control.Name;
 
         //TODO: If not available then change color to gray

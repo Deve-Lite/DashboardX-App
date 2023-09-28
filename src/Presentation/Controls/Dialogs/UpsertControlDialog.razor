@@ -16,13 +16,13 @@
 
                         <MudItem xs="3"
                                  Class="p-1 m-0">
-                            <IconSelector @bind-Icon="@Control.Icon"
+                            <IconSelector @bind-Icon="@Control.Icon.Name"
                                           Label="Icon" />
                         </MudItem>
 
                         <MudItem xs="9"
                                  Class="p-1 m-0">
-                            <ColorSelector @bind-Value="@Control.IconBackgroundColor"
+                            <ColorSelector @bind-Value="@Control.Icon.BackgroundHex"
                                            Label="Device Theme" />
                         </MudItem>
 

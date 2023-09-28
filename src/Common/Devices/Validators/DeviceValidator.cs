@@ -19,7 +19,10 @@ public class DeviceValidator : BaseValidator<Device>
         RuleFor(x => x.BrokerId)
             .NotEmpty();
 
-        RuleFor(x => x.IconBackgroundColor)
+        RuleFor(x => x.Icon.Name)
+            .NotEmpty();
+
+        RuleFor(x => x.Icon.BackgroundHex)
             .NotEmpty();
     }
 }

@@ -62,7 +62,7 @@ public class UserService : AuthorizedService, IUserService
         var request = new Request<ChangePasswordModel>
         {
             Method = HttpMethod.Patch,
-            Route = "api/v1/users/me",
+            Route = "api/v1/users/me/password",
             Data = dto
         };
 

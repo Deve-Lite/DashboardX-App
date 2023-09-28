@@ -16,44 +16,6 @@ public class BrokerService : AuthorizedService, IBrokerService
     {
     }
 
-    //TODO: Function retriving password and username for broker
-    //TODO: Replace function to brokers
-    public async Task<IResult<List<Device>>> GetBrokerDevices(string brokerId)
-    {
-        var request = new Request
-        {
-            Method = HttpMethod.Get,
-            Route = $"api/v1/brokers/{brokerId}/devices"
-        };
-
-        var response = await SendAsync<List<Device>>(request);
-
-        if (response.StatusCode == HttpStatusCode.OK)
-        {
-            var list = await _localStorage.GetItemAsync<List<Device>>(BrokerConstraints.DevicesListName);
-
-            foreach (var device in response.Data)
-            {
-                int index = list.FindIndex(x => x.BrokerId == device.BrokerId);
-
-                if (index != -1)
-                    list[index] = device;
-                else
-                    list.Add(device);
-            }
-
-            await _localStorage.SetItemAsync(BrokerConstraints.DevicesListName, response.Data);
-        }
-
-        if (response.StatusCode == HttpStatusCode.NotModified)
-        {
-            var list = await _localStorage.GetItemAsync<List<Device>>(BrokerConstraints.DevicesListName);
-            response.Data = list.Where(x => x.BrokerId == brokerId).ToList();
-        }
-
-        return response;
-    }
-
     public async Task<IResult<List<Broker>>> GetBrokers()
     {
         var request = new Request

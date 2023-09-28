@@ -8,11 +8,8 @@
 
 @code 
 {
-
     [Parameter]
-    public string BackgroundColor { get; set; } = string.Empty;
-    [Parameter]
-    public string Icon { get; set; } = string.Empty;
+    public Icon Icon { get; set; } = new();
     [Parameter]
     public Size IconSize { get; set; } = Size.Medium;
 
@@ -21,15 +18,15 @@
 
     public string GetIcon()
     {
-        if (string.IsNullOrEmpty(Icon))
+        if (string.IsNullOrEmpty(Icon.Name))
             return @Icons.Material.Filled.Home;
 
-        if (!IconUtils.IconList.ContainsKey(Icon))
+        if (!IconUtils.IconList.ContainsKey(Icon.Name))
             return @Icons.Material.Filled.Home;
 
-        return IconUtils.IconList[Icon];
+        return IconUtils.IconList[Icon.Name];
     }
 
-    public string GetBackgroundColor() => string.IsNullOrEmpty(BackgroundColor) ? ThemeColors.ColorPrimary : BackgroundColor;
+    public string GetBackgroundColor() => string.IsNullOrEmpty(Icon.BackgroundHex) ? ThemeColors.ColorPrimary : Icon.BackgroundHex;
     
 }

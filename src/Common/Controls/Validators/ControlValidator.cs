@@ -14,10 +14,10 @@ public class ControlValidator : BaseValidator<Control>
         RuleFor(x => x.DeviceId)
             .NotEmpty();
 
-        RuleFor(x => x.Icon)
+        RuleFor(x => x.Icon.Name)
             .NotEmpty();
 
-        RuleFor(x => x.IconBackgroundColor)
+        RuleFor(x => x.Icon.BackgroundHex)
             .NotEmpty();
 
         RuleFor(x => x.Topic)

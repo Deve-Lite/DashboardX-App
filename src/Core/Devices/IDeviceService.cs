@@ -2,8 +2,9 @@
 
 public interface IDeviceService
 {
-    Task<IResult<Device>> GetDevice(string id);
     Task<IResult<List<Device>>> GetDevices();
+    Task<IResult<List<Device>>> GetDevices(string brokerId);
+    Task<IResult<Device>> GetDevice(string id);
     Task<IResult<Device>> CreateDevice(Device broker);
     Task<IResult<Device>> UpdateDevice(Device broker);
     Task<IResult> RemoveDevice(string deviceId);
