@@ -65,7 +65,7 @@ public class ClientService : IClientService
             var client = _clients.FirstOrDefault(x => x.Id == broker.Id);
             if (client is null)
             {
-                var newClient = new Client(_storageService, _clientLogger, _factory, broker);
+                var newClient = new Client(_storageService, _clientLogger, _brokerService, _factory, broker);
                 _clients.Add(newClient);
                 client = newClient;
             }
@@ -111,7 +111,7 @@ public class ClientService : IClientService
             var client = _clients.FirstOrDefault(x => x.Id == broker.Id);
             if (client is null)
             {
-                var newClient = new Client(_storageService, _clientLogger, _factory, broker);
+                var newClient = new Client(_storageService, _clientLogger, _brokerService, _factory, broker);
                 _clients.Add(newClient);
             }
             else if (client.Broker.EditedAt != broker.EditedAt)
@@ -154,7 +154,7 @@ public class ClientService : IClientService
 
         if (client is null)
         {
-            var newClient = new Client(_storageService, _clientLogger, _factory, brokerResult.Data);
+            var newClient = new Client(_storageService, _clientLogger, _brokerService, _factory, brokerResult.Data);
 
             var failedConnections = await UpdateClientDevices(newClient, deviceResult.Data);
 
@@ -215,7 +215,7 @@ public class ClientService : IClientService
 
         if (result.Succeeded)
         {
-            var client = new Client(_storageService, _clientLogger, _factory, result.Data);
+            var client = new Client(_storageService, _clientLogger, _brokerService, _factory, result.Data);
             _clients.Add(client);
 
             return Result<Client>.Success(client, result.StatusCode);

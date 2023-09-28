@@ -29,7 +29,7 @@ public class DeviceService : AuthorizedService, IDeviceService
 
         if (response.StatusCode == HttpStatusCode.OK)
         {
-            var list = await _localStorage.GetItemAsync<List<Device>>(DeviceConstants.DevicesListName);
+            var list = await _localStorage.GetItemAsync<List<Device>>(DeviceConstants.DevicesListName) ?? new List<Device>();
 
             try
             {
@@ -55,8 +55,7 @@ public class DeviceService : AuthorizedService, IDeviceService
                 _logger.LogError($"Failed to update cache.{e.Message}");
             }
 
-            var data = JsonSerializer.Serialize(list);
-
+            string data = JsonSerializer.Serialize(list);
             await _localStorage.SetItemAsync(DeviceConstants.DevicesListName, data);
         }
 

@@ -1,5 +1,6 @@
 ﻿using MQTTnet.Client;
 using MQTTnet.Protocol;
+using Presentation.Brokers;
 using System.Text;
 
 namespace Presentation.Clients;
@@ -10,6 +11,7 @@ public class Client : IAsyncDisposable
     private readonly MqttFactory _factory;
     public readonly ITopicService TopicService;
     public readonly IMqttClient MqttService;
+    public readonly IBrokerService BrokerService;
 
     public string Id => Broker.Id;
     public bool IsConnected { get; set; }
@@ -19,12 +21,14 @@ public class Client : IAsyncDisposable
 
     public Func<Task> RerenderPage { get; set; }
 
-    public Client(ILocalStorageService storage, ILogger<Client> clientLogger, MqttFactory factory, Broker broker)
+    public Client(ILocalStorageService storage, ILogger<Client> clientLogger, IBrokerService brokerService,  MqttFactory factory, Broker broker)
     {
         Broker = broker;
         MqttService = factory.CreateMqttClient();
+        BrokerService = brokerService;
 
         TopicService = new TopicService(storage);
+
         _factory = factory;
         _logger = clientLogger;
 
@@ -68,7 +72,7 @@ public class Client : IAsyncDisposable
     {
         try
         {
-            var options = Options();
+            var options = await Options();
             var response = await MqttService.ConnectAsync(options);
             IsConnected = true;
 
@@ -230,15 +234,19 @@ public class Client : IAsyncDisposable
 
     #region Privates
 
-    private MqttClientOptions Options()
+    private async Task<MqttClientOptions> Options()
     {
         var optionsBuilder = _factory.CreateClientOptionsBuilder()
             .WithClientId(Broker.ClientId)
             .WithWebSocketServer($"wss://{Broker.Server}:{Broker.Port}/mqtt")
             .WithCleanSession(false);
 
-        if (!string.IsNullOrEmpty(Broker.Username) && !string.IsNullOrEmpty(Broker.Password))
-            optionsBuilder = optionsBuilder.WithCredentials(Broker.Username, Broker.Password);
+        var result = await BrokerService.GetBrokerCredentials(Broker.Id);
+
+        //TODO: Notify about problem
+
+        if (result.Succeeded && !string.IsNullOrEmpty(result.Data.Username) && !string.IsNullOrEmpty(result.Data.Password))
+            optionsBuilder = optionsBuilder.WithCredentials(result.Data.Username, result.Data.Password);
 
         return optionsBuilder.Build();
     }

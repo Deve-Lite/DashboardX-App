@@ -1,5 +1,7 @@
 ﻿namespace Common.Brokers.Models;
 
+//TODO: Create DTO for broker
+
 public class Broker : BaseModel
 {
     [JsonPropertyName("icon")]
@@ -35,10 +37,8 @@ public class Broker : BaseModel
         IsSSL = IsSSL,
         KeepAlive = KeepAlive,
         Name = Name,
-        Password = Password,
         Port = Port,
         Server = Server,
-        Username = Username
     };
 
 }

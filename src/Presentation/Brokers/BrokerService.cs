@@ -57,6 +57,23 @@ public class BrokerService : AuthorizedService, IBrokerService
         return response;
     }
 
+    public async Task<IResult<BrokerCredentials>> GetBrokerCredentials(string id)
+    {
+        return Result<BrokerCredentials>.Success(new BrokerCredentials() { Username="Admin", Password="Admin123" });
+
+        //TODO: Change if metod implemented
+
+        var request = new Request
+        {
+            Method = HttpMethod.Get,
+            Route = $"api/v1/brokers/{id}/credentials"
+        };
+
+        Result<BrokerCredentials> response = await SendAsync<BrokerCredentials>(request);
+
+        return response;
+    }
+
     public async Task<IResult<Broker>> CreateBroker(Broker broker)
     {
         var request = new Request<Broker>
