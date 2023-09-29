@@ -177,7 +177,7 @@ public class ClientService : IClientService
         return Result<Client>.Warning(client, message: $"Failed to subsribe {failConnections} topics.");
     }
 
-    public async Task<Result<Client>> UpdateClient(Broker broker)
+    public async Task<Result<Client>> UpdateClient(BrokerDTO broker)
     {
         var result = await _brokerService.UpdateBroker(broker);
 
@@ -209,7 +209,7 @@ public class ClientService : IClientService
         return Result.Fail(result.Messages, result.StatusCode);
     }
 
-    public async Task<Result<Client>> CreateClient(Broker broker)
+    public async Task<Result<Client>> CreateClient(BrokerDTO broker)
     {
         var result = await _brokerService.CreateBroker(broker);
 

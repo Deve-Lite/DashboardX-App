@@ -233,7 +233,13 @@ public class DeviceService : AuthorizedService, IDeviceService
             Data = control
         };
 
-        var response = await SendAsync<BaseModel>(request);
+        var options = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+
+
+        var response = await SendAsync<BaseModel, Control>(request, options);
 
         if (!response.Succeeded)
             return Result<Control>.Fail(response.Messages, response.StatusCode);

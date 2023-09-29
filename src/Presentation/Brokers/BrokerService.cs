@@ -74,16 +74,16 @@ public class BrokerService : AuthorizedService, IBrokerService
         return response;
     }
 
-    public async Task<IResult<Broker>> CreateBroker(Broker broker)
+    public async Task<IResult<Broker>> CreateBroker(BrokerDTO dto)
     {
-        var request = new Request<Broker>
+        var request = new Request<BrokerDTO>
         {
             Method = HttpMethod.Post,
             Route = "api/v1/brokers",
-            Data = broker
+            Data = dto
         };
 
-        var response = await SendAsync<BaseModel, Broker>(request);
+        var response = await SendAsync<BaseModel, BrokerDTO>(request);
 
         if (!response.Succeeded)
             return Result<Broker>.Fail(response.Messages, response.StatusCode);
@@ -93,20 +93,20 @@ public class BrokerService : AuthorizedService, IBrokerService
         if (!itemResponse.Succeeded)
             return Result<Broker>.Fail(itemResponse.StatusCode, itemResponse.Messages + " Pleace refresh page.");
 
-        broker = itemResponse.Data;
+        var broker = itemResponse.Data;
 
         await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, broker);
 
         return Result<Broker>.Success(broker, response.StatusCode);
     }
 
-    public async Task<IResult<Broker>> UpdateBroker(Broker broker)
+    public async Task<IResult<Broker>> UpdateBroker(BrokerDTO dto)
     {
-        var request = new Request<Broker>
+        var request = new Request<BrokerDTO>
         {
             Method = HttpMethod.Patch,
-            Route = $"api/v1/brokers/{broker.Id}",
-            Data = broker
+            Route = $"api/v1/brokers/{dto.Id}",
+            Data = dto
         };
 
         var options = new JsonSerializerOptions
@@ -114,17 +114,17 @@ public class BrokerService : AuthorizedService, IBrokerService
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-        var response = await SendAsync<Broker>(request, options);
+        var response = await SendAsync<Broker,BrokerDTO>(request, options);
 
         if (!response.Succeeded)
             return Result<Broker>.Fail(response.Messages, response.StatusCode);
 
-        var itemResponse = await GetBroker(broker.Id);
+        var itemResponse = await GetBroker(dto.Id);
 
         if (!itemResponse.Succeeded)
             return Result<Broker>.Fail(itemResponse.Messages, itemResponse.StatusCode);
 
-        broker = itemResponse.Data;
+        var broker = itemResponse.Data;
 
         await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, broker);
 

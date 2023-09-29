@@ -1,12 +1,14 @@
 ﻿@inject IStringLocalizer<UpsertBrokerDialog> _localizer;
 @inject IClientService _clientService
+@inject IBrokerService _brokerService
+
 
 <MudDialog>
     <DialogContent>
         <DialogLoading IsLoading="IsLoading">
             <LoadedContent>
                 <MudForm @ref="@form"
-                         Model="@Broker"
+                         Model="@Model"
                          Validation="@(BrokerValidator.ValidateValue)"
                          ValidationDelay="0"
                          Class="m-0 p-0 w-100">
@@ -14,44 +16,44 @@
 
                         <MudItem xs="3"
                                  Class="p-1 m-0">
-                            <IconSelector @bind-Icon="@Broker.Icon.Name"
+                            <IconSelector @bind-Icon="@Model.Icon.Name"
                                           Label="Icon" />
                         </MudItem>
 
                         <MudItem xs="9"
                                  Class="p-1 m-0">
-                            <ColorSelector @bind-Value="@Broker.Icon.BackgroundHex"
+                            <ColorSelector @bind-Value="@Model.Icon.BackgroundHex"
                                            Label="Additional Theme" />
                         </MudItem>
 
                         <MudItem xs="12"
                                  Class="p-1 m-0">
-                            <MudTextField @bind-Value="Broker.Name"
+                            <MudTextField @bind-Value="Model.Name"
                                           T="string"
                                           Label="@_localizer["Name"]"
                                           Variant="Variant.Filled"
                                           OnlyValidateIfDirty="true"
                                           Clearable="true"
                                           Class="p-0 m-0"
-                                          For="@(() => Broker.Name)"
+                                          For="@(() => Model.Name)"
                                           HelperText="@_localizer["Provide meaningful name."]" />
                         </MudItem>
 
                         <MudItem xs="12"
                                  Class="p-1 m-0">
-                            <MudTextField @bind-Value="Broker.Server" T="string"
+                            <MudTextField @bind-Value="Model.Server" T="string"
                                           Label="@_localizer["Server"]"
                                           Variant="Variant.Filled"
                                           OnlyValidateIfDirty="true"
                                           Clearable="true"
                                           Class="p-0 m-0"
                                           HelperText="@_localizer["Server url."]"
-                                          For="@(() => Broker.Server)" />
+                                          For="@(() => Model.Server)" />
                         </MudItem>
 
                         <MudItem xs="6"
                                  Class="p-1 m-0">
-                            <MudTextField @bind-Value="Broker.Port"
+                            <MudTextField @bind-Value="Model.Port"
                                           T="int"
                                           Label="@_localizer["Port"]"
                                           Variant="Variant.Filled"
@@ -59,30 +61,30 @@
                                           Clearable="true"
                                           Class="p-0 m-0"
                                           HelperText="@_localizer["Provide secure websocket port."]"
-                                          For="@(() => Broker.Port)" />
+                                          For="@(() => Model.Port)" />
 
                         </MudItem>
                         <MudItem xs="6"
                                  Class="p-1 m-0">
-                            <MudTextField @bind-Value="Broker.KeepAlive" T="int"
+                            <MudTextField @bind-Value="Model.KeepAlive" T="int"
                                           Label="@_localizer["Keep Alive"]"
                                           Variant="Variant.Filled"
                                           OnlyValidateIfDirty="true"
                                           Clearable="true"
                                           Class="p-0 m-0"
                                           HelperText="@_localizer["Ping interval time in seconds."]"
-                                          For="@(() => Broker.KeepAlive)" />
+                                          For="@(() => Model.KeepAlive)" />
                         </MudItem>
                         <MudItem xs="12"
                                  Class="p-1 m-0">
-                            <MudTextField @bind-Value="Broker.ClientId" T="string"
+                            <MudTextField @bind-Value="Model.ClientId" T="string"
                                           Label="@_localizer["Client Id"]"
                                           Variant="Variant.Filled"
                                           OnlyValidateIfDirty="true"
                                           Clearable="true"
                                           Class="p-0 m-0"
                                           HelperText="@_localizer["Broker unique identifier."]"
-                                          For="@(() => Broker.ClientId)" />
+                                          For="@(() => Model.ClientId)" />
                         </MudItem>
 
                         <MudItem xs="12"
@@ -96,26 +98,26 @@
                         {
                             <MudItem xs="12"
                                      Class="p-1 m-0">
-                                <MudTextField @bind-Value="Broker.Username"
+                                <MudTextField @bind-Value="Model.Username"
                                               T="string"
                                               Label="@_localizer["Username"]"
                                               Variant="Variant.Filled"
                                               OnlyValidateIfDirty="true"
                                               Clearable="true"
                                               Class="p-0 m-0"
-                                              For="@(() => Broker.Username)" />
+                                              For="@(() => Model.Username)" />
 
                             </MudItem>
 
                             <MudItem xs="12"
                                      Class="p-1 m-0">
-                                <MudTextField @bind-Value="Broker.Password"
+                                <MudTextField @bind-Value="Model.Password"
                                               Label="@_localizer["Password"]"
                                               Variant="Variant.Filled"
                                               OnlyValidateIfDirty="true"
                                               Clearable="true"
                                               Class="p-0 m-0"
-                                              For="@(() => Broker.Password)"
+                                              For="@(() => Model.Password)"
                                               InputType="@_passwordInput"
                                               Adornment="Adornment.End"
                                               AdornmentIcon="@_passwordInputIcon"
@@ -148,25 +150,39 @@
     [Parameter]
     public Broker Broker { get; set; } = new();
 
+    public BrokerDTO Model { get; set; } = new();
+
     private BrokerValidator BrokerValidator = new();
     private MudForm? form;
 
     public bool IsLoading { get; set; }
 
-    protected override Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (form is not null && firstRender && form.IsValid)
             StateHasChanged();
 
-        if (firstRender && !string.IsNullOrEmpty(Broker.Id))
+        if (firstRender && !string.IsNullOrEmpty(Model.Id))
         {
-            Broker = Broker.Copy();
+            Model = Broker.Dto();
 
-            if (!string.IsNullOrEmpty(Broker.Password) || !string.IsNullOrEmpty(Broker.Username))
+            var result = await _brokerService.GetBrokerCredentials(Model.Id);
+
+            if (result.Succeeded)
+            {
+                Model.Username = result.Data.Username;
+                Model.Password = result.Data.Password;
+            }
+            else
+            {
+                //TODO: Think
+            }
+
+            if (!string.IsNullOrEmpty(Model.Password) || !string.IsNullOrEmpty(Model.Username))
                 ShowAuthorizationFields = true;
         }
 
-        return base.OnAfterRenderAsync(firstRender);
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     private void Cancel() => Dialog!.Cancel();
@@ -183,12 +199,18 @@
 
         IsLoading = true;
 
+        if (!ShowAuthorizationFields)
+        {
+            Model.Password = "";
+            Model.Username = "";
+        }
+
         var result = Result<Client>.Fail();
 
-        if (string.IsNullOrEmpty(Broker.Id))
-            result = await _clientService.CreateClient(Broker);
+        if (string.IsNullOrEmpty(Model.Id))
+            result = await _clientService.CreateClient(Model);
         else
-            result = await _clientService.UpdateClient(Broker);
+            result = await _clientService.UpdateClient(Model);
 
         var success = RequestHelpers.InvokeAfterRequest(_snackbar, result, _localizer["Successfully updated broker."]);
 

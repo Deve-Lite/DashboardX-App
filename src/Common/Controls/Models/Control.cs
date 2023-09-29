@@ -75,13 +75,16 @@ public class Control : BaseModel
     [JsonPropertyName("qualityOfService")]
     public MqttQualityOfServiceLevel QualityOfService { get; set; } = MqttQualityOfServiceLevel.AtMostOnce;
 
-    [JsonPropertyName("displayName")]
+    [JsonPropertyName("canDisplayName")]
     public bool DisplayName { get; set; }
+
     [JsonPropertyName("isAvailable")]
     public bool IsAvailable { get; set; }
+
     [JsonPropertyName("isConfirmationRequired")]
     public bool IsConfiramtionRequired { get; set; }
-    [JsonPropertyName("notifyOnPublish")]
+
+    [JsonPropertyName("canNotifyOnPublish")]
     public bool NotifyOnPublish { get; set; }
 
     [JsonPropertyName("attributes")]

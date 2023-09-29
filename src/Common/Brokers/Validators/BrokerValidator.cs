@@ -2,7 +2,7 @@
 
 namespace Common.Brokers.Validators;
 
-public class BrokerValidator : BaseValidator<Broker>
+public class BrokerValidator : BaseValidator<BrokerDTO>
 {
     public BrokerValidator() : base()
     {

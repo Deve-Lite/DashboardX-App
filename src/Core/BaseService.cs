@@ -47,6 +47,7 @@ public abstract class BaseService
 #if DEBUG
             await Task.Delay(RequestDebugDelay);
             _logger.LogInformation($"Sending request to: {message.RequestUri} with {message.Method}, {message.Version}");
+            _logger.LogInformation($"Payload: {message.Content?.ReadAsStream().ToString()}");
 #endif
 
             var response = await _client.SendAsync(message);
