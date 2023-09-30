@@ -2,7 +2,7 @@
 
 namespace Common.Devices.Validators;
 
-public class DeviceValidator : BaseValidator<Device>
+public class DeviceValidator : BaseValidator<DeviceDTO>
 {
     public DeviceValidator() : base()
     {

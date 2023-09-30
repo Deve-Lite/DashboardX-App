@@ -244,7 +244,7 @@ public class ClientService : IClientService
         return Result.Fail(result.Messages, result.StatusCode);
     }
 
-    public async Task<Result<Device>> CreateDeviceForClient(Device device)
+    public async Task<Result<Device>> CreateDeviceForClient(DeviceDTO device)
     {
         var result = await _deviceService.CreateDevice(device);
 
@@ -259,18 +259,24 @@ public class ClientService : IClientService
         return Result<Device>.Fail(result.Messages, result.StatusCode);
     }
 
-    public async Task<Result<Device>> UpdateDeviceForClient(Device device)
+    public async Task<Result<Device>> UpdateDeviceForClient(DeviceDTO device)
     {
         var result = await _deviceService.UpdateDevice(device);
 
         if (result.Succeeded)
         {
+            //TODO: Optimize edit
             var client = _clients.First(x => x.Id == device.BrokerId);
 
-            var unsuccessfullConnections = await UpdateClientDevices(client, new List<Device> { result.Data });
+            var devicesResult = await _deviceService.GetDevices(device.BrokerId);
+
+            if (!devicesResult.Succeeded)
+                return Result<Device>.Fail();
+
+            var unsuccessfullConnections = await UpdateClientDevices(client, devicesResult.Data);
 
             if (unsuccessfullConnections == 0)
-                return (Result<Device>)Result.Success(result.StatusCode);
+                return Result<Device>.Success(result.Data);
 
             return Result<Device>.Warning(message: $"Failed to subsribe {unsuccessfullConnections} topics.");
         }
@@ -284,7 +290,7 @@ public class ClientService : IClientService
 
     public async Task<Result> RemoveControlFromDevice(string clientId, string deviceId, Control control)
     {
-        var result = await _deviceService.RemoveDeviceControls(deviceId, new List<string> { clientId });
+        var result = await _deviceService.RemoveDeviceControls(deviceId, control.Id);
 
         if (result.Succeeded)
         {
@@ -409,7 +415,7 @@ public class ClientService : IClientService
             usedDevices.Add(device.Id);
         }
 
-        foreach (var device in client.Devices)
+        foreach (var device in client.Devices.ToList())
             if (!usedDevices.Contains(device.Id))
                 client.Devices.Remove(device);
 

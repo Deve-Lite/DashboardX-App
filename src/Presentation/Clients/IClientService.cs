@@ -12,8 +12,8 @@ public interface IClientService
     Task<Result<Client>> UpdateClient(BrokerDTO broker);
 
     Task<Result> RemoveDeviceFromClient(string clientId, Device device);
-    Task<Result<Device>> CreateDeviceForClient(Device device);
-    Task<Result<Device>> UpdateDeviceForClient(Device device);
+    Task<Result<Device>> CreateDeviceForClient(DeviceDTO device);
+    Task<Result<Device>> UpdateDeviceForClient(DeviceDTO device);
 
     Task<Result> RemoveControlFromDevice(string clientId, string deviceId, Control control);
     Task<Result> CreateControlForDevice(string clientId, string deviceId, Control control);

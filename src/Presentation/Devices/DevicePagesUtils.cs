@@ -13,8 +13,7 @@ public class DevicePagesUtils
     {
         var parameters = new DialogParameters<UpsertDeviceDialog>
         {
-            { x => x.Device, device },
-            { x => x.ClientId, device.BrokerId }
+            { x => x.Model, device.Dto() }
         };
 
         var dialog = await dialogService.ShowAsync<UpsertDeviceDialog>(localizer["Edit Device"], parameters);
@@ -59,14 +58,15 @@ public class DevicePagesUtils
 
     public static async Task AddDevice(Action refreshUI,
         IDialogService dialogService,
-        IStringLocalizer<object> localizer, string? clientId = null)
+        IStringLocalizer<object> localizer, 
+        string? clientId = null)
     {
-        var parameters = new DialogParameters<RemoveDeviceDialog>
+        var parameters = new DialogParameters<UpsertDeviceDialog>
         {
-            { x => x.ClientId, clientId }
+            { x => x.Model, new DeviceDTO{ BrokerId = clientId ?? string.Empty } }
         };
 
-        var dialog = await dialogService.ShowAsync<UpsertDeviceDialog>(localizer["Create Device"]);
+        var dialog = await dialogService.ShowAsync<UpsertDeviceDialog>(localizer["Create Device"], parameters);
         var result = await dialog.Result;
 
         if (result.Canceled)

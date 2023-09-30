@@ -59,8 +59,11 @@ public class BrokerService : AuthorizedService, IBrokerService
 
     public async Task<IResult<BrokerCredentials>> GetBrokerCredentials(string id)
     {
-        return Result<BrokerCredentials>.Success(new BrokerCredentials() { Username="Admin", Password="Admin123" });
 
+        //if(id == "403bba67-7f6a-4a5c-a70b-1ab8d52cdc46'")
+            return Result<BrokerCredentials>.Success(new BrokerCredentials() { Username="Admin", Password="Admin123" });
+
+        //return Result<BrokerCredentials>.Success(new BrokerCredentials() { Username="", Password="" });
         //TODO: Change if metod implemented
 
         var request = new Request

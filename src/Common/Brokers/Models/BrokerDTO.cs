@@ -13,9 +13,9 @@ public class BrokerDTO : BaseModel
 
     [JsonPropertyName("isSsl")]
     public bool IsSSL { get; set; }
-    [JsonPropertyName("sslUsername")]
+    [JsonPropertyName("username")]
     public string Username { get; set; } = string.Empty;
-    [JsonPropertyName("sslPassword")]
+    [JsonPropertyName("password")]
     public string Password { get; set; } = string.Empty;
 
     [JsonPropertyName("clientId")]

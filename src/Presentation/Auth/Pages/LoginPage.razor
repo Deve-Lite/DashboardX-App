@@ -143,11 +143,11 @@
             return;
         }
 
+        _loadingService.HideLoading();
+
         var result = await _authenticationService.ReAuthenticate(refreshToken);
 
         await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnSuccessfullLogin);
-
-        _loadingService.HideLoading();
     }
 
     private async Task LoginAsync()

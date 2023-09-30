@@ -148,8 +148,6 @@
     private MudDialogInstance? Dialog { get; set; }
 
     [Parameter]
-    public Broker Broker { get; set; } = new();
-
     public BrokerDTO Model { get; set; } = new();
 
     private BrokerValidator BrokerValidator = new();
@@ -159,23 +157,25 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        Model.IsSSL = true;
+
         if (form is not null && firstRender && form.IsValid)
             StateHasChanged();
 
         if (firstRender && !string.IsNullOrEmpty(Model.Id))
         {
-            Model = Broker.Dto();
-
             var result = await _brokerService.GetBrokerCredentials(Model.Id);
 
             if (result.Succeeded)
             {
+                //TODO: If empty then leave false else set proper fields
+
                 Model.Username = result.Data.Username;
                 Model.Password = result.Data.Password;
             }
             else
             {
-                //TODO: Think
+                //TODO: Thinkof
             }
 
             if (!string.IsNullOrEmpty(Model.Password) || !string.IsNullOrEmpty(Model.Username))

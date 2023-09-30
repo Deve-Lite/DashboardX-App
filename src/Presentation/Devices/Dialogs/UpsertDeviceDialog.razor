@@ -7,7 +7,7 @@
         <DialogLoading IsLoading="IsLoading">
             <LoadedContent>
                 <MudForm @ref="@form"
-                         Model="@Device"
+                         Model="@Model"
                          Validation="@(DeviceValidator.ValidateValue)"
                          ValidationDelay="0"
                          Class="m-0 p-0 w-100">
@@ -15,19 +15,19 @@
 
                         <MudItem xs="3"
                                  Class="p-1 m-0">
-                            <IconSelector @bind-Icon="@Device.Icon.Name"
+                            <IconSelector @bind-Icon="@Model.Icon.Name"
                                           Label="Icon" />
                         </MudItem>
 
                         <MudItem xs="9"
                                  Class="p-1 m-0">
-                            <ColorSelector @bind-Value="@Device.Icon.BackgroundHex"
+                            <ColorSelector @bind-Value="@Model.Icon.BackgroundHex"
                                            Label="Device Theme" />
                         </MudItem>
 
                         <MudItem xs="12"
                                  Class="p-1 m-0">
-                            <MudTextField @bind-Value="Device.Name"
+                            <MudTextField @bind-Value="Model.Name"
                                           T="string"
                                           Label="@_localizer["Name"]"
                                           Variant="Variant.Filled"
@@ -35,18 +35,18 @@
                                           Clearable="true"
                                           Class="p-0 m-0"
                                           HelperText="@_localizer["Provide meaningful name."]"
-                                          For="@(() => Device.Name)" />
+                                          For="@(() => Model.Name)" />
                         </MudItem>
 
                         <MudItem xs="12"
                                  Class="p-1 m-0">
-                            <MudSelect @bind-Value="Device.BrokerId"
+                            <MudSelect @bind-Value="Model.BrokerId"
                                        xs="12"
                                        T="string"
                                        Class="p-0 m-0"
                                        HelperText="@_localizer["Select device broker"]"
                                        Label="@_localizer["Broker"]"
-                                       For="(() => Device.BrokerId)"
+                                       For="(() => Model.BrokerId)"
                                        Variant="Variant.Filled"
                                        AnchorOrigin="Origin.BottomCenter">
                                 @foreach (var data in AvaliableBrokers)
@@ -59,21 +59,21 @@
                         <MudItem xs="12"
                                  Class="p-1 m-0">
 
-                            <MudTextField @bind-Value="Device.Placing"
+                            <MudTextField @bind-Value="Model.Placing"
                                           T="string"
                                           Label="@_localizer["Placing"]"
                                           Variant="Variant.Filled"
                                           OnlyValidateIfDirty="true"
                                           Clearable="true"
                                           Class="p-0 m-0"
-                                          For="@(() => Device.Placing)"
+                                          For="@(() => Model.Placing)"
                                           HelperText="@_localizer["Placing of device."]" />
 
                         </MudItem>
 
                         <MudItem xs="12"
                                  Class="p-1 m-0">
-                            <MudTextField @bind-Value="Device.BaseDevicePath"
+                            <MudTextField @bind-Value="Model.BaseDevicePath"
                                           T="string"
                                           Label="@_localizer["Base device path"]"
                                           Variant="Variant.Filled"
@@ -81,7 +81,7 @@
                                           Clearable="true"
                                           Class="p-0 m-0"
                                           HelperText="@_localizer["Path combined with broker path {brokerPath}{DevicePath}."]"
-                                          For="@(() => Device.BaseDevicePath)" />
+                                          For="@(() => Model.BaseDevicePath)" />
 
                         </MudItem>
                     </MudGrid>
@@ -104,7 +104,8 @@
     private MudDialogInstance? Dialog { get; set; }
 
     [Parameter]
-    public Device Device { get; set; } = new();
+    public DeviceDTO Model { get; set; } = new();
+
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
 
@@ -121,6 +122,7 @@
         if (result.Succeeded)
         {
             AvaliableBrokers = result.Data;
+            StateHasChanged();
         }
         else
             Dialog!.Close(DialogResult.Ok(Result.Fail(result.StatusCode, _localizer["Failed to load brokers."])));
@@ -132,9 +134,6 @@
     {
         if (form is not null && firstRender && form.IsValid)
             StateHasChanged();
-
-        if (firstRender && !string.IsNullOrEmpty(Device.Id))
-            Device = Device.Copy();
 
         return base.OnAfterRenderAsync(firstRender);
     }
@@ -153,10 +152,12 @@
 
         var result = Result<Device>.Fail();
 
-        if (string.IsNullOrEmpty(Device.Id))
-            result = await _clientService.CreateDeviceForClient(Device);
+        if (string.IsNullOrEmpty(Model.Id))
+            result = await _clientService.CreateDeviceForClient(Model);
         else
-            result = await _clientService.UpdateDeviceForClient(Device);
+        {
+            result = await _clientService.UpdateDeviceForClient(Model);
+        }
 
         var success = RequestHelpers.InvokeAfterRequest(_snackbar, result, OnAdded);
 

@@ -29,10 +29,10 @@ public class DeviceService : AuthorizedService, IDeviceService
 
         if (response.StatusCode == HttpStatusCode.OK)
         {
-            var list = await _localStorage.GetItemAsync<List<Device>>(DeviceConstants.DevicesListName) ?? new List<Device>();
 
             try
             {
+                var list = await _localStorage.GetItemAsync<List<Device>>(DeviceConstants.DevicesListName) ?? new List<Device>();
                 foreach (var device in response.Data)
                 {
                     if (list.Any())
@@ -47,6 +47,9 @@ public class DeviceService : AuthorizedService, IDeviceService
                     else
                         list.Add(device);
                 }
+
+                string data = JsonSerializer.Serialize(list);
+                await _localStorage.SetItemAsync(DeviceConstants.DevicesListName, data);
             }
             catch (Exception e)
             {
@@ -55,8 +58,6 @@ public class DeviceService : AuthorizedService, IDeviceService
                 _logger.LogError($"Failed to update cache.{e.Message}");
             }
 
-            string data = JsonSerializer.Serialize(list);
-            await _localStorage.SetItemAsync(DeviceConstants.DevicesListName, data);
         }
 
         if (response.StatusCode == HttpStatusCode.NotModified)
@@ -111,16 +112,16 @@ public class DeviceService : AuthorizedService, IDeviceService
         return response;
     }
 
-    public async Task<IResult<Device>> CreateDevice(Device device)
+    public async Task<IResult<Device>> CreateDevice(DeviceDTO dto)
     {
-        var request = new Request<Device>
+        var request = new Request<DeviceDTO>
         {
             Method = HttpMethod.Post,
             Route = $"api/v1/devices",
-            Data = device
+            Data = dto
         };
 
-        var response = await SendAsync<BaseModel, Device>(request);
+        var response = await SendAsync<BaseModel, DeviceDTO>(request);
 
         if (!response.Succeeded)
             return Result<Device>.Fail( response.Messages, response.StatusCode);
@@ -130,21 +131,20 @@ public class DeviceService : AuthorizedService, IDeviceService
         if (!itemResponse.Succeeded)
             return Result<Device>.Fail(itemResponse.Messages, itemResponse.StatusCode);
 
-        device = itemResponse.Data;
+        var device = itemResponse.Data;
 
         await _localStorage.UpsertItemToList(DeviceConstants.DevicesListName, device);
 
         return Result<Device>.Success(device, response.StatusCode);
     }
 
-    public async Task<IResult<Device>> UpdateDevice(Device device)
+    public async Task<IResult<Device>> UpdateDevice(DeviceDTO dto)
     {
-        var dto = device.Dto();
 
         var request = new Request<DeviceDTO>
         {
             Method = HttpMethod.Patch,
-            Route = $"api/v1/devices/{device.Id}",
+            Route = $"api/v1/devices/{dto.Id}",
             Data = dto
         };
 
@@ -158,12 +158,12 @@ public class DeviceService : AuthorizedService, IDeviceService
         if (!response.Succeeded)
             return Result<Device>.Fail(response.Messages, response.StatusCode);
 
-        var itemResponse = await GetDevice(device.Id);
+        var itemResponse = await GetDevice(dto.Id);
 
         if (!itemResponse.Succeeded)
             return Result<Device>.Fail(itemResponse.Messages, itemResponse.StatusCode);
 
-        device = itemResponse.Data;
+        var device = itemResponse.Data;
 
         await _localStorage.UpsertItemToList(DeviceConstants.DevicesListName, device);
 
@@ -208,18 +208,18 @@ public class DeviceService : AuthorizedService, IDeviceService
         return response;
     }
 
-    public async Task<IResult> RemoveDeviceControls(string deviceId, List<string> controlIds)
+    public async Task<IResult> RemoveDeviceControls(string deviceId, string controlId)
     {
         var request = new Request
         {
             Method = HttpMethod.Delete,
-            Route = $"api/v1/devices/{deviceId}/controls",
+            Route = $"api/v1/devices/{deviceId}/controls/controlId",
         };
 
         var response = await SendAsync(request);
 
         if (response.Succeeded)
-            await _localStorage.RemoveItemsFromList<Device>(ControlStoragePath(deviceId), controlIds);
+            await _localStorage.RemoveItemFromList<Device>(ControlStoragePath(deviceId), controlId);
 
         return response;
     }
@@ -238,7 +238,6 @@ public class DeviceService : AuthorizedService, IDeviceService
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-
         var response = await SendAsync<BaseModel, Control>(request, options);
 
         if (!response.Succeeded)
@@ -256,7 +255,7 @@ public class DeviceService : AuthorizedService, IDeviceService
         var request = new Request<Control>
         {
             Method = HttpMethod.Patch,
-            Route = $"api/v1/devices/{control.DeviceId}/controls",
+            Route = $"api/v1/devices/{control.DeviceId}/controls/{control.Id}",
             Data = control
         };
 

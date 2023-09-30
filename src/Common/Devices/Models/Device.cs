@@ -16,7 +16,7 @@ public class Device : BaseModel
     [JsonPropertyName("brokerId")]
     public string BrokerId { get; set; } = string.Empty;
 
-    [JsonPropertyName("baseDevicePath")]
+    [JsonPropertyName("basePath")]
     public string BaseDevicePath { get; set; } = string.Empty;
 
     [JsonPropertyName("updatedAt")]
@@ -34,17 +34,7 @@ public class Device : BaseModel
         BrokerId = BrokerId,
         Icon = Icon,
         Name = Name,
-        Placing = Placing
-    };
-
-    public Device Copy() => new()
-    {
-        BaseDevicePath = BaseDevicePath,
-        BrokerId = BrokerId,
-        EditedAt = EditedAt,
-        Icon = Icon.Copy(),
         Id = Id,
-        Name = Name,
         Placing = Placing
     };
 }

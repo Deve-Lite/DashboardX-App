@@ -62,8 +62,18 @@ public abstract class BaseService
                     return Result<T>.Success(new(), HttpStatusCode.NoContent);
                 }
 
-                var data = JsonSerializer.Deserialize<T>(payload)!;
-                return Result<T>.Success(data, response.StatusCode);
+                try
+                {
+                    //TODO: Chandle Invalid serialziation
+                    var data = JsonSerializer.Deserialize<T>(payload)!;
+
+                    return Result<T>.Success(data, response.StatusCode);
+                }
+                catch (Exception ex) 
+                {
+                    Console.WriteLine(ex.ToString());
+                }
+                return Result<T>.Fail();
             }
 
             if (!string.IsNullOrEmpty(payload))

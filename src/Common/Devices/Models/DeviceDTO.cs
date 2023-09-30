@@ -1,6 +1,6 @@
 ﻿namespace Common.Devices.Models;
 
-public class DeviceDTO
+public class DeviceDTO : BaseModel
 {
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
@@ -14,7 +14,7 @@ public class DeviceDTO
     [JsonPropertyName("brokerId")]
     public string BrokerId { get; set; } = string.Empty;
 
-    [JsonPropertyName("baseDevicePath")]
+    [JsonPropertyName("basePath")]
     public string BaseDevicePath { get; set; } = string.Empty;
 
 }
