@@ -1,4 +1,4 @@
-﻿namespace Presentation.Shared;
+﻿namespace Presentation.Utils;
 
 public class IconUtils
 {
@@ -6,6 +6,7 @@ public class IconUtils
     public const string DefaultEditIcon = Icons.Material.Filled.Edit;
 
     public const string DefaultRemoveIcon = Icons.Material.Filled.Delete;
+    public const string DefaultRefresh = Icons.Material.Filled.Refresh;
 
     //Icons for indirect use
 

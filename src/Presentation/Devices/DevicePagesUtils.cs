@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using Presentation.Devices.Dialogs;
 
 namespace Presentation.Devices;
@@ -33,7 +34,8 @@ public class DevicePagesUtils
     public static async Task RemoveDevice(Device device, 
         IDialogService dialogService, 
         IStringLocalizer<object> localizer, 
-        NavigationManager _navigationManager)
+        NavigationManager _navigationManager, 
+        IJSRuntime runtime)
     {
         var parameters = new DialogParameters<RemoveDeviceDialog>
         {
@@ -50,10 +52,7 @@ public class DevicePagesUtils
         var x = result.Data as Result ?? Result.Fail(message: localizer["Couldn't parse response."]);
 
         if (x.Succeeded)
-        {
-            //TODO: If on devices do nothing if brokers/brokerid do nothing if on device go back!
-            _navigationManager.NavigateTo("/devices");
-        }
+            await runtime.GoBack();
     }
 
     public static async Task AddDevice(Action refreshUI,

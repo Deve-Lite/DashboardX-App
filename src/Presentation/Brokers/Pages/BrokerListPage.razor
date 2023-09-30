@@ -1,13 +1,14 @@
 @page "/brokers"
+@using Presentation.Utils;
 
 @inject IClientService _clientService
 @inject IStringLocalizer<BrokerListPage> _localizer
 
+@inherits BasePage
+
 <PageLoading FailedToLoad="!LoadedSuccessfully">
     <FailedToLoadContent>
-        <div>
-            Failed to load... TODO: Refresh button
-        </div>
+        <RefreshPageButton RefreshPage="LoadPage" />
     </FailedToLoadContent>
     <LoadedContent>
         <MudGrid Class="m-0 p-3 w-100">
@@ -118,24 +119,30 @@
 
 @code 
 {
-    public bool IsMobile { get; set; }
-    public bool LoadedSuccessfully { get; set; } = true;
     private List<Client> Clients { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
+    {
+        await LoadPage();
+        await base.OnInitializedAsync();
+    }
+
+    public async Task LoadPage()
     {
         if (_loadingService.IsLoading)
             return;
 
         _loadingService.ShowLoading();
 
-        IsMobile = false; //TODO: Uncoment = await _runtime.IsMobile();
-
         var result = await _clientService.GetClients();
         if (result.Succeeded)
         {
-             Clients = result.Data;
+            Clients = result.Data;
             LoadedSuccessfully = true;
+        }
+        else
+        {
+            LoadedSuccessfully = false;
         }
 
         if (result.ShowToast)
@@ -143,6 +150,8 @@
                 _snackbar.Add(message, result.Severity);
 
         _loadingService.HideLoading();
+
+        StateHasChanged();
     }
 
     private async Task ConnectAsync(Client client)

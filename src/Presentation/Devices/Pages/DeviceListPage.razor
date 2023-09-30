@@ -1,13 +1,14 @@
 ﻿@page "/devices"
+@using Presentation.Utils;
 
 @inject IClientService _clientService
 @inject IStringLocalizer<DeviceListPage> _localizer
 
+@inherits BasePage
+
 <PageLoading FailedToLoad="!LoadedSuccessfully">
     <FailedToLoadContent>
-        <div>
-            Failed to load... TODO: Refresh button
-        </div>
+        <RefreshPageButton RefreshPage="LoadPage" />
     </FailedToLoadContent>
     <LoadedContent>
         <MudGrid Class="m-0 p-3 w-100">
@@ -104,7 +105,7 @@
 
                                         <MudIconButton Class="z-10"
                                                        Icon="@IconUtils.DefaultRemoveIcon"
-                                                       OnClick="() => DevicePagesUtils.RemoveDevice(device, _dialogService, _localizer, _navigationManager)">
+                                                       OnClick="() => DevicePagesUtils.RemoveDevice(device, _dialogService, _localizer, _navigationManager, _runtime)">
 
                                         </MudIconButton>
                                     </MudItem>
@@ -121,10 +122,15 @@
 
 @code
 {
-    public bool LoadedSuccessfully { get; set; } = false;
     private List<Client> Clients { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
+    {
+        await LoadPage();
+        await base.OnInitializedAsync();
+    }
+
+    public async Task LoadPage()
     {
         if (_loadingService.IsLoading)
             return;
@@ -138,11 +144,17 @@
             Clients = result.Data;
             LoadedSuccessfully = true;
         }
+        else
+        {
+            LoadedSuccessfully = false;
+        }
 
         if (result.ShowToast)
             foreach (var message in result.Messages)
                 _snackbar.Add(message, result.Severity);
 
         _loadingService.HideLoading();
+
+        StateHasChanged();
     }
 }

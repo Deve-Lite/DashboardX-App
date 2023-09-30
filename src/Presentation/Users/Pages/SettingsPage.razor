@@ -1,14 +1,15 @@
 ﻿@page "/user/settings"
 @using Presentation.Users.Dialogs;
+@using Presentation.Utils;
 
 @inject IStringLocalizer<SettingsPage> _localizer;
 @inject IUserService _userService
 
+@inherits BasePage
+
 <PageLoading FailedToLoad="!LoadedSuccessfully">
     <FailedToLoadContent>
-        <div>
-            Failed to load... TODO: Refresh button
-        </div>
+        <RefreshPageButton RefreshPage="LoadPage" />
     </FailedToLoadContent>
     <LoadedContent>
         <MudGrid Class="m-0 p-3 w-100">
@@ -116,15 +117,19 @@
 
     public User User { get; set; } = new();
     private Preferences Preferences = new();
-    public bool LoadedSuccessfully { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
+    {
+        await LoadPage();
+        await base.OnInitializedAsync();
+    }
+
+    public async Task LoadPage()
     {
         if (_loadingService.IsLoading)
             return;
 
         _loadingService.ShowLoading();
-
 
         var result = await _userService.GetUser();
 
@@ -137,6 +142,8 @@
         }
 
         _loadingService.HideLoading();
+
+        StateHasChanged();
     }
 
 

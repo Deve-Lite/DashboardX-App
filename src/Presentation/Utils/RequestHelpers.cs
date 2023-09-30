@@ -1,4 +1,4 @@
-﻿namespace Presentation;
+﻿namespace Presentation.Utils;
 
 public class RequestHelpers
 {
