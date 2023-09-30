@@ -1,4 +1,5 @@
-﻿using MQTTnet.Client;
+﻿using Common.Controls.Models;
+using MQTTnet.Client;
 using MQTTnet.Protocol;
 using Presentation.Brokers;
 using System.Text;
@@ -108,6 +109,7 @@ public class Client : IAsyncDisposable
 
         Devices.Remove(device);
     }
+
     /// <summary>
     /// Unsubscribes from control topic and removes it from device controls collection.
     /// </summary>
@@ -133,6 +135,34 @@ public class Client : IAsyncDisposable
         }
 
         device.Controls.Remove(control);
+    }
+
+    public async Task<bool> Resubscibe(Device device, Control newControl)
+    {
+        try
+        {
+            var control = device.Controls.First(x => x.Id == newControl.Id);
+
+            var oldTopic = await TopicService.RemoveTopic(Broker.Id, device, control);
+            var topic = await TopicService.AddTopic(Broker.Id, device, control);
+
+            control.Update(newControl);
+
+            var result = await MqttService.SubscribeAsync(topic, control.QualityOfService);
+
+            if (IsConnected)
+            {
+                await MqttService.UnsubscribeAsync(topic);
+                await MqttService.SubscribeAsync(topic, control.QualityOfService);
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("." + ex.Message);
+            return false;
+        }
     }
 
     /// <summary>

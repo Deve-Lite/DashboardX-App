@@ -18,21 +18,9 @@ public partial class BaseControl : ComponentBase
     [Parameter]
     public Device? Device { get; set; }
 
-    protected string BackgroundColor { get; set; } = string.Empty;
-    protected string Icon { get; set; } = string.Empty;
-    protected string Name { get; set; } = string.Empty;
+    public string GetBackgroundColor() => $"{Control!.Icon.BackgroundHex}80";
 
-    protected override Task OnInitializedAsync()
-    {
-
-        BackgroundColor = $"{Control!.Icon.BackgroundHex}AA";
-        Icon = IconUtils.IconList.GetValueOrDefault(Control.Icon.Name, "");
-        Name = string.IsNullOrEmpty(Control.Name) ? Localizer!["No name"] : Control.Name;
-
-        //TODO: If not available then change color to gray
-        return base.OnInitializedAsync();
-    }
-
+    public string GetName() => string.IsNullOrEmpty(Control?.Name) ? Localizer!["No name"] : Control.Name;
 
     public async Task<bool> ConfirmationDialog() 
     {

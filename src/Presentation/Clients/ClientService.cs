@@ -330,7 +330,8 @@ public class ClientService : IClientService
         {
             var client = _clients.First(x => x.Id == clientId);
             var device = client.Devices.First(x => x.Id == deviceId);
-            await client.UnsubscribeAsync(deviceId, control.Id);
+
+            await client.Resubscibe(device, control);
 
             return Result.Success(result.StatusCode);
         }

@@ -3,16 +3,16 @@
 <MudButton Class="p-0 m-0 w-100 bg-transparent" OnClick="ActionAsync">
     <MudCard Elevation="5"
              Class="container container-fit-content p-0 m-0 w-100 h-100"
-             Style="@($"border: 1px solid {Control!.Icon.BackgroundHex}; border-radius: 1rem; background-color: {BackgroundColor};")">
+             Style="@($"border: 1px solid {Control!.Icon.BackgroundHex}; border-radius: 1rem; background-color: {GetBackgroundColor()};")">
         <MudGrid Class="p-0 m-0 w-100 h-100 d-flex flex-column">
 
             <MudItem xs="12" Class="pl-3 pr-3 m-0 pt-4 pb-3 d-flex justify-content-center align-items-center">
-                <MudIcon Icon="@Icon" Size="Size.Large" />
+                <MudIcon Icon="@IconUtils.GetIcon(Control?.Icon?.Name!)" Size="Size.Large" />
             </MudItem>
 
             <MudItem xs="12" Class="p-1 d-flex justify-content-center align-items-center hide-overlapping-text">
                 <MudText Typo="Typo.body1">
-                    @Name
+                    @GetName()
                 </MudText>
             </MudItem>
         </MudGrid>
@@ -67,8 +67,8 @@
 
         var topic = Control!.GetTopic(Device!);
 
-        var payload = Control!.Attributes.PayloadTemplate.Replace("<<value>>", $"{current}");
+        var payload = Control?.Attributes?.PayloadTemplate!.Replace("<<value>>", $"{current}");
 
-        await Client!.PublishAsync(topic, Control!.Attributes.Payload, Control!.QualityOfService);
+        await Client!.PublishAsync(topic, Control?.Attributes?.Payload!, Control!.QualityOfService);
     }
 }

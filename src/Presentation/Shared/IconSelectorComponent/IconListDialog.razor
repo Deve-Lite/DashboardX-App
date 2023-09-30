@@ -10,7 +10,7 @@
                 </MudText>
             </MudItem>
 
-            @foreach (var (key, value) in IconUtils.IconList)
+            @foreach (var (key, value) in IconUtils.AvailableIcons)
             {
                 <MudItem xs="2" Class="d-flex justify-content-center align-content-center">
                     <MudIconButton Icon="@value" OnClick="() => IconSelected(key)" />

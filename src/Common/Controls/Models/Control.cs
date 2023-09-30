@@ -92,25 +92,8 @@ public class Control : BaseModel
 
     #region Methods
 
-    public static Control Create(Control dto)
-    {
-        return new Control
-        {
-            Id = dto.Id,
-            QualityOfService = dto.QualityOfService,
-            Type = dto.Type,
-            Topic = dto.Topic,
-            DeviceId = dto.DeviceId,
-            StringType = dto.StringType,
-            Icon = dto.Icon.Copy(),
-            IsAvailable = dto.IsAvailable,
-            IsConfiramtionRequired = dto.IsConfiramtionRequired,
-        };
-    }
-
     public bool IsTheSame(Control control)
     {
-        //TODO compare attruibutes
         return Id == control.Id &&
                DeviceId == control.DeviceId &&
                StringType == control.StringType &&
@@ -124,6 +107,8 @@ public class Control : BaseModel
 
     public Control Copy()
     {
+        var attrCopy = Attributes.Copy();
+
         return new()
         {
             Name = Name,
@@ -135,8 +120,22 @@ public class Control : BaseModel
             IsConfiramtionRequired = IsConfiramtionRequired,
             QualityOfService = QualityOfService,
             Topic = Topic,
-            Attributes = Attributes.Copy(),
+            Attributes = attrCopy,
         };
+    }
+
+    public void Update(Control newControl)
+    {
+        Name = newControl.Name;
+        Id = newControl.Id;
+        DeviceId = newControl.DeviceId;
+        StringType = newControl.StringType;
+        Icon = newControl.Icon;
+        IsAvailable = newControl.IsAvailable;
+        IsConfiramtionRequired = newControl.IsConfiramtionRequired;
+        QualityOfService = newControl.QualityOfService;
+        Topic = newControl.Topic;
+        Attributes = newControl.Attributes;
     }
 
     #endregion

@@ -251,7 +251,7 @@ public class DeviceService : AuthorizedService, IDeviceService
         }
         catch (Exception ex) 
         {
-            _logger.LogError("Cache error");
+            _logger.LogError($"Cache error {ex.Message}");
         }
 
         return Result<Control>.Success(control, response.StatusCode);

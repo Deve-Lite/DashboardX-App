@@ -16,7 +16,7 @@
 
                         <MudItem xs="3"
                                  Class="p-1 m-0">
-                            <IconSelector @bind-Icon="@Control.Icon.Name"
+                            <IconSelector @bind-IconName="@Control.Icon.Name"
                                           Label="Icon" />
                         </MudItem>
 
@@ -181,22 +181,16 @@
 
     protected override void OnInitialized()
     {
+        if(!string.IsNullOrEmpty(Control.Id))
+        {
+            Control = Control.Copy();
+            StateHasChanged();
+        }
+
         Control.DeviceId = DeviceId;
         base.OnInitialized();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        var validationResult = await Validator.ValidateAsync(Control);
-
-        if (validationResult.IsValid && firstRender)
-            StateHasChanged();
-
-        if (firstRender && !string.IsNullOrEmpty(Control.Id))
-            Control = Control.Copy();
-
-        await base.OnAfterRenderAsync(firstRender);
-    }
 
     private void Cancel() => Dialog!.Cancel();
 

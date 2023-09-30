@@ -11,7 +11,7 @@ public class IconUtils
 
     public const string DefualtIcon = "Home";
 
-    public static Dictionary<string, string> IconList = new()
+    private static Dictionary<string, string> iconDictionary = new()
     {
         { "Home", Icons.Material.Filled.Home },
         { "HomeMini", Icons.Material.Filled.HomeMini },
@@ -55,4 +55,19 @@ public class IconUtils
         { "LaptopMac", Icons.Material.Filled.LaptopMac},
         { "LaptopWindows", Icons.Material.Filled.LaptopWindows},
     };
+
+    public static Dictionary<string, string> AvailableIcons => iconDictionary;
+
+    public static bool ContainsIcon(string name) => iconDictionary.ContainsKey(name);
+
+    public static string GetIcon(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            return @Icons.Material.Filled.Home;
+
+        if (!iconDictionary.ContainsKey(name))
+            return @Icons.Material.Filled.Home;
+
+        return iconDictionary[name];
+    }
 }

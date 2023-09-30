@@ -72,10 +72,12 @@ public class ControlAttributes
 
     public ControlAttributes Copy()
     {
+        var payloads = Payloads == null ? null : new Dictionary<string, string>(Payloads);
+
         return new()
         {
             Payload = Payload,
-            Payloads = new Dictionary<string, string>(Payloads),
+            Payloads = payloads,
             OnPayload = OnPayload,
             OffPayload = OffPayload,
             PayloadTemplate = PayloadTemplate,

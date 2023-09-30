@@ -3,7 +3,7 @@
           Style="@($"background-color: {GetBackgroundColor()};")">
     <MudIcon Class="p-0 m-0"
              Size="IconSize"
-             Icon="@GetIcon()"/>
+             Icon="@IconUtils.GetIcon(Icon?.Name!)"/>
 </MudPaper>
 
 @code 
@@ -16,17 +16,5 @@
     public string Padding { get; set; } = "p-2";
     public string DefaultColor { get; set; } = string.Empty;
 
-    public string GetIcon()
-    {
-        if (string.IsNullOrEmpty(Icon.Name))
-            return @Icons.Material.Filled.Home;
-
-        if (!IconUtils.IconList.ContainsKey(Icon.Name))
-            return @Icons.Material.Filled.Home;
-
-        return IconUtils.IconList[Icon.Name];
-    }
-
     public string GetBackgroundColor() => string.IsNullOrEmpty(Icon.BackgroundHex) ? ThemeColors.ColorPrimary : Icon.BackgroundHex;
-    
 }

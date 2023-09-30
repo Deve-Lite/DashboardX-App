@@ -14,7 +14,7 @@
 
     <MudItem xs="12" 
              Class="p-0 m-0 d-flex justify-content-center align-items-center">
-        <MudIconButton Icon="@CurrentIcon()"
+        <MudIconButton Icon="@IconUtils.GetIcon(IconName)"
                        Size="@Size"
                        OnClick="async() => await SelectIcon()" />
     </MudItem>
@@ -22,7 +22,7 @@
 
 @code 
 {
-    private string icon = IconUtils.DefualtIcon;
+    private string iconName = string.Empty;
 
     [Parameter]
     public string Label { get; set; } = string.Empty;
@@ -30,37 +30,37 @@
     public Size Size { get; set; } = Size.Large;
 #pragma warning disable BL0007
     [Parameter]
-    public string Icon
+    public string IconName
     {
-        get => icon;
+        get => iconName;
         set
         {
-            if (value == this.icon)
+            if (value == this.iconName)
                 return;
 
-            this.icon = value;
-            if (IconChanged.HasDelegate)
+            this.iconName = value;
+            if (IconNameChanged.HasDelegate)
             {
-                IconChanged.InvokeAsync(this.icon);
+                IconNameChanged.InvokeAsync(this.iconName);
             }
         }
     }
     [Parameter]
-    public EventCallback<string> IconChanged { get; set; }
+    public EventCallback<string> IconNameChanged { get; set; }
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
 
-        if (!IconUtils.IconList.ContainsKey(Icon))
-            Icon = IconUtils.DefualtIcon;
+        if (!IconUtils.ContainsIcon(IconName))
+            IconName = IconUtils.DefualtIcon;
     }
 
     public async Task SelectIcon()
     {
         var parameters = new DialogParameters<IconListDialog>
         {
-            { x => x.SelectedIcon, Icon }
+            { x => x.SelectedIcon, IconName }
         };
 
         var dialog = await _dialogService.ShowAsync<IconListDialog>(_localizer["Select icon"], parameters);
@@ -69,14 +69,6 @@
         if (result.Canceled)
             return;
 
-        Icon = result.Data as string ?? IconUtils.DefualtIcon;
-    }
-
-    public string CurrentIcon()
-    {
-        if (!IconUtils.IconList.ContainsKey(Icon))
-            return IconUtils.DefualtIcon;
-
-        return IconUtils.IconList[Icon];
+        IconName = result.Data as string ?? IconUtils.DefualtIcon;
     }
 }
