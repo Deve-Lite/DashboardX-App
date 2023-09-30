@@ -22,7 +22,7 @@ public static class ThemeColors
         TextSecondary = new("9C27B0"),
         SecondaryContrastText = new(18, 18, 18, 0.4),
 
-        Tertiary = new("c9a0dc"),
+        Tertiary = new($"{colorPrimary}aa"),
 
         Background = new("F5F5F5"),
 
@@ -33,6 +33,10 @@ public static class ThemeColors
 
     private static PaletteDark PaletteDark => new()
     {
+        Primary = new("#1ec7a5"),
 
+        Secondary = new("212529"),
+
+        Tertiary = new("#1ec7a5aa")
     };
 }
