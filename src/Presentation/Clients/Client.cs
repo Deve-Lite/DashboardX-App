@@ -119,7 +119,19 @@ public class Client : IAsyncDisposable
         var device = Devices.First(x => x.Id == deviceId);
         var control = device.Controls.First(x => x.Id == controlId);
         var topic = await TopicService.RemoveTopic(Broker.Id, device, control);
-        await MqttService.UnsubscribeAsync(topic);
+        
+        if(IsConnected)
+        {
+            try 
+            { 
+                await MqttService.UnsubscribeAsync(topic); 
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Failed to unsubscribe: {e}");
+            }
+        }
+
         device.Controls.Remove(control);
     }
 

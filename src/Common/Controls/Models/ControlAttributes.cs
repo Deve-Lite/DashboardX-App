@@ -6,7 +6,7 @@ public class ControlAttributes
 
     //Used by: Button
     [JsonPropertyName("payload")]
-    public string Payload { get; set; } = string.Empty;
+    public string? Payload { get; set; }
 
     // In Controls: Text
 
@@ -15,19 +15,19 @@ public class ControlAttributes
     //Used by: Radio
 
     [JsonPropertyName("payloads")]
-    public Dictionary<string, string> Payloads { get; set; } = new();
+    public Dictionary<string, string>? Payloads { get; set; }
 
     // Used by: Switch
     [JsonPropertyName("onPayload")]
-    public string OnPayload { get; set; } = string.Empty;
+    public string? OnPayload { get; set; }
 
     // Used by: Switch
     [JsonPropertyName("offpayload")]
-    public string OffPayload { get; set; } = string.Empty;
+    public string? OffPayload { get; set; }
 
     // Used by: Slider, Color, DateTime
     [JsonPropertyName("payloadTemplate")]
-    public string PayloadTemplate { get; set; } = string.Empty;
+    public string? PayloadTemplate { get; set; }
 
     // Used by: Slider
     [JsonPropertyName("maxValue")]
@@ -39,7 +39,7 @@ public class ControlAttributes
 
     // Used by: Color 
     [JsonPropertyName("colorFormat")]
-    public string StringColorFormat { get; set; } = "rgb";
+    public string? StringColorFormat { get; set; }
 
     [JsonIgnore]
     public ColorFormat ColorFormatEnum

@@ -199,11 +199,11 @@ public class DeviceService : AuthorizedService, IDeviceService
 
         var response = await SendAsync<List<Control>>(request);
 
-        if (response.StatusCode == HttpStatusCode.OK)
-            await _localStorage.SetItemAsync(DeviceConstants.DevicesListName, response.Data);
+        //if (response.StatusCode == HttpStatusCode.OK)
+            //await _localStorage.SetItemAsync(DeviceConstants.DevicesListName, response.Data);
 
-        if (response.StatusCode == HttpStatusCode.NotModified)
-            response.Data = await _localStorage.GetItemAsync<List<Control>>(ControlStoragePath(deviceId));
+        //if (response.StatusCode == HttpStatusCode.NotModified)
+           //response.Data = await _localStorage.GetItemAsync<List<Control>>(ControlStoragePath(deviceId));
 
         return response;
     }
@@ -213,13 +213,13 @@ public class DeviceService : AuthorizedService, IDeviceService
         var request = new Request
         {
             Method = HttpMethod.Delete,
-            Route = $"api/v1/devices/{deviceId}/controls/controlId",
+            Route = $"api/v1/devices/{deviceId}/controls/{controlId}",
         };
 
         var response = await SendAsync(request);
 
-        if (response.Succeeded)
-            await _localStorage.RemoveItemFromList<Device>(ControlStoragePath(deviceId), controlId);
+        //if (response.Succeeded)
+            //await _localStorage.RemoveItemFromList<Device>(ControlStoragePath(deviceId), controlId);
 
         return response;
     }
@@ -245,7 +245,14 @@ public class DeviceService : AuthorizedService, IDeviceService
 
         control.Id = response.Data.Id;
 
-        await _localStorage.UpsertItemToList(ControlStoragePath(control.DeviceId), control);
+        try
+        {
+            await _localStorage.UpsertItemToList(ControlStoragePath(control.DeviceId), control);
+        }
+        catch (Exception ex) 
+        {
+            _logger.LogError("Cache error");
+        }
 
         return Result<Control>.Success(control, response.StatusCode);
     }
@@ -269,7 +276,7 @@ public class DeviceService : AuthorizedService, IDeviceService
         if (!response.Succeeded)
             return Result<Control>.Fail(response.Messages, response.StatusCode);
 
-        await _localStorage.UpsertItemToList(ControlStoragePath(control.DeviceId), control);
+        //await _localStorage.UpsertItemToList(ControlStoragePath(control.DeviceId), control);
 
         return Result<Control>.Success(control, response.StatusCode);
     }

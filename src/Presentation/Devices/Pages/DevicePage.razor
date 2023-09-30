@@ -27,7 +27,7 @@
 
             <MudItem xs="6" Class="d-flex p-0 pt-3 pb-3 m-0 justify-content-end">
 
-                <MudButton OnClick="async() => await ControlPagesUtils.AddControl(_dialogService, DeviceId, StateHasChanged, _localizer)"
+                <MudButton OnClick="async() => await ControlPagesUtils.AddControl(_dialogService, DeviceId, StateHasChanged, _localizer, ClientId)"
                            Color="Color.Primary"
                            Variant="Variant.Filled"
                            StartIcon="@Icons.Material.Filled.AddToQueue">
@@ -131,7 +131,8 @@
                         <MudItem Class="p-1 m-0">
                             <ControlFactory Client="@Client"
                                             Device="@Device"
-                                            Control="@control" />
+                                            Control="@control"
+                                            RefreshList="StateHasChanged"/>
                         </MudItem>
                     }
                 </MudElement>

@@ -14,7 +14,7 @@
         <MudIconButton Size="Size.Medium"
                        Icon="@IconUtils.DefaultRemoveIcon"
                        Class="m-0"
-                       OnClick="async() => await ControlPagesUtils.RemoveControl(_dialogService, Control!, Client!.Id, _localizer)" />
+                       OnClick="async() => await ControlPagesUtils.RemoveControl(_dialogService, Control!, Client!.Id, _localizer, RefreshList!)" />
 
     </MudElement>
 
@@ -52,4 +52,6 @@
     [Parameter]
     public Device? Device { get; set; }
 
+    [Parameter]
+    public Action? RefreshList { get; set; }
 }
