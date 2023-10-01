@@ -1,0 +1,24 @@
+﻿@using Presentation.Utils;
+
+@inject IStringLocalizer<RefreshPageButton> _localizer
+
+<MudGrid Class="p-0 m-0 w-100 h-100">
+    <MudItem xs="12" Class="p-0 m-0 d-flex flex-column justify-content-center align-items-center">
+        <MudIconButton Class="p-2 m-0"
+                       Size="Size.Large"
+                       Variant="Variant.Filled"
+                       Color="Color.Tertiary"
+                       OnClick="RefreshPage!.Invoke"
+                       Icon="@IconUtils.DefaultRefresh">
+        </MudIconButton>
+        <MudText Class="mt-5" Align="Align.Center" Typo="Typo.body1">
+            @_localizer["Failed to load page, please refresh."]
+        </MudText>
+    </MudItem>
+</MudGrid>
+
+
+@code {
+    [Parameter]
+    public Func<Task>? RefreshPage { get; set; }
+}

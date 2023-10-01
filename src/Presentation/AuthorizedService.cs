@@ -22,7 +22,7 @@ public abstract class AuthorizedService : BaseService
         _applicationStateProvider = (ApplicationStateProvider)authenticationState;
     }
 
-    protected virtual async Task<Result> SendAsync(Request request, JsonSerializerOptions? options = null)
+    protected virtual async Task<Result> SendAsync(Request request)
     {
         var message = CreateMessage(request);
         var results = await Run(message);
@@ -56,7 +56,7 @@ public abstract class AuthorizedService : BaseService
 
     protected override async Task<Result> SendAsync<T>(Request<T> request, JsonSerializerOptions? options = null) where T : class
     {
-        var message = CreateMessage(request);
+        var message = CreateMessage(request, options);
         var results = await Run(message);
 
         if (results.StatusCode == HttpStatusCode.Unauthorized)
@@ -72,7 +72,7 @@ public abstract class AuthorizedService : BaseService
 
     protected override async Task<Result<T>> SendAsync<T, T1>(Request<T1> request, JsonSerializerOptions? options = null) where T1 : class where T : class
     {
-        var message = CreateMessage(request);
+        var message = CreateMessage(request, options);
         var results = await Run<T>(message);
 
         if (results.StatusCode == HttpStatusCode.Unauthorized)

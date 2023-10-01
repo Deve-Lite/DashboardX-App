@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Presentation.Devices.Dialogs;
+using System.Text.RegularExpressions;
 
 namespace Presentation.Devices;
 
@@ -13,8 +14,7 @@ public class DevicePagesUtils
     {
         var parameters = new DialogParameters<UpsertDeviceDialog>
         {
-            { x => x.Device, device },
-            { x => x.ClientId, device.BrokerId }
+            { x => x.Model, device.Dto() }
         };
 
         var dialog = await dialogService.ShowAsync<UpsertDeviceDialog>(localizer["Edit Device"], parameters);
@@ -34,7 +34,8 @@ public class DevicePagesUtils
     public static async Task RemoveDevice(Device device, 
         IDialogService dialogService, 
         IStringLocalizer<object> localizer, 
-        NavigationManager _navigationManager)
+        NavigationManager _navigationManager, 
+        IJSRuntime runtime)
     {
         var parameters = new DialogParameters<RemoveDeviceDialog>
         {
@@ -52,21 +53,28 @@ public class DevicePagesUtils
 
         if (x.Succeeded)
         {
-            //TODO: If on devices do nothing if brokers/brokerid do nothing if on device go back!
-            _navigationManager.NavigateTo("/devices");
+            var currentPage = _navigationManager.Uri;
+            string deviceListPagePattern = @".*/devices$";
+            string brokerPagePattern = @".*/brokers/.*";
+
+            if (new Regex(brokerPagePattern).IsMatch(currentPage) || new Regex(deviceListPagePattern).IsMatch(currentPage))
+                return;
+
+            await runtime.GoBack();
         }
     }
 
     public static async Task AddDevice(Action refreshUI,
         IDialogService dialogService,
-        IStringLocalizer<object> localizer, string? clientId = null)
+        IStringLocalizer<object> localizer, 
+        string? clientId = null)
     {
-        var parameters = new DialogParameters<RemoveDeviceDialog>
+        var parameters = new DialogParameters<UpsertDeviceDialog>
         {
-            { x => x.ClientId, clientId }
+            { x => x.Model, new DeviceDTO{ BrokerId = clientId ?? string.Empty } }
         };
 
-        var dialog = await dialogService.ShowAsync<UpsertDeviceDialog>(localizer["Create Device"]);
+        var dialog = await dialogService.ShowAsync<UpsertDeviceDialog>(localizer["Create Device"], parameters);
         var result = await dialog.Result;
 
         if (result.Canceled)

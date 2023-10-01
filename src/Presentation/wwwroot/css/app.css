@@ -63,3 +63,19 @@ a, .btn-link {
     .blazor-error-boundary::after {
         content: "An error has occurred."
     }
+
+.spinner {
+    box-sizing: border-box;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    border: 5px solid #9C27B0AA;
+    border-right-color: #9C27B0;
+    animation: rotateSpinner 800ms linear infinite;
+}
+
+@keyframes rotateSpinner {
+    to {
+        transform: rotate(360deg);
+    }
+}

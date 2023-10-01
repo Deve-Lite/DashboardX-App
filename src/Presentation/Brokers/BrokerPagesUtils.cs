@@ -6,7 +6,7 @@ public class BrokerPagesUtils
 {
     public static async Task UpdateBroker(Client client, IDialogService dialogService, Action refreshUI, IStringLocalizer<object> localizer)
     {
-        var parameters = new DialogParameters<UpsertBrokerDialog> { { x => x.Broker, client.Broker } };
+        var parameters = new DialogParameters<UpsertBrokerDialog> { { x => x.Model, client.Broker.Dto() } };
 
         var dialog = await dialogService.ShowAsync<UpsertBrokerDialog>(localizer["Edit Broker"], parameters);
         var result = await dialog.Result;

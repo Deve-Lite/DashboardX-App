@@ -1,3 +1,4 @@
+@using Presentation.Utils;
 @inherits LayoutComponentBase
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
@@ -12,85 +13,89 @@
     <MudSnackbarProvider />
     <MudDialogProvider />
 
-    <AuthorizeView Roles="@($"{RolesConstraints.User}, {RolesConstraints.Admin}")">
-        <Authorized>
-            <MudAppBar Elevation="1" Dense="@true" Color="Color.Primary">
-                <MudIconButton Icon="@Icons.Material.Filled.Menu"
-                               Color="Color.Secondary"
-                               Edge="Edge.Start"
-                               OnClick="@ToggleDrawer" />
-                <MudText Color="Color.Secondary" Typo="Typo.h6">
-                    @_localizer["DashboardX"]
-                </MudText>
+    <CascadingValue Value="@AppTheme">
+        <CascadingValue Value="@IsDarkMode">
+            <AuthorizeView Roles="@($"{RolesConstraints.User}, {RolesConstraints.Admin}")">
+                <Authorized>
+                    <MudAppBar Elevation="1" Dense="@true" Color="Color.Primary">
+                        <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                                       Color="Color.Secondary"
+                                       Edge="Edge.Start"
+                                       OnClick="@ToggleDrawer" />
+                        <MudText Color="Color.Secondary" Typo="Typo.h6">
+                            @_localizer["DashboardX"]
+                        </MudText>
 
-                <MudSpacer />
+                        <MudSpacer />
 
-            </MudAppBar>
-            <MudDrawer @bind-Open="@Open"
-                       ClipMode="DrawerClipMode.Docked"
-                       Elevation="1"
-                       Variant="@DrawerVariant.Responsive">
+                    </MudAppBar>
+                    <MudDrawer @bind-Open="@Open"
+                               ClipMode="DrawerClipMode.Docked"
+                               Elevation="1"
+                               Variant="@DrawerVariant.Responsive">
 
-                <MudNavMenu>
-                    <MudList Clickable="true" Class="w-100">
+                        <MudNavMenu>
+                            <MudList Clickable="true" Class="w-100">
 
-                        <MudListItem Icon="@Icons.Material.Filled.DisplaySettings" 
-                                     OnClick="NavigateToBrokers">
-                            @_localizer["Brokers"]
-                        </MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.DisplaySettings"
+                                             OnClick="NavigateToBrokers">
+                                    @_localizer["Brokers"]
+                                </MudListItem>
 
-                        <MudListItem Icon="@Icons.Material.Filled.SettingsInputComponent"
-                                     OnClick="NavigateToDevices">
-                            @_localizer["Devices"]
-                        </MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.SettingsInputComponent"
+                                             OnClick="NavigateToDevices">
+                                    @_localizer["Devices"]
+                                </MudListItem>
 
-                        <MudListItem Icon="@Icons.Material.Filled.Settings"
-                                     OnClick="NavigateToProfile">
-                            @_localizer["Settings"]
-                        </MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Settings"
+                                             OnClick="NavigateToProfile">
+                                    @_localizer["Settings"]
+                                </MudListItem>
 
-                        <MudListItem Icon="@Icons.Material.Filled.Email"
-                                     OnClick="NavigateToSubs">
-                            @_localizer["Subscribtions"]
-                        </MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Email"
+                                             OnClick="NavigateToSubs">
+                                    @_localizer["Subscribtions"]
+                                </MudListItem>
 
-                        <MudListItem Icon="@Icons.Material.Filled.Logout"
-                                     OnClick="Logout">
-                            @_localizer["Logout"]
-                        </MudListItem>
-                    </MudList>
-                </MudNavMenu>
-            </MudDrawer>
+                                <MudListItem Icon="@Icons.Material.Filled.Logout"
+                                             OnClick="Logout">
+                                    @_localizer["Logout"]
+                                </MudListItem>
+                            </MudList>
+                        </MudNavMenu>
+                    </MudDrawer>
 
-            @if (IsLoading)
-            {
-                <MudProgressLinear Color="Color.Tertiary"
-                                   Indeterminate="@IsLoading"
-                                   Size="Size.Medium"
-                                   Class="progress-linear-under-appbar position-absolute" />
-            }
+                    @if (IsLoading)
+                    {
+                        <MudProgressLinear Color="Color.Tertiary"
+                                           Indeterminate="@IsLoading"
+                                           Size="Size.Medium"
+                                           Class="progress-linear-under-appbar position-absolute" />
+                    }
 
-            <MudMainContent Style="height: 100vh;">
-                @Body
-            </MudMainContent>
-        </Authorized>
-        <NotAuthorized>
-            @if (IsLoading)
-            {
-                <MudProgressLinear Color="Color.Tertiary"
-                                   Indeterminate="@IsLoading"
-                                   Size="Size.Medium"
-                                   Class="progress-linear position-absolute" />
-            }
+                    <MudMainContent Style="height: 100vh;">
+                        @Body
+                    </MudMainContent>
+                </Authorized>
+                <NotAuthorized>
+                    @if (IsLoading)
+                    {
+                        <MudProgressLinear Color="Color.Tertiary"
+                                           Indeterminate="@IsLoading"
+                                           Size="Size.Medium"
+                                           Class="progress-linear position-absolute" />
+                    }
 
-            <MudItem Class="image-in-background">
-                <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-items-center bg-transparent" Style="height: 100vh;">
-                    @Body
-                </MudContainer>
-            </MudItem>
+                    <MudItem Class="image-in-background">
+                        <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-items-center bg-transparent" Style="height: 100vh;">
+                            @Body
+                        </MudContainer>
+                    </MudItem>
 
-        </NotAuthorized>
-    </AuthorizeView>
+                </NotAuthorized>
+            </AuthorizeView>
+        </CascadingValue>
+    </CascadingValue>
 </MudLayout>
 
 @code {

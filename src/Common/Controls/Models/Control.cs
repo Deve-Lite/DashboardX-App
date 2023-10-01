@@ -28,10 +28,10 @@ public class Control : BaseModel
 
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
+
     [JsonPropertyName("icon")]
-    public string Icon { get; set; } = string.Empty;
-    [JsonPropertyName("iconBackgroundColor")]
-    public string IconBackgroundColor { get; set; } = string.Empty;
+    public Icon Icon { get; set; } = new();
+
     [JsonPropertyName("topic")]
     public string Topic { get; set; } = string.Empty;
 
@@ -75,45 +75,30 @@ public class Control : BaseModel
     [JsonPropertyName("qualityOfService")]
     public MqttQualityOfServiceLevel QualityOfService { get; set; } = MqttQualityOfServiceLevel.AtMostOnce;
 
-    [JsonPropertyName("displayName")]
-    public bool DisplayName { get; set; }
+    [JsonPropertyName("canDisplayName")]
+    public bool DisplayName { get; set; } = true;
+
     [JsonPropertyName("isAvailable")]
-    public bool IsAvailable { get; set; }
+    public bool IsAvailable { get; set; } = true;
+
     [JsonPropertyName("isConfirmationRequired")]
-    public bool IsConfiramtionRequired { get; set; }
-    [JsonPropertyName("notifyOnPublish")]
-    public bool NotifyOnPublish { get; set; }
+    public bool IsConfiramtionRequired { get; set; } = false;
+
+    [JsonPropertyName("canNotifyOnPublish")]
+    public bool NotifyOnPublish { get; set; } = false;
 
     [JsonPropertyName("attributes")]
     public ControlAttributes Attributes { get; set; } = new();
 
     #region Methods
 
-    public static Control Create(Control dto)
-    {
-        return new Control
-        {
-            Id = dto.Id,
-            QualityOfService = dto.QualityOfService,
-            Type = dto.Type,
-            Topic = dto.Topic,
-            DeviceId = dto.DeviceId,
-            StringType = dto.StringType,
-            Icon = dto.Icon,
-            IconBackgroundColor = dto.IconBackgroundColor,
-            IsAvailable = dto.IsAvailable,
-            IsConfiramtionRequired = dto.IsConfiramtionRequired,
-        };
-    }
-
     public bool IsTheSame(Control control)
     {
-        //TODO compare attruibutes
         return Id == control.Id &&
                DeviceId == control.DeviceId &&
                StringType == control.StringType &&
-               Icon == control.Icon &&
-               IconBackgroundColor == control.IconBackgroundColor &&
+               Icon.Name == control.Icon.Name &&
+               Icon.BackgroundHex == control.Icon.BackgroundHex &&
                IsAvailable == control.IsAvailable &&
                IsConfiramtionRequired == control.IsConfiramtionRequired &&
                QualityOfService == control.QualityOfService &&
@@ -122,20 +107,35 @@ public class Control : BaseModel
 
     public Control Copy()
     {
+        var attrCopy = Attributes.Copy();
+
         return new()
         {
             Name = Name,
             Id = Id,
             DeviceId = DeviceId,
             StringType = StringType,
-            Icon = Icon,
-            IconBackgroundColor = IconBackgroundColor,
+            Icon = Icon.Copy(),
             IsAvailable = IsAvailable,
             IsConfiramtionRequired = IsConfiramtionRequired,
             QualityOfService = QualityOfService,
             Topic = Topic,
-            Attributes = Attributes.Copy(),
+            Attributes = attrCopy,
         };
+    }
+
+    public void Update(Control newControl)
+    {
+        Name = newControl.Name;
+        Id = newControl.Id;
+        DeviceId = newControl.DeviceId;
+        StringType = newControl.StringType;
+        Icon = newControl.Icon;
+        IsAvailable = newControl.IsAvailable;
+        IsConfiramtionRequired = newControl.IsConfiramtionRequired;
+        QualityOfService = newControl.QualityOfService;
+        Topic = newControl.Topic;
+        Attributes = newControl.Attributes;
     }
 
     #endregion

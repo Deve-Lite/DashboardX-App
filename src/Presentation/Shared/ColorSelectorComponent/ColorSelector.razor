@@ -1,4 +1,5 @@
-﻿@inject IStringLocalizer<IconSelector> _localizer
+﻿@using Presentation.Utils;
+@inject IStringLocalizer<IconSelector> _localizer
 
 <MudGrid Class="p-0 m-0 w-100">
 
@@ -28,6 +29,7 @@
 
     [Parameter]
     public string Label { get; set; } = string.Empty;
+#pragma warning disable BL0007
     [Parameter]
     public string Value
     {
@@ -46,6 +48,14 @@
     }
     [Parameter]
     public EventCallback<string> ValueChanged { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        if (string.IsNullOrEmpty(Value))
+            Value = ThemeColors.ColorPrimary;
+    }
 
     public async Task GetHex()
     {

@@ -68,6 +68,8 @@ public class AuthenticationService : BaseService, IAuthenticationService
             return Result.Success(response.StatusCode);
         }
 
+        await _applicationStateProvider.Logout();
+
         return Result.Fail(response.StatusCode);
     }
 }

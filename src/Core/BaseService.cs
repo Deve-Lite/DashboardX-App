@@ -1,5 +1,4 @@
-﻿
-using Core.Models;
+﻿using Core.Models;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text;
@@ -47,6 +46,8 @@ public abstract class BaseService
 
 #if DEBUG
             await Task.Delay(RequestDebugDelay);
+            _logger.LogInformation($"Sending request to: {message.RequestUri} with {message.Method}, {message.Version}");
+            _logger.LogInformation($"Payload: {message.Content?.ReadAsStream().ToString()}");
 #endif
 
             var response = await _client.SendAsync(message);
@@ -61,14 +62,24 @@ public abstract class BaseService
                     return Result<T>.Success(new(), HttpStatusCode.NoContent);
                 }
 
-                var data = JsonSerializer.Deserialize<T>(payload)!;
-                return Result<T>.Success(data, response.StatusCode);
+                try
+                {
+                    //TODO: Chandle Invalid serialziation
+                    var data = JsonSerializer.Deserialize<T>(payload)!;
+
+                    return Result<T>.Success(data, response.StatusCode);
+                }
+                catch (Exception ex) 
+                {
+                    Console.WriteLine(ex.ToString());
+                }
+                return Result<T>.Fail();
             }
 
             if (!string.IsNullOrEmpty(payload))
             {
                 var errorResponse = JsonSerializer.Deserialize<ErrorMessage>(payload)!;
-                return Result<T>.Fail(statusCode:response.StatusCode, errorResponse.Message);
+                return Result<T>.Fail(statusCode: response.StatusCode, errorResponse.Message);
             }
 
             return Result<T>.Fail(response.StatusCode);
@@ -81,7 +92,7 @@ public abstract class BaseService
         catch (Exception e)
         {
             _logger.LogError($"Unexpected error occured. {e.Message}");
-            return Result<T>.Fail(message:"Failed to fetch data");
+            return Result<T>.Fail(message: "Failed to fetch data");
         }
     }
 
@@ -91,6 +102,7 @@ public abstract class BaseService
         {
 #if DEBUG
             await Task.Delay(RequestDebugDelay);
+            _logger.LogInformation($"Sending request to: {message.RequestUri} with {message.Method}, {message.Version}");
 #endif
 
             var response = await _client.SendAsync(message);
@@ -99,7 +111,7 @@ public abstract class BaseService
 
             if (response.IsSuccessStatusCode)
                 return Result.Success(response.StatusCode);
-            
+
             if (!string.IsNullOrEmpty(payload))
             {
                 var error = JsonSerializer.Deserialize<ErrorMessage>(payload)!;

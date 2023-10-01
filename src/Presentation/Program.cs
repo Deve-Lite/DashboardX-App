@@ -9,11 +9,12 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
+//TODO: Test environments variables
 var isProduction = builder.Configuration.GetValue<string>("ASPNETCORE_ENVIRONMENT") == "Production";
 
-var apiUrl = builder.Configuration.GetValue<string>("Api:Url");
+var apiUrl = builder.Configuration.GetValue<string>("Api:Url")!;
 if (isProduction)
-    apiUrl = builder.Configuration.GetValue<string>("API_URL");
+    apiUrl = builder.Configuration.GetValue<string>("API_URL")!;
 
 builder.Services.AddSingleton(sp => new HttpClient
 {

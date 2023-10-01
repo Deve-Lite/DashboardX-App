@@ -1,5 +1,7 @@
-﻿using MQTTnet.Client;
+﻿using Common.Controls.Models;
+using MQTTnet.Client;
 using MQTTnet.Protocol;
+using Presentation.Brokers;
 using System.Text;
 
 namespace Presentation.Clients;
@@ -10,6 +12,7 @@ public class Client : IAsyncDisposable
     private readonly MqttFactory _factory;
     public readonly ITopicService TopicService;
     public readonly IMqttClient MqttService;
+    public readonly IBrokerService BrokerService;
 
     public string Id => Broker.Id;
     public bool IsConnected { get; set; }
@@ -19,12 +22,14 @@ public class Client : IAsyncDisposable
 
     public Func<Task> RerenderPage { get; set; }
 
-    public Client(ILocalStorageService storage, ILogger<Client> clientLogger, MqttFactory factory, Broker broker)
+    public Client(ILocalStorageService storage, ILogger<Client> clientLogger, IBrokerService brokerService,  MqttFactory factory, Broker broker)
     {
         Broker = broker;
         MqttService = factory.CreateMqttClient();
+        BrokerService = brokerService;
 
         TopicService = new TopicService(storage);
+
         _factory = factory;
         _logger = clientLogger;
 
@@ -68,7 +73,7 @@ public class Client : IAsyncDisposable
     {
         try
         {
-            var options = Options();
+            var options = await Options();
             var response = await MqttService.ConnectAsync(options);
             IsConnected = true;
 
@@ -104,6 +109,7 @@ public class Client : IAsyncDisposable
 
         Devices.Remove(device);
     }
+
     /// <summary>
     /// Unsubscribes from control topic and removes it from device controls collection.
     /// </summary>
@@ -115,8 +121,48 @@ public class Client : IAsyncDisposable
         var device = Devices.First(x => x.Id == deviceId);
         var control = device.Controls.First(x => x.Id == controlId);
         var topic = await TopicService.RemoveTopic(Broker.Id, device, control);
-        await MqttService.UnsubscribeAsync(topic);
+        
+        if(IsConnected)
+        {
+            try 
+            { 
+                await MqttService.UnsubscribeAsync(topic); 
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Failed to unsubscribe: {e}");
+            }
+        }
+
         device.Controls.Remove(control);
+    }
+
+    public async Task<bool> Resubscibe(Device device, Control newControl)
+    {
+        try
+        {
+            var control = device.Controls.First(x => x.Id == newControl.Id);
+
+            var oldTopic = await TopicService.RemoveTopic(Broker.Id, device, control);
+            var topic = await TopicService.AddTopic(Broker.Id, device, control);
+
+            control.Update(newControl);
+
+            var result = await MqttService.SubscribeAsync(topic, control.QualityOfService);
+
+            if (IsConnected)
+            {
+                await MqttService.UnsubscribeAsync(topic);
+                await MqttService.SubscribeAsync(topic, control.QualityOfService);
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("." + ex.Message);
+            return false;
+        }
     }
 
     /// <summary>
@@ -230,15 +276,19 @@ public class Client : IAsyncDisposable
 
     #region Privates
 
-    private MqttClientOptions Options()
+    private async Task<MqttClientOptions> Options()
     {
         var optionsBuilder = _factory.CreateClientOptionsBuilder()
             .WithClientId(Broker.ClientId)
             .WithWebSocketServer($"wss://{Broker.Server}:{Broker.Port}/mqtt")
             .WithCleanSession(false);
 
-        if (!string.IsNullOrEmpty(Broker.Username) && !string.IsNullOrEmpty(Broker.Password))
-            optionsBuilder = optionsBuilder.WithCredentials(Broker.Username, Broker.Password);
+        var result = await BrokerService.GetBrokerCredentials(Broker.Id);
+
+        //TODO: Notify about problem
+
+        if (result.Succeeded && !string.IsNullOrEmpty(result.Data.Username) && !string.IsNullOrEmpty(result.Data.Password))
+            optionsBuilder = optionsBuilder.WithCredentials(result.Data.Username, result.Data.Password);
 
         return optionsBuilder.Build();
     }

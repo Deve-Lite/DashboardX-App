@@ -1,34 +1,21 @@
-﻿<MudPaper Elevation="5" 
-          Class="p-2 m-0 rounded-circle"
+﻿@using Presentation.Utils;
+<MudPaper Elevation="5" 
+          Class="@($"{Padding} m-0 rounded-circle")"
           Style="@($"background-color: {GetBackgroundColor()};")">
     <MudIcon Class="p-0 m-0"
              Size="IconSize"
-             Icon="@GetIcon()"/>
+             Icon="@IconUtils.GetIcon(Icon?.Name!)"/>
 </MudPaper>
 
 @code 
 {
-
     [Parameter]
-    public string BackgroundColor { get; set; } = string.Empty;
-    [Parameter]
-    public string Icon { get; set; } = string.Empty;
+    public Icon Icon { get; set; } = new();
     [Parameter]
     public Size IconSize { get; set; } = Size.Medium;
 
+    public string Padding { get; set; } = "p-2";
     public string DefaultColor { get; set; } = string.Empty;
 
-    public string GetIcon()
-    {
-        if (string.IsNullOrEmpty(Icon))
-            return @Icons.Material.Filled.Home;
-
-        if (!IconUtils.IconList.ContainsKey(Icon))
-            return @Icons.Material.Filled.Home;
-
-        return IconUtils.IconList[Icon];
-    }
-
-    public string GetBackgroundColor() => string.IsNullOrEmpty(BackgroundColor) ? ThemeColors.ColorPrimary : BackgroundColor;
-    
+    public string GetBackgroundColor() => string.IsNullOrEmpty(Icon.BackgroundHex) ? ThemeColors.ColorPrimary : Icon.BackgroundHex;
 }

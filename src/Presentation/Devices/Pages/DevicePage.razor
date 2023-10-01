@@ -1,4 +1,5 @@
 ﻿@page "/devices/{DeviceId}/{ClientId}"
+@using Presentation.Brokers
 @using Presentation.Controls.Dialogs
 @using Presentation.Controls;
 
@@ -8,145 +9,138 @@
 
 @implements IDisposable
 
-@if (_loadingService.IsLoading)
-{
-    <div> Loading... </div>
-}
-else if (!LoadedSuccessfully)
-{
-    <div>
-        Failed to load... TODO: Refresh button
-    </div>
-}
-else if (IsMobile)
-{
+@inherits BasePage
 
-}
-else
-{
-    <MudGrid Class="m-0 p-3 w-100">
-        <MudItem xs="6" Class="p-0 pt-3 pb-3 m-0">
-            <MudButton OnClick="async() => await _runtime.GoBack()"
-                       Color="Color.Dark"
-                       Variant="Variant.Filled"
-                       StartIcon="@Icons.Material.Filled.ArrowBackIos">
-                @_localizer["Back"]
-            </MudButton>
-        </MudItem>
+<PageLoading FailedToLoad="!LoadedSuccessfully">
+    <FailedToLoadContent>
+        <RefreshPageButton RefreshPage="LoadPage" />
+    </FailedToLoadContent>
+    <LoadedContent>
+        <MudGrid Class="m-0 p-3 w-100">
+            <MudItem xs="6" Class="p-0 pt-3 pb-3 m-0">
+                <MudButton OnClick="async() => await _runtime.GoBack()"
+                           Color="Color.Dark"
+                           Variant="Variant.Filled"
+                           StartIcon="@Icons.Material.Filled.ArrowBackIos">
+                    @_localizer["Back"]
+                </MudButton>
+            </MudItem>
 
-        <MudItem xs="6" Class="d-flex p-0 pt-3 pb-3 m-0 justify-content-end">
+            <MudItem xs="6" Class="d-flex p-0 pt-3 pb-3 m-0 justify-content-end">
 
-            <MudButton OnClick="async() => await ControlPagesUtils.AddControl(_dialogService, DeviceId, StateHasChanged, _localizer)"
-                       Color="Color.Primary"
-                       Variant="Variant.Filled"
-                       StartIcon="@Icons.Material.Filled.AddToQueue">
-                @_localizer["Add Control"]
-            </MudButton>
+                <MudButton OnClick="async() => await ControlPagesUtils.AddControl(_dialogService, DeviceId, StateHasChanged, _localizer, ClientId)"
+                           Color="Color.Primary"
+                           Variant="Variant.Filled"
+                           StartIcon="@Icons.Material.Filled.AddToQueue">
+                    @_localizer["Add Control"]
+                </MudButton>
 
-        </MudItem>
+            </MudItem>
 
-        <MudItem xs="12" sm="12" md="9" lg="7" xl="5" xxl="4"
-                 Class="p-0 m-0 pt-4 pb-5 mud-w-auto">
-            <MudCard Elevation="5"
-                     Class="m-0 p-4 rounded-2">
-                <MudCardContent Class="p-0 m-0">
-                    <MudGrid Class="m-0 p-0 w-100">
+            <MudItem xs="12" sm="12" md="9" lg="7" xl="5" xxl="4"
+                     Class="p-0 m-0 pt-4 pb-5 mud-w-auto">
+                <MudCard Elevation="5"
+                         Class="m-0 p-4 rounded-2">
+                    <MudCardContent Class="p-0 m-0">
+                        <MudGrid Class="m-0 p-0 w-100">
 
-                        <MudItem xs="12">
-                            <MudText Typo="Typo.h6" Align="Align.Center"> @Device.Name</MudText>
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.h6" Align="Align.Center"> @Device.Name</MudText>
+                            </MudItem>
+
+                            <MudItem xs="6" sm="5" md="4" lg="3" xl="2" Class="m-0 p-1">
+                                <MudText Typo="Typo.button" Class="p-1 pl-0 m-0">
+                                    @_localizer["Placing"]
+                                </MudText>
+                                <MudText Class="hide-overlapping-text">
+                                    @Device.Placing
+                                </MudText>
+                            </MudItem>
+
+                            <MudItem xs="6" sm="5" md="4" lg="3" xl="2" Class="m-0 p-1">
+                                <MudText Typo="Typo.button" Class="p-1 pl-0 m-0">
+                                    @_localizer["Base Path"]
+                                </MudText>
+                                <MudText Class="hide-overlapping-text">
+                                    @(string.IsNullOrEmpty(Device.BaseDevicePath) ? _localizer["Base path not provided."] : Device.BaseDevicePath)
+                                </MudText>
+                            </MudItem>
+
+                            <MudItem xs="6" sm="5" md="4" lg="3" xl="2" Class="m-0 p-1">
+                                <MudText Typo="Typo.button" Class="p-1 pl-0 m-0">
+                                    @_localizer["Broker"]
+                                </MudText>
+                                <MudText Class="hide-overlapping-text">
+                                    @Client!.Broker.Name
+                                </MudText>
+                            </MudItem>
+
+                            <MudItem xs="6" sm="5" md="4" lg="3" xl="2" xxl="1" Class="m-0 p-1">
+                                <MudText Typo="Typo.button" Class="p-1 pl-0 m-0">
+                                    @_localizer["Keep Alive"]
+                                </MudText>
+
+                                <MudText Class="hide-overlapping-text">
+                                    @Client!.Broker.KeepAlive
+                                </MudText>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+
+                    <MudItem xs="12" Class="p-0 pt-2 pb-2 m-0">
+                        <MudProgressLinear Size="Size.Small" Color="Color.Tertiary" Rounded="true" Value="100" />
+                    </MudItem>
+
+                    <MudCardActions Class="p-0 m-0">
+                        <MudButton Class="z-10 m-0"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   OnClick="() => DevicePagesUtils.UpdateDevice(Device, _dialogService, StateHasChanged, _localizer)">
+                            @_localizer["Edit"]
+                        </MudButton>
+
+                        <MudButton Class="z-10 m-0 ml-2"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   Href="@($"brokers/{Client!.Id}")">
+                            @_localizer["Broker"]
+                        </MudButton>
+
+                        <MudButton Class="z-10 m-0 ml-2 mr-2"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Error"
+                                   OnClick="() => DevicePagesUtils.RemoveDevice(Device, _dialogService, _localizer, _navigationManager, _runtime)">
+                            @_localizer["Delete"]
+                        </MudButton>
+
+                        <BrokerConnectionSwitch Client="Client" />
+
+                    </MudCardActions>
+
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" Class="p-0 pt-4 pb-4 m-0">
+                <MudProgressLinear Size="Size.Small" Color="Color.Tertiary" Rounded="true" Value="100" />
+            </MudItem>
+
+            <MudItem xs="12" Class="p-0 pt-4 pb-4 m-0 d-flex">
+
+                <MudElement Class="p-1 m-0 d-flex w-100 flex-animate flex-list-justify">
+                    @foreach (var control in Device.Controls)
+                    {
+                        <MudItem Class="p-1 m-0">
+                            <ControlFactory Client="@Client"
+                                            Device="@Device"
+                                            Control="@control"
+                                            RefreshList="StateHasChanged"/>
                         </MudItem>
-
-                        <MudItem xs="6" sm="5" md="4" lg="3" xl="2" Class="m-0 p-1">
-                            <MudText Typo="Typo.button" Class="p-1 pl-0 m-0">
-                                @_localizer["Placing"]
-                            </MudText>
-                            <MudText Class="hide-overlapping-text">
-                                @Device.Placing
-                            </MudText>
-                        </MudItem>
-
-                        <MudItem xs="6" sm="5" md="4" lg="3" xl="2" Class="m-0 p-1">
-                            <MudText Typo="Typo.button" Class="p-1 pl-0 m-0">
-                                @_localizer["Base Path"]
-                            </MudText>
-                            <MudText Class="hide-overlapping-text">
-                                @(string.IsNullOrEmpty(Device.BaseDevicePath) ? _localizer["Base path not provided."] : Device.BaseDevicePath)
-                            </MudText>
-                        </MudItem>
-
-                        <MudItem xs="6" sm="5" md="4" lg="3" xl="2" Class="m-0 p-1">
-                            <MudText Typo="Typo.button" Class="p-1 pl-0 m-0">
-                                @_localizer["Broker"]
-                            </MudText>
-                            <MudText Class="hide-overlapping-text">
-                                @Client!.Broker.Name
-                            </MudText>
-                        </MudItem>
-
-                        <MudItem xs="6" sm="5" md="4" lg="3" xl="2" xxl="1" Class="m-0 p-1">
-                            <MudText Typo="Typo.button" Class="p-1 pl-0 m-0">
-                                @_localizer["Keep Alive"]
-                            </MudText>
-
-                            <MudText Class="hide-overlapping-text">
-                                @Client!.Broker.KeepAlive
-                            </MudText>
-                        </MudItem>
-                    </MudGrid>
-                </MudCardContent>
-
-                <MudItem xs="12" Class="p-0 pt-2 pb-2 m-0">
-                    <MudProgressLinear Size="Size.Small" Color="Color.Tertiary" Rounded="true" Value="100" />
-                </MudItem>
-
-                <MudCardActions Class="p-0 m-0">
-                    <MudButton Class="z-10 m-0"
-                               Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               OnClick="() => DevicePagesUtils.UpdateDevice(Device, _dialogService, StateHasChanged, _localizer)">
-                        @_localizer["Edit"]
-                    </MudButton>
-
-                    <MudButton Class="z-10 m-0 ml-2"
-                               Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               Href="@($"brokers/{Client!.Id}")">
-                        @_localizer["Broker"]
-                    </MudButton>
-
-                    <MudButton Class="z-10 m-0 ml-2 mr-2"
-                               Variant="Variant.Filled"
-                               Color="Color.Error"
-                               OnClick="() => DevicePagesUtils.RemoveDevice(Device, _dialogService, _localizer, _navigationManager)">
-                        @_localizer["Delete"]
-                    </MudButton>
-
-                    <BrokerConnectionSwitch Client="Client" />
-
-                </MudCardActions>
-
-            </MudCard>
-        </MudItem>
-
-        <MudItem xs="12" Class="p-0 pt-4 pb-4 m-0">
-            <MudProgressLinear Size="Size.Small" Color="Color.Tertiary" Rounded="true" Value="100" />
-        </MudItem>
-
-        <MudItem xs="12" Class="p-0 pt-4 pb-4 m-0">
-
-            @foreach (var control in Device.Controls)
-            {
-               <MudItem xs="6" sm="5" md="4" lg="3" xl="2" xxl="1">
-                   <ControlFactory Client="@Client"  
-                       Device="@Device" 
-                       Control="@control"/>
-               </MudItem>
-            }
-        </MudItem>
-    </MudGrid>
-}
-
-
+                    }
+                </MudElement>
+            </MudItem>
+        </MudGrid>
+    </LoadedContent>
+</PageLoading>
 
 @code {
 
@@ -155,16 +149,17 @@ else
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
 
-    public bool IsMobile { get; set; }
-    public bool LoadedSuccessfully { get; set; } = true;
-
     public Client? Client { get; set; }
     public Device Device { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
-        IsMobile = false; //TODO: Uncoment = await _runtime.IsMobile();
+        await LoadPage();
+        await base.OnInitializedAsync();
+    }
 
+    public async Task LoadPage()
+    {
         if (_loadingService.IsLoading)
             return;
 
@@ -179,6 +174,10 @@ else
             LoadedSuccessfully = true;
             Device = Client.Devices.FirstOrDefault(x => x.Id == DeviceId)!;
         }
+        else
+        {
+            LoadedSuccessfully = false;
+        }
 
         if (result.ShowToast)
             foreach (var message in result.Messages)
@@ -186,12 +185,13 @@ else
 
         _loadingService.HideLoading();
 
-        await base.OnInitializedAsync();
+        StateHasChanged();
     }
 
     public void Dispose()
     {
-        Client!.RerenderPage -= Rerender;
+#pragma warning disable CS8601
+        Client!.RerenderPage -= Rerender!;
     }
 
     private Task Rerender()

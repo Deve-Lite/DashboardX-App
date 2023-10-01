@@ -1,30 +1,42 @@
-﻿@inject IStringLocalizer<RemoveBrokerDialog> _localizer;
+﻿@using Presentation.Utils;
+@inject IStringLocalizer<RemoveBrokerDialog> _localizer;
 @inject IClientService _clientService;
 
-
-<MudDialog Title="Removing Broker">
+<MudDialog>
     <DialogContent>
-        <MudText>@_localizer["Are you sure you want to remove this broker?"]</MudText>
-        <MudText Class="hide-overlapping-text">@_localizer["Server name:"] @Broker.Name</MudText>
-        <MudText Class="hide-overlapping-text">@_localizer["Server url:"] @Broker.Server</MudText>
-        <MudText Class="hide-overlapping-text">@_localizer["Client id:"] @Broker.ClientId</MudText>
+        <DialogLoading IsLoading="IsLoading">
+            <LoadedContent>
+                <MudText>@_localizer["Are you sure you want to remove this broker?"]</MudText>
+                <MudText Class="hide-overlapping-text">@_localizer["Server name:"] @Broker.Name</MudText>
+                <MudText Class="hide-overlapping-text">@_localizer["Server url:"] @Broker.Server</MudText>
+                <MudText Class="hide-overlapping-text">@_localizer["Client id:"] @Broker.ClientId</MudText>
+            </LoadedContent>
+        </DialogLoading>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">@_localizer["Cancel"]</MudButton>
+        <MudButton OnClick="Cancel"
+                   Disabled="IsLoading">
+            @_localizer["Cancel"]
+        </MudButton>
         <MudButton OnClick="RemoveAsync"
+                   Disabled="IsLoading"
                    ButtonType="ButtonType.Submit"
                    Variant="Variant.Filled"
-                   Color="Color.Error">@_localizer["Remove"] </MudButton>
+                   Color="Color.Error">
+            @_localizer["Remove"]
+        </MudButton>
     </DialogActions>
 </MudDialog>
 
-@code 
+@code
 {
     [CascadingParameter]
     private MudDialogInstance? Dialog { get; set; }
 
     [Parameter]
     public Broker Broker { get; set; } = new();
+
+    public bool IsLoading { get; set; }
 
     private void Cancel() => Dialog!.Cancel();
 
@@ -33,24 +45,20 @@
         if (string.IsNullOrEmpty(Broker.Id))
             return;
 
-        if (_loadingService.IsLoading)
+        if (IsLoading)
             return;
 
-        _loadingService.ShowLoading();
+        IsLoading = true;
 
         var result = await _clientService.RemoveClient(Broker.Id);
-        
-        _loadingService.HideLoading();
 
-        await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnRemoved);
+        var success = RequestHelpers.InvokeAfterRequest(_snackbar, result, _localizer["Successfully removed broker."]);
+
+        IsLoading = false;
+
+        if (!success)
+            return;
 
         Dialog!.Close(DialogResult.Ok(result));
     }
-
-    private Task OnRemoved()
-    {
-        _snackbar.Add("Successfully removed broker.", MudBlazor.Severity.Success, config => { config.ShowCloseIcon = false; });
-        return Task.CompletedTask;
-    }
-
 }

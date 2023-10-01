@@ -1,14 +1,18 @@
-﻿namespace Presentation.Shared;
+﻿namespace Presentation.Utils;
 
 public class IconUtils
 {
-    public static string DefualtIcon = Icons.Material.Filled.Home;
+    //Icons for direct use
+    public const string DefaultEditIcon = Icons.Material.Filled.Edit;
 
-    public static string DefaultEditIcon = Icons.Material.Filled.Edit;
+    public const string DefaultRemoveIcon = Icons.Material.Filled.Delete;
+    public const string DefaultRefresh = Icons.Material.Filled.Refresh;
 
-    public static string DefaultRemoveIcon = Icons.Material.Filled.Delete;
+    //Icons for indirect use
 
-    public static Dictionary<string, string> IconList = new Dictionary<string, string>()
+    public const string DefualtIcon = "Home";
+
+    private static Dictionary<string, string> iconDictionary = new()
     {
         { "Home", Icons.Material.Filled.Home },
         { "HomeMini", Icons.Material.Filled.HomeMini },
@@ -52,4 +56,19 @@ public class IconUtils
         { "LaptopMac", Icons.Material.Filled.LaptopMac},
         { "LaptopWindows", Icons.Material.Filled.LaptopWindows},
     };
+
+    public static Dictionary<string, string> AvailableIcons => iconDictionary;
+
+    public static bool ContainsIcon(string name) => iconDictionary.ContainsKey(name);
+
+    public static string GetIcon(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            return @Icons.Material.Filled.Home;
+
+        if (!iconDictionary.ContainsKey(name))
+            return @Icons.Material.Filled.Home;
+
+        return iconDictionary[name];
+    }
 }

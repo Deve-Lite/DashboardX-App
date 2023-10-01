@@ -55,6 +55,7 @@ public class ClientService : IClientService
         var usedClients = new HashSet<string>();
 
         var devicesGroups = devicesResult.Data
+            .Where(x => !string.IsNullOrEmpty(x.BrokerId))
             .GroupBy(x => x.BrokerId)
             .ToDictionary(group => group.Key, group => group.ToList());
 
@@ -65,7 +66,7 @@ public class ClientService : IClientService
             var client = _clients.FirstOrDefault(x => x.Id == broker.Id);
             if (client is null)
             {
-                var newClient = new Client(_storageService, _clientLogger, _factory, broker);
+                var newClient = new Client(_storageService, _clientLogger, _brokerService, _factory, broker);
                 _clients.Add(newClient);
                 client = newClient;
             }
@@ -111,7 +112,7 @@ public class ClientService : IClientService
             var client = _clients.FirstOrDefault(x => x.Id == broker.Id);
             if (client is null)
             {
-                var newClient = new Client(_storageService, _clientLogger, _factory, broker);
+                var newClient = new Client(_storageService, _clientLogger, _brokerService, _factory, broker);
                 _clients.Add(newClient);
             }
             else if (client.Broker.EditedAt != broker.EditedAt)
@@ -137,7 +138,7 @@ public class ClientService : IClientService
     public async Task<Result<Client>> GetClient(string brokerId)
     {
         var brokerTask = _brokerService.GetBroker(brokerId);
-        var deviceTask = _brokerService.GetBrokerDevices(brokerId);
+        var deviceTask = _deviceService.GetDevices(brokerId);
 
         await Task.WhenAll(brokerTask, deviceTask);
 
@@ -154,7 +155,7 @@ public class ClientService : IClientService
 
         if (client is null)
         {
-            var newClient = new Client(_storageService, _clientLogger, _factory, brokerResult.Data);
+            var newClient = new Client(_storageService, _clientLogger, _brokerService, _factory, brokerResult.Data);
 
             var failedConnections = await UpdateClientDevices(newClient, deviceResult.Data);
 
@@ -177,7 +178,7 @@ public class ClientService : IClientService
         return Result<Client>.Warning(client, message: $"Failed to subsribe {failConnections} topics.");
     }
 
-    public async Task<Result<Client>> UpdateClient(Broker broker)
+    public async Task<Result<Client>> UpdateClient(BrokerDTO broker)
     {
         var result = await _brokerService.UpdateBroker(broker);
 
@@ -209,13 +210,13 @@ public class ClientService : IClientService
         return Result.Fail(result.Messages, result.StatusCode);
     }
 
-    public async Task<Result<Client>> CreateClient(Broker broker)
+    public async Task<Result<Client>> CreateClient(BrokerDTO broker)
     {
         var result = await _brokerService.CreateBroker(broker);
 
         if (result.Succeeded)
         {
-            var client = new Client(_storageService, _clientLogger, _factory, result.Data);
+            var client = new Client(_storageService, _clientLogger, _brokerService, _factory, result.Data);
             _clients.Add(client);
 
             return Result<Client>.Success(client, result.StatusCode);
@@ -244,7 +245,7 @@ public class ClientService : IClientService
         return Result.Fail(result.Messages, result.StatusCode);
     }
 
-    public async Task<Result<Device>> CreateDeviceForClient(Device device)
+    public async Task<Result<Device>> CreateDeviceForClient(DeviceDTO device)
     {
         var result = await _deviceService.CreateDevice(device);
 
@@ -259,18 +260,24 @@ public class ClientService : IClientService
         return Result<Device>.Fail(result.Messages, result.StatusCode);
     }
 
-    public async Task<Result<Device>> UpdateDeviceForClient(Device device)
+    public async Task<Result<Device>> UpdateDeviceForClient(DeviceDTO device)
     {
         var result = await _deviceService.UpdateDevice(device);
 
         if (result.Succeeded)
         {
+            //TODO: Optimize edit
             var client = _clients.First(x => x.Id == device.BrokerId);
 
-            var unsuccessfullConnections = await UpdateClientDevices(client, new List<Device> { result.Data });
+            var devicesResult = await _deviceService.GetDevices(device.BrokerId);
+
+            if (!devicesResult.Succeeded)
+                return Result<Device>.Fail();
+
+            var unsuccessfullConnections = await UpdateClientDevices(client, devicesResult.Data);
 
             if (unsuccessfullConnections == 0)
-                return (Result<Device>)Result.Success(result.StatusCode);
+                return Result<Device>.Success(result.Data);
 
             return Result<Device>.Warning(message: $"Failed to subsribe {unsuccessfullConnections} topics.");
         }
@@ -284,7 +291,7 @@ public class ClientService : IClientService
 
     public async Task<Result> RemoveControlFromDevice(string clientId, string deviceId, Control control)
     {
-        var result = await _deviceService.RemoveDeviceControls(deviceId, new List<string> { clientId });
+        var result = await _deviceService.RemoveDeviceControls(deviceId, control.Id);
 
         if (result.Succeeded)
         {
@@ -306,7 +313,6 @@ public class ClientService : IClientService
             var client = _clients.First(x => x.Id == clientId);
             var device = client.Devices.First(x => x.Id == deviceId);
 
-
             if (!await client.SubscribeAsync(device, control))
                 return Result.Fail(new List<string> { "Failed to subscribe message however, control was created." }, result.StatusCode);
 
@@ -324,7 +330,8 @@ public class ClientService : IClientService
         {
             var client = _clients.First(x => x.Id == clientId);
             var device = client.Devices.First(x => x.Id == deviceId);
-            await client.UnsubscribeAsync(deviceId, control.Id);
+
+            await client.Resubscibe(device, control);
 
             return Result.Success(result.StatusCode);
         }
@@ -409,7 +416,7 @@ public class ClientService : IClientService
             usedDevices.Add(device.Id);
         }
 
-        foreach (var device in client.Devices)
+        foreach (var device in client.Devices.ToList())
             if (!usedDevices.Contains(device.Id))
                 client.Devices.Remove(device);
 

@@ -4,8 +4,8 @@ public interface IBrokerService
 {
     Task<IResult<Broker>> GetBroker(string id);
     Task<IResult<List<Broker>>> GetBrokers();
-    Task<IResult<List<Device>>> GetBrokerDevices(string brokerId);
-    Task<IResult<Broker>> CreateBroker(Broker broker);
-    Task<IResult<Broker>> UpdateBroker(Broker broker);
+    Task<IResult<BrokerCredentials>> GetBrokerCredentials(string id);
+    Task<IResult<Broker>> CreateBroker(BrokerDTO broker);
+    Task<IResult<Broker>> UpdateBroker(BrokerDTO broker);
     Task<IResult> RemoveBroker(string id);
 }

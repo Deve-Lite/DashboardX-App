@@ -1,20 +1,25 @@
-﻿@inject IStringLocalizer<ControlFactory> _localizer;
+﻿@using Presentation.Controls.Implementations
+@using Presentation.Controls.Implementations.SliderComponents
+@using Presentation.Utils;
+@inject IStringLocalizer<ControlFactory> _localizer;
 
-<MudGrid Class="p-0 m-0">
+<MudPaper Class="p-0 m-0 w-100 d-flex" Style="border-radius: 1rem;">
 
-    <MudItem xs="3" Class="p-1 m-0">
+    <MudElement Class="p-0 m-0 d-flex flex-column flex-wrap justify-content-center align-items-center" Style="width:80px;">
 
-        <MudIconButton Size="Size.Medium" 
+        <MudIconButton Size="Size.Medium"
                        Icon="@IconUtils.DefaultEditIcon"
+                       Class="m-0"
                        OnClick="async() => await ControlPagesUtils.UpdateControl(_dialogService, Control!, Client!.Id, StateHasChanged, _localizer)" />
 
         <MudIconButton Size="Size.Medium"
-                       Icon="@IconUtils.DefaultRemoveIcon" 
-                       OnClick="async() => await ControlPagesUtils.RemoveControl(_dialogService, Control!, Client!.Id, _localizer)" />
+                       Icon="@IconUtils.DefaultRemoveIcon"
+                       Class="m-0"
+                       OnClick="async() => await ControlPagesUtils.RemoveControl(_dialogService, Control!, Client!.Id, _localizer, RefreshList!)" />
 
-    </MudItem>
+    </MudElement>
 
-    <MudItem xs="9" Class="p-1 m-0">
+    <MudElement Class="p-0 m-0 d-flex w-100 justify-content-center align-items-center">
         @if (Control!.Type == ControlType.State)
         {
             <!--TODO: Thinkof state control placing -->
@@ -23,16 +28,20 @@
         {
             <ButtonControl Client="@Client" Device="@Device" Control="@Control" />
         }
+        else if (Control!.Type == ControlType.Slider)
+        {
+            <SliderControl Client="@Client" Device="@Device" Control="@Control" />
+        }
         else
         {
             <MudText>
                 @_localizer["Sorry this control is not yet implemented."]
             </MudText>
         }
-    </MudItem>
-</MudGrid>
+    </MudElement>
+</MudPaper>
 
-@code 
+@code
 {
 
     [Parameter]
@@ -44,4 +53,6 @@
     [Parameter]
     public Device? Device { get; set; }
 
+    [Parameter]
+    public Action? RefreshList { get; set; }
 }

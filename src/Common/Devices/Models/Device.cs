@@ -11,15 +11,12 @@ public class Device : BaseModel
     public string Placing { get; set; } = string.Empty;
 
     [JsonPropertyName("icon")]
-    public string Icon { get; set; } = "default.png";
-
-    [JsonPropertyName("iconBackgroundColor")]
-    public string IconBackgroundColor { get; set; } = string.Empty;
+    public Icon Icon { get; set; } = new();
 
     [JsonPropertyName("brokerId")]
     public string BrokerId { get; set; } = string.Empty;
 
-    [JsonPropertyName("baseDevicePath")]
+    [JsonPropertyName("basePath")]
     public string BaseDevicePath { get; set; } = string.Empty;
 
     [JsonPropertyName("updatedAt")]
@@ -36,20 +33,8 @@ public class Device : BaseModel
         BaseDevicePath = BaseDevicePath,
         BrokerId = BrokerId,
         Icon = Icon,
-        IconBackgroundColor = IconBackgroundColor,
         Name = Name,
-        Placing = Placing
-    };
-
-    public Device Copy() => new()
-    {
-        BaseDevicePath = BaseDevicePath,
-        BrokerId = BrokerId,
-        EditedAt = EditedAt,
-        Icon = Icon,
-        IconBackgroundColor = IconBackgroundColor,
         Id = Id,
-        Name = Name,
         Placing = Placing
     };
 }

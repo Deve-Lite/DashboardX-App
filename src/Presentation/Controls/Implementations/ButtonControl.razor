@@ -1,0 +1,57 @@
+﻿@using Presentation.Utils;
+@inherits BaseControl
+
+@inject IStringLocalizer<ButtonControl> _localizer;
+
+
+<MudCard Elevation="1"
+         Class="container container-fit-content p-0 m-0 w-100 h-100"
+         Style="@($"border: 1px solid {GetBorderBackgroundColor()}; border-radius: 1rem; background-color: {GetBackgroundColor()};")">
+    <MudButton Class="p-0 m-0 w-100 h-100 bg-transparent" OnClick="ActionAsync">
+        <MudGrid Class="p-0 m-0 w-100 h-100 d-flex flex-column">
+
+            @if (Control!.DisplayName)
+            {
+                <MudItem xs="12" Class="pl-3 pr-3 m-0 pt-4 pb-3 d-flex justify-content-center align-items-center">
+                    <MudIcon Icon="@IconUtils.GetIcon(Control?.Icon?.Name!)" Size="Size.Large" />
+                </MudItem>
+
+                <MudItem xs="12" Class="p-1 d-flex justify-content-center align-items-center hide-overlapping-text">
+                    <MudText Typo="Typo.body1">
+                        @GetName()
+                    </MudText>
+                </MudItem>
+            }
+            else
+            {
+                <MudItem xs="12" Class="m-0 p-0 h-100 d-flex justify-content-center align-items-center">
+                    <MudElement Class="h-100 w-100">
+                        <MudIcon Icon="@IconUtils.GetIcon(Control?.Icon?.Name!)"
+                                 Size="Size.Large" />
+                    </MudElement>
+                </MudItem>
+            }
+        </MudGrid>
+    </MudButton>
+</MudCard>
+
+@code
+{
+#pragma warning disable CS0108
+    public async Task ActionAsync()
+    {
+        if (!Control!.IsAvailable)
+        {
+            _snackbar.Add(_localizer["Hey, this control is currently off!"]);
+            return;
+        }
+
+        if (!await ConfirmationDialog())
+            return;
+
+        var topic = Control!.GetTopic(Device!);
+
+        await Client!.PublishAsync(topic, Control?.Attributes?.Payload!, Control!.QualityOfService);
+    }
+}
+

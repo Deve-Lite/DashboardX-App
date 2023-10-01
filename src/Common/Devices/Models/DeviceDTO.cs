@@ -1,6 +1,6 @@
 ﻿namespace Common.Devices.Models;
 
-public class DeviceDTO
+public class DeviceDTO : BaseModel
 {
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
@@ -9,15 +9,12 @@ public class DeviceDTO
     public string Placing { get; set; } = string.Empty;
 
     [JsonPropertyName("icon")]
-    public string Icon { get; set; } = "default.png";
-
-    [JsonPropertyName("iconBackgroundColor")]
-    public string IconBackgroundColor { get; set; } = string.Empty;
+    public Icon Icon { get; set; } = new();
 
     [JsonPropertyName("brokerId")]
     public string BrokerId { get; set; } = string.Empty;
 
-    [JsonPropertyName("baseDevicePath")]
+    [JsonPropertyName("basePath")]
     public string BaseDevicePath { get; set; } = string.Empty;
 
 }

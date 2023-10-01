@@ -1,0 +1,104 @@
+﻿@inject IStringLocalizer<ConfirmDialog> _localizer
+@inject IUserService _userService
+
+@inherits BaseFormDialog
+
+<MudDialog>
+    <DialogContent>
+        <DialogLoading IsLoading="IsLoading">
+            <LoadedContent>
+                <MudForm @ref="@Form"
+                         Model="@Model"
+                         Validation="@(Validator.ValidateValue)"
+                         ValidationDelay="0">
+                    <MudGrid Class="p-0 m-0 w-100">
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="Model.Password"
+                                          T="string"
+                                          For="@(() => Model.Password)"
+                                          InputType="@_passwordInput"
+                                          Variant="Variant.Filled"
+                                          Adornment="Adornment.End"
+                                          OnlyValidateIfDirty="true"
+                                          Clearable="true"
+                                          AdornmentIcon="@_passwordInputIcon"
+                                          OnAdornmentClick="TogglePasswordVisibility"
+                                          Label="@_localizer["Password"]"
+                                          HelperText="@_localizer["Provide password for your account."]" />
+                        </MudItem>
+                    </MudGrid>
+                </MudForm>
+            </LoadedContent>
+        </DialogLoading>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel"
+                   Disabled="IsLoading">
+            @_localizer["Cancel"]
+        </MudButton>
+        <MudButton OnClick="RemoveAsync"
+                   Disabled="IsLoading"
+                   Variant="Variant.Filled"
+                   Color="Color.Error">@_localizer["Remove"] </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code
+{
+    private PasswordConfirm Model = new();
+    private PasswordConfirmValidator Validator = new();
+
+    private async Task RemoveAsync()
+    {
+        if (IsLoading)
+            return;
+
+        await Form!.Validate();
+
+        if (!Form.IsValid)
+            return;
+
+        IsLoading = true;
+
+        var result = await _userService.RemoveAccount(Model);
+
+        if (result.Succeeded)
+        {
+            //TODO: Clear local data
+
+            _snackbar.Add(_localizer["Thanks for using our app."], Severity.Info);
+
+            IsLoading = false;
+
+            _navigationManager.NavigateTo("/");
+        }
+
+        _snackbar.Add(_localizer["Failed to remove your account."], Severity.Error);
+
+        IsLoading = false;
+    }
+
+    #region Form
+
+    private bool _passwordVisibility;
+    private InputType _passwordInput = InputType.Password;
+    private string _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
+
+    private void TogglePasswordVisibility()
+    {
+        if (_passwordVisibility)
+        {
+            _passwordVisibility = false;
+            _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
+            _passwordInput = InputType.Password;
+        }
+        else
+        {
+            _passwordVisibility = true;
+            _passwordInputIcon = Icons.Material.Filled.Visibility;
+            _passwordInput = InputType.Text;
+        }
+    }
+
+    #endregion
+}

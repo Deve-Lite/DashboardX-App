@@ -1,5 +1,6 @@
 @page "/"
 @page "/auth/login"
+@using Presentation.Utils;
 
 @attribute [AllowAnonymous]
 @inject IStringLocalizer<LoginPage> _localizer
@@ -9,105 +10,101 @@
 @inject IUserService _userService
 @inject IPrefrenceService _preferenceService
 
-@if (_loadingService.IsLoading)
-{
-    
-}
-else
-{
-    <MudCard Class="container d-flex container-fit-content p-5" Style="border-radius: 1rem;">
-        <MudForm @ref="@form" 
-                 Model="@LoginData"
-                 Validation="@(LoginValidator.ValidateValue)"
-                 ValidationDelay="0">
-            <MudGrid>
+<PageLoading>
+    <LoadedContent>
+        <MudCard Class="container d-flex container-fit-content p-5" Style="border-radius: 1rem;">
+            <MudForm @ref="@form"
+                     Model="@LoginData"
+                     Validation="@(LoginValidator.ValidateValue)"
+                     ValidationDelay="0">
+                <MudGrid>
 
-                <MudItem xs="12">
-                    <MudText Class="text-center"
-                             Color="Color.Primary"
-                             Typo="Typo.h4">
-                        @_localizer["DashboardX"]
-                    </MudText>
-                </MudItem>
-
-                <MudItem xs="12">
-                    <MudText Class="text-center">
-                        @_localizer["Don't know what to do with your custom IoT device? Use It. It is so simple."]
-                    </MudText>
-                </MudItem>
-
-                <MudItem xs="12">
-                    <MudTextField @bind-Value="LoginData.Email"
-                                  T="string"
-                                  OnlyValidateIfDirty="true"
-                                  Variant="Variant.Filled"
-                                  HelperText="@_localizer["Provide email for your account."]"
-                                  Label="@_localizer["Email"]"
-                                  For="@(() => LoginData.Email)" />
-                </MudItem>
-                <MudItem xs="12" Class="h">
-                    <MudTextField @bind-Value="LoginData.Password"
-                                  Label="@_localizer["Password"]"
-                                  HelperText="@_localizer["Provide password for your account."]"
-                                  OnlyValidateIfDirty="true"
-                                  For="@(() => LoginData.Password)"
-                                  Variant="Variant.Filled"
-                                  InputType="@_passwordInput"
-                                  Adornment="Adornment.End"
-                                  AdornmentIcon="@_passwordInputIcon"
-                                  OnAdornmentClick="TogglePasswordVisibility" />
-                </MudItem>
-                <MudItem xs="12" Class="d-flex justify-space-between align-center">
-                    <MudLink Href="/account/forgot-password">@_localizer["Forgot password?"]</MudLink>
-
-                    <MudCheckBox @bind-Checked="RememberMe"
-                                 T="bool"
-                                 Label="@_localizer["Remember Me"]"
+                    <MudItem xs="12">
+                        <MudText Class="text-center"
                                  Color="Color.Primary"
-                                 Class="ml-n1" />
-                </MudItem>
-                <MudItem xs="7">
-
-                </MudItem>
-                <MudItem xs="5" Class="d-flex justify-end">
-                    <MudButton Variant="Variant.Filled"
-                               OnClick="LoginAsync"
-                               Color="Color.Primary"
-                               Size="Size.Large"
-                               EndIcon="@Icons.Material.Filled.Login"
-                               Style="width: 100%;">
-                        @_localizer["Sign In"]
-                    </MudButton>
-
-                </MudItem>
-
-                @if (IsDebug)
-                {
-                    <MudItem xs="12">
-                        <MudButton OnClick="FillAdministratorCredentials"
-                            >@_localizer["Fill Administrator Credentials"]
-                        </MudButton>
+                                 Typo="Typo.h4">
+                            @_localizer["DashboardX"]
+                        </MudText>
                     </MudItem>
+
                     <MudItem xs="12">
-                        <MudButton OnClick="FillBasicUserCredentials">
-                            @_localizer["Login with user Credentials."]
-                        </MudButton>
+                        <MudText Class="text-center">
+                            @_localizer["Don't know what to do with your custom IoT device? Use It. It is so simple."]
+                        </MudText>
                     </MudItem>
-                }
 
-                <MudItem xs="12">
-                    <MudText Class="text-center">
-                        <MudLink Color="Color.Primary" Href="/auth/register" Typo="Typo.h6">
-                            @_localizer["Sign up"]
-                        </MudLink>
-                        @_localizer["now for a smarter tommorow!"]
-                    </MudText>
-                </MudItem>
-            </MudGrid>
-        </MudForm>
-    </MudCard>
-}
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="LoginData.Email"
+                                      T="string"
+                                      OnlyValidateIfDirty="true"
+                                      Variant="Variant.Filled"
+                                      HelperText="@_localizer["Provide email for your account."]"
+                                      Label="@_localizer["Email"]"
+                                      For="@(() => LoginData.Email)" />
+                    </MudItem>
+                    <MudItem xs="12" Class="h">
+                        <MudTextField @bind-Value="LoginData.Password"
+                                      Label="@_localizer["Password"]"
+                                      HelperText="@_localizer["Provide password for your account."]"
+                                      OnlyValidateIfDirty="true"
+                                      For="@(() => LoginData.Password)"
+                                      Variant="Variant.Filled"
+                                      InputType="@_passwordInput"
+                                      Adornment="Adornment.End"
+                                      AdornmentIcon="@_passwordInputIcon"
+                                      OnAdornmentClick="TogglePasswordVisibility" />
+                    </MudItem>
+                    <MudItem xs="12" Class="d-flex justify-space-between align-center">
+                        <MudLink Href="/account/forgot-password">@_localizer["Forgot password?"]</MudLink>
 
+                        <MudCheckBox @bind-Checked="RememberMe"
+                                     T="bool"
+                                     Label="@_localizer["Remember Me"]"
+                                     Color="Color.Primary"
+                                     Class="ml-n1" />
+                    </MudItem>
+                    <MudItem xs="7">
+
+                    </MudItem>
+                    <MudItem xs="5" Class="d-flex justify-end">
+                        <MudButton Variant="Variant.Filled"
+                                   OnClick="LoginAsync"
+                                   Color="Color.Primary"
+                                   Size="Size.Large"
+                                   EndIcon="@Icons.Material.Filled.Login"
+                                   Style="width: 100%;">
+                            @_localizer["Sign In"]
+                        </MudButton>
+
+                    </MudItem>
+
+                    @if (IsDebug)
+                    {
+                        <MudItem xs="12">
+                            <MudButton OnClick="FillAdministratorCredentials">
+                                @_localizer["Fill Administrator Credentials"]
+                            </MudButton>
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudButton OnClick="FillBasicUserCredentials">
+                                @_localizer["Login with user Credentials."]
+                            </MudButton>
+                        </MudItem>
+                    }
+
+                    <MudItem xs="12">
+                        <MudText Class="text-center">
+                            <MudLink Color="Color.Primary" Href="/auth/register" Typo="Typo.h6">
+                                @_localizer["Sign up"]
+                            </MudLink>
+                            @_localizer["now for a smarter tommorow!"]
+                        </MudText>
+                    </MudItem>
+                </MudGrid>
+            </MudForm>
+        </MudCard>
+    </LoadedContent>
+</PageLoading>
 
 @code
 {
@@ -147,11 +144,11 @@ else
             return;
         }
 
+        _loadingService.HideLoading();
+
         var result = await _authenticationService.ReAuthenticate(refreshToken);
 
         await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnSuccessfullLogin);
-
-        _loadingService.HideLoading();
     }
 
     private async Task LoginAsync()
