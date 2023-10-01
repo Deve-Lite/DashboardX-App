@@ -55,6 +55,7 @@ public class ClientService : IClientService
         var usedClients = new HashSet<string>();
 
         var devicesGroups = devicesResult.Data
+            .Where(x => !string.IsNullOrEmpty(x.BrokerId))
             .GroupBy(x => x.BrokerId)
             .ToDictionary(group => group.Key, group => group.ToList());
 
