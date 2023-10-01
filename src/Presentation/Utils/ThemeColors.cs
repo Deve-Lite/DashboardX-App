@@ -28,15 +28,19 @@ public static class ThemeColors
 
         Success = new("00C853"),
         Warning = new("FFAB40"),
-        Error = new("C62828")
+        Error = new("C62828"),
+        Info = new("33b5e5")
     };
 
     private static PaletteDark PaletteDark => new()
     {
         Primary = new("#1ec7a5"),
-
         Secondary = new("212529"),
+        Tertiary = new("#1ec7a5aa"),
 
-        Tertiary = new("#1ec7a5aa")
+        Success = new("007E33"),
+        Warning = new("FF8800"),
+        Error = new("CC0000"),
+        Info = new("0099CC")
     };
 }

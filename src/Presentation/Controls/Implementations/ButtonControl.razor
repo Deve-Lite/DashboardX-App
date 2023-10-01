@@ -1,10 +1,12 @@
 ﻿@using Presentation.Utils;
 @inherits BaseControl
 
+@inject IStringLocalizer<ButtonControl> _localizer;
+
 <MudButton Class="p-0 m-0 w-100 h-100 bg-transparent" OnClick="ActionAsync">
-    <MudCard Elevation="5"
+    <MudCard Elevation="1"
              Class="container container-fit-content p-0 m-0 w-100 h-100"
-             Style="@($"border: 1px solid {Control!.Icon.BackgroundHex}; border-radius: 1rem; background-color: {GetBackgroundColor()};")">
+             Style="@($"border: 1px solid {GetBorderBackgroundColor()}; border-radius: 1rem; background-color: {GetBackgroundColor()};")">
         <MudGrid Class="p-0 m-0 w-100 h-100 d-flex flex-column">
 
             <MudItem xs="12" Class="pl-3 pr-3 m-0 pt-4 pb-3 d-flex justify-content-center align-items-center">
@@ -25,6 +27,12 @@
     #pragma warning disable CS0108
     public async Task ActionAsync()
     {
+        if (!Control!.IsAvailable)
+        {
+            _snackbar.Add(_localizer["Hey, this control is currently off!"]);
+            return;
+        }
+
         if (!await ConfirmationDialog())
             return;
 

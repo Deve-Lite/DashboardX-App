@@ -7,7 +7,6 @@ public partial class BaseControl : ComponentBase
 {
     [Inject]
     protected IStringLocalizer<BaseControl>? Localizer { get; set; }
-
     [Inject]
     protected IDialogService? DialogService { get; set; }
 
@@ -18,7 +17,39 @@ public partial class BaseControl : ComponentBase
     [Parameter]
     public Device? Device { get; set; }
 
-    public string GetBackgroundColor() => $"{Control!.Icon.BackgroundHex}80";
+    [CascadingParameter]
+    protected MudTheme? AppTheme { get; set; }
+
+    [CascadingParameter]
+    private bool IsDarkMode { get; set; }
+
+    public string GetBackgroundColor()
+    {
+        if (!Control!.IsAvailable)
+        {
+            var background = AppTheme!.Palette.DrawerBackground;
+            if (IsDarkMode)
+                background = AppTheme!.PaletteDark.DrawerBackground;
+
+            background.SetAlpha(background.A * 0.5);
+            return background.ToString();
+        }
+
+        return $"{Control!.Icon.BackgroundHex}80";
+    }
+
+    public string GetBorderBackgroundColor()
+    {
+        if (!Control!.IsAvailable)
+        {
+            if (IsDarkMode)
+                return AppTheme!.PaletteDark.Error.ToString();
+
+            return AppTheme!.Palette.Error.ToString();
+        }
+
+        return Control!.Icon.BackgroundHex;
+    }
 
     public string GetName() => string.IsNullOrEmpty(Control?.Name) ? Localizer!["No name"] : Control.Name;
 
