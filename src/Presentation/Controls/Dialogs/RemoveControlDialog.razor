@@ -2,6 +2,7 @@
 @inject IStringLocalizer<RemoveControlDialog> _localizer;
 @inject IClientService _clientService;
 
+@inherits BaseDialog
 
 <MudDialog>
     <DialogContent>
@@ -25,19 +26,12 @@
 
 @code
 {
-    [CascadingParameter]
-    private MudDialogInstance? Dialog { get; set; }
-
     [Parameter]
     public Control Control { get; set; } = new();
     [Parameter]
     public string DeviceId { get; set; } = string.Empty;
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
-
-    public bool IsLoading { get; set; }
-
-    private void Cancel() => Dialog!.Cancel();
 
     private async Task RemoveAsync()
     {

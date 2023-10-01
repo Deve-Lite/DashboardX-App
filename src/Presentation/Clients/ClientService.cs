@@ -312,7 +312,6 @@ public class ClientService : IClientService
             var client = _clients.First(x => x.Id == clientId);
             var device = client.Devices.First(x => x.Id == deviceId);
 
-
             if (!await client.SubscribeAsync(device, control))
                 return Result.Fail(new List<string> { "Failed to subscribe message however, control was created." }, result.StatusCode);
 

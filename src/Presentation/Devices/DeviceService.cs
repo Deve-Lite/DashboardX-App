@@ -3,7 +3,6 @@ using System.Net;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 
-
 namespace Presentation.Devices;
 
 public class DeviceService : AuthorizedService, IDeviceService
@@ -79,16 +78,16 @@ public class DeviceService : AuthorizedService, IDeviceService
 
         var response = await SendAsync<Device>(request);
 
-        if (response.StatusCode == HttpStatusCode.OK)
-        {
-            await _localStorage.UpsertItemToList(DeviceConstants.DevicesListName, response.Data);
-        }
+        //if (response.StatusCode == HttpStatusCode.OK)
+        //{
+        //    await _localStorage.UpsertItemToList(DeviceConstants.DevicesListName, response.Data);
+        //}
 
-        if (response.StatusCode == HttpStatusCode.NotModified)
-        {
-            var list = await _localStorage.GetItemAsync<List<Device>>(DeviceConstants.DevicesListName);
-            response.Data = list.SingleOrDefault(b => b.BrokerId == id)!;
-        }
+        //if (response.StatusCode == HttpStatusCode.NotModified)
+        //{
+        //    var list = await _localStorage.GetItemAsync<List<Device>>(DeviceConstants.DevicesListName);
+        //    response.Data = list.SingleOrDefault(b => b.BrokerId == id)!;
+        //}
 
         return response;
     }
@@ -103,11 +102,11 @@ public class DeviceService : AuthorizedService, IDeviceService
 
         var response = await SendAsync<List<Device>>(request);
 
-        if (response.StatusCode == HttpStatusCode.OK)
-            await _localStorage.SetItemAsync(DeviceConstants.DevicesListName, response.Data);
+        //if (response.StatusCode == HttpStatusCode.OK)
+        //    await _localStorage.SetItemAsync(DeviceConstants.DevicesListName, response.Data);
 
-        if (response.StatusCode == HttpStatusCode.NotModified)
-            response.Data = await _localStorage.GetItemAsync<List<Device>>(DeviceConstants.DevicesListName);
+        //if (response.StatusCode == HttpStatusCode.NotModified)
+        //    response.Data = await _localStorage.GetItemAsync<List<Device>>(DeviceConstants.DevicesListName);
 
         return response;
     }
@@ -133,7 +132,7 @@ public class DeviceService : AuthorizedService, IDeviceService
 
         var device = itemResponse.Data;
 
-        await _localStorage.UpsertItemToList(DeviceConstants.DevicesListName, device);
+        //await _localStorage.UpsertItemToList(DeviceConstants.DevicesListName, device);
 
         return Result<Device>.Success(device, response.StatusCode);
     }
@@ -165,8 +164,7 @@ public class DeviceService : AuthorizedService, IDeviceService
 
         var device = itemResponse.Data;
 
-        await _localStorage.UpsertItemToList(DeviceConstants.DevicesListName, device);
-
+        //await _localStorage.UpsertItemToList(DeviceConstants.DevicesListName, device);
 
         return Result<Device>.Success(device, response.StatusCode);
     }
@@ -181,8 +179,8 @@ public class DeviceService : AuthorizedService, IDeviceService
 
         var response = await SendAsync(request);
 
-        if (response.Succeeded)
-            await _localStorage.RemoveItemFromList<Device>(DeviceConstants.DevicesListName, deviceId);
+        //if (response.Succeeded)
+        //    await _localStorage.RemoveItemFromList<Device>(DeviceConstants.DevicesListName, deviceId);
         
         return response;
     }
@@ -245,14 +243,14 @@ public class DeviceService : AuthorizedService, IDeviceService
 
         control.Id = response.Data.Id;
 
-        try
-        {
-            await _localStorage.UpsertItemToList(ControlStoragePath(control.DeviceId), control);
-        }
-        catch (Exception ex) 
-        {
-            _logger.LogError($"Cache error {ex.Message}");
-        }
+        //try
+        //{
+        //    await _localStorage.UpsertItemToList(ControlStoragePath(control.DeviceId), control);
+        //}
+        //catch (Exception ex) 
+        //{
+        //    _logger.LogError($"Cache error {ex.Message}");
+        //}
 
         return Result<Control>.Success(control, response.StatusCode);
     }

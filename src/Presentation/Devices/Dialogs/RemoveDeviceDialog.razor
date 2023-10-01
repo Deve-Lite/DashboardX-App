@@ -2,6 +2,8 @@
 @inject IStringLocalizer<RemoveDeviceDialog> _localizer;
 @inject IClientService _clientService;
 
+@inherits BaseDialog
+
 <MudDialog>
     <DialogContent>
         <DialogLoading IsLoading="IsLoading">
@@ -29,20 +31,14 @@
 
 @code
 {
-    [CascadingParameter]
-    private MudDialogInstance? Dialog { get; set; }
-
     [Parameter]
     public Device Device { get; set; } = new();
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
 
-    public bool IsLoading { get; set; }
-
-    private void Cancel() => Dialog!.Cancel();
-
     private async Task RemoveAsync()
     {
+
         if (string.IsNullOrEmpty(Device.Id))
             return;
 

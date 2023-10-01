@@ -3,11 +3,13 @@
 @inject IClientService _clientService
 @inject IBrokerService _brokerService
 
+@inherits BaseFormDialog
+
 <MudDialog>
     <DialogContent>
         <DialogLoading IsLoading="IsLoading">
             <LoadedContent>
-                <MudForm @ref="@form"
+                <MudForm @ref="@Form"
                          Model="@Model"
                          Validation="@(DeviceValidator.ValidateValue)"
                          ValidationDelay="0"
@@ -91,9 +93,12 @@
         </DialogLoading>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">@_localizer["Cancel"]</MudButton>
-        <MudButton form="upsertBrokerForm"
-                   OnClick="SubmitAsync"
+        <MudButton OnClick="Cancel"
+                   Disabled="IsLoading">
+                   @_localizer["Cancel"]
+        </MudButton>
+        <MudButton OnClick="SubmitAsync"
+                   Disabled="IsLoading"
                    Variant="Variant.Filled"
                    Color="Color.Primary">@_localizer["Submit"] </MudButton>
     </DialogActions>
@@ -101,9 +106,6 @@
 
 @code
 {
-    [CascadingParameter]
-    private MudDialogInstance? Dialog { get; set; }
-
     [Parameter]
     public DeviceDTO Model { get; set; } = new();
 
@@ -112,9 +114,6 @@
 
     private DeviceValidator DeviceValidator = new();
     private List<Broker> AvaliableBrokers = new();
-    private MudForm? form;
-
-    public bool IsLoading { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -133,7 +132,7 @@
 
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
-        if (form is not null && firstRender && form.IsValid)
+        if (Form is not null && firstRender && Form.IsValid)
             StateHasChanged();
 
         return base.OnAfterRenderAsync(firstRender);
@@ -144,9 +143,9 @@
         if (IsLoading)
             return;
 
-        await form!.Validate();
+        await Form!.Validate();
 
-        if (!form.IsValid)
+        if (!Form.IsValid)
             return;
 
         IsLoading = true;
@@ -170,10 +169,6 @@
         Dialog!.Close(DialogResult.Ok(result));
     }
 
-    private void Cancel() 
-        => Dialog!.Cancel();
-
     private void OnAdded() 
         => _snackbar.Add(_localizer["Success"], MudBlazor.Severity.Success);
-    
 }

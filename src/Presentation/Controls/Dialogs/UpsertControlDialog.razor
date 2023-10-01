@@ -4,6 +4,8 @@
 @inject IClientService _clientService
 @inject IBrokerService _brokerService
 
+@inherits BaseFormDialog
+
 <MudDialog>
     <DialogContent>
         <MudForm @ref="Form"
@@ -161,13 +163,8 @@
     </DialogActions>
 </MudDialog>
 
-
 @code
 {
-
-    [CascadingParameter]
-    private MudDialogInstance? Dialog { get; set; }
-
     [Parameter]
     public Control Control { get; set; } = new();
     [Parameter]
@@ -175,10 +172,7 @@
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
 
-    private MudForm Form = new();
-
     public ControlValidator Validator = new();
-    public bool IsLoading { get; set; }
 
     protected override void OnInitialized()
     {
@@ -191,9 +185,6 @@
         Control.DeviceId = DeviceId;
         base.OnInitialized();
     }
-
-
-    private void Cancel() => Dialog!.Cancel();
 
     private void TypeChanged(ControlType typeSelected)
     {

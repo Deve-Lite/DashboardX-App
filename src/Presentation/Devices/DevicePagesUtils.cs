@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 using Presentation.Devices.Dialogs;
+using System.Text.RegularExpressions;
 
 namespace Presentation.Devices;
 
@@ -52,7 +52,16 @@ public class DevicePagesUtils
         var x = result.Data as Result ?? Result.Fail(message: localizer["Couldn't parse response."]);
 
         if (x.Succeeded)
+        {
+            var currentPage = _navigationManager.Uri;
+            string deviceListPagePattern = @".*/devices$";
+            string brokerPagePattern = @".*/brokers/.*";
+
+            if (new Regex(brokerPagePattern).IsMatch(currentPage) || new Regex(deviceListPagePattern).IsMatch(currentPage))
+                return;
+
             await runtime.GoBack();
+        }
     }
 
     public static async Task AddDevice(Action refreshUI,

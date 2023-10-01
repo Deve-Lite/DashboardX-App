@@ -26,11 +26,11 @@ public class BrokerService : AuthorizedService, IBrokerService
 
         var response = await SendAsync<List<Broker>>(request);
 
-        if (response.StatusCode == HttpStatusCode.OK)
-            await _localStorage.SetItemAsync(BrokerConstraints.BrokerListName, response.Data);
+        //if (response.StatusCode == HttpStatusCode.OK)
+        //    await _localStorage.SetItemAsync(BrokerConstraints.BrokerListName, response.Data);
 
-        if (response.StatusCode == HttpStatusCode.NotModified)
-            response.Data = await _localStorage.GetItemAsync<List<Broker>>(BrokerConstraints.BrokerListName);
+        //if (response.StatusCode == HttpStatusCode.NotModified)
+        //    response.Data = await _localStorage.GetItemAsync<List<Broker>>(BrokerConstraints.BrokerListName);
 
         return response;
     }
@@ -45,14 +45,14 @@ public class BrokerService : AuthorizedService, IBrokerService
 
         var response = await SendAsync<Broker>(request);
 
-        if (response.StatusCode == HttpStatusCode.OK)
-            await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, response.Data);
+        //if (response.StatusCode == HttpStatusCode.OK)
+        //    await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, response.Data);
 
-        if (response.StatusCode == HttpStatusCode.NotModified)
-        {
-            var list = await _localStorage.GetItemAsync<List<Broker>>(BrokerConstraints.BrokerListName);
-            response.Data = list.SingleOrDefault(b => b.Id == id)!;
-        }
+        //if (response.StatusCode == HttpStatusCode.NotModified)
+        //{
+        //    var list = await _localStorage.GetItemAsync<List<Broker>>(BrokerConstraints.BrokerListName);
+        //    response.Data = list.SingleOrDefault(b => b.Id == id)!;
+        //}
 
         return response;
     }
@@ -91,7 +91,7 @@ public class BrokerService : AuthorizedService, IBrokerService
 
         var broker = itemResponse.Data;
 
-        await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, broker);
+        //await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, broker);
 
         return Result<Broker>.Success(broker, response.StatusCode);
     }
@@ -122,7 +122,7 @@ public class BrokerService : AuthorizedService, IBrokerService
 
         var broker = itemResponse.Data;
 
-        await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, broker);
+        //await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, broker);
 
         return Result<Broker>.Success(broker, response.StatusCode);
     }
@@ -137,8 +137,8 @@ public class BrokerService : AuthorizedService, IBrokerService
 
         var response = await SendAsync(request);
 
-        if (response.Succeeded)
-            await _localStorage.RemoveItemFromList<Broker>(BrokerConstraints.BrokerListName, id);
+        //if (response.Succeeded)
+        //    await _localStorage.RemoveItemFromList<Broker>(BrokerConstraints.BrokerListName, id);
 
         return response;
     }

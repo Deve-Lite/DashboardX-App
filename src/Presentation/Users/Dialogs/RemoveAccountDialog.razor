@@ -1,11 +1,13 @@
 ﻿@inject IStringLocalizer<ConfirmDialog> _localizer
 @inject IUserService _userService
 
+@inherits BaseFormDialog
+
 <MudDialog>
     <DialogContent>
         <DialogLoading IsLoading="IsLoading">
             <LoadedContent>
-                <MudForm @ref="@form"
+                <MudForm @ref="@Form"
                          Model="@Model"
                          Validation="@(Validator.ValidateValue)"
                          ValidationDelay="0">
@@ -43,25 +45,17 @@
 
 @code
 {
-    [CascadingParameter]
-    private MudDialogInstance? Dialog { get; set; }
-
     private PasswordConfirm Model = new();
     private PasswordConfirmValidator Validator = new();
-    private MudForm? form;
-
-    public bool IsLoading { get; set; }
-
-    private void Cancel() => Dialog!.Cancel();
 
     private async Task RemoveAsync()
     {
         if (IsLoading)
             return;
 
-        await form!.Validate();
+        await Form!.Validate();
 
-        if (!form.IsValid)
+        if (!Form.IsValid)
             return;
 
         IsLoading = true;

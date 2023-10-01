@@ -3,12 +3,13 @@
 @inject IClientService _clientService
 @inject IBrokerService _brokerService
 
+@inherits BaseFormDialog
 
 <MudDialog>
     <DialogContent>
         <DialogLoading IsLoading="IsLoading">
             <LoadedContent>
-                <MudForm @ref="@form"
+                <MudForm @ref="@Form"
                          Model="@Model"
                          Validation="@(BrokerValidator.ValidateValue)"
                          ValidationDelay="0"
@@ -142,25 +143,18 @@
     </DialogActions>
 </MudDialog>
 
-
 @code
 {
-    [CascadingParameter]
-    private MudDialogInstance? Dialog { get; set; }
-
     [Parameter]
     public BrokerDTO Model { get; set; } = new();
 
     private BrokerValidator BrokerValidator = new();
-    private MudForm? form;
-
-    public bool IsLoading { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         Model.IsSSL = true;
 
-        if (form is not null && firstRender && form.IsValid)
+        if (Form is not null && firstRender && Form.IsValid)
             StateHasChanged();
 
         if (firstRender && !string.IsNullOrEmpty(Model.Id))
@@ -186,16 +180,14 @@
         await base.OnAfterRenderAsync(firstRender);
     }
 
-    private void Cancel() => Dialog!.Cancel();
-
     private async Task SubmitAsync()
     {
         if (IsLoading)
             return;
 
-        await form!.Validate();
+        await Form!.Validate();
 
-        if (!form.IsValid)
+        if (!Form.IsValid)
             return;
 
         IsLoading = true;
