@@ -10,6 +10,12 @@
     <MudButton Class="p-0 m-0 w-100 h-100 bg-transparent" OnClick="ActionAsync">
         <MudGrid Class="p-0 m-0 w-100 h-100 d-flex flex-column">
 
+            <MudItem xs="12" Style="position:absolute;"
+                     Class="m-0 p-2 d-flex justify-content-end align-items-center">
+                <MudIcon Icon="@ButtonIcon"
+                         Style="max-height:16px; max-width:16px;" />
+            </MudItem>
+
             @if (Control!.DisplayName)
             {
                 <MudItem xs="12" Class="pl-3 pr-3 m-0 pt-4 pb-3 d-flex justify-content-center align-items-center">
@@ -37,6 +43,8 @@
 
 @code
 {
+    public static string ButtonIcon => Icons.Material.Filled.AdsClick;
+
 #pragma warning disable CS0108
     public async Task ActionAsync()
     {

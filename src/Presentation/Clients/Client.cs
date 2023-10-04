@@ -57,16 +57,25 @@ public class Client : IAsyncDisposable
     {
         //TODO Change to Result
 
-        if (!MqttService.IsConnected)
-            await ConnectAsync();
+        try
+        {
+            if (!MqttService.IsConnected)
+                await ConnectAsync();
 
-        var mqttMessage = new MqttApplicationMessageBuilder()
-               .WithTopic(topic)
-               .WithPayload(Encoding.UTF8.GetBytes(payload))
-               .WithQualityOfServiceLevel(quality)
-               .Build();
+            var mqttMessage = new MqttApplicationMessageBuilder()
+                   .WithTopic(topic)
+                   .WithPayload(Encoding.UTF8.GetBytes(payload))
+                   .WithQualityOfServiceLevel(quality)
+                   .Build();
 
-        return await MqttService.PublishAsync(mqttMessage);
+            return await MqttService.PublishAsync(mqttMessage);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError($"Failed to send request {e.Message}");
+
+            return new MqttClientPublishResult();
+        }
     }
 
     public async Task<Result> ConnectAsync()

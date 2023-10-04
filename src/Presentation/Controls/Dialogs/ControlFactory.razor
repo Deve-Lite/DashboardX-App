@@ -28,6 +28,10 @@
         {
             <ButtonControl Client="@Client" Device="@Device" Control="@Control" />
         }
+        else if (Control!.Type == ControlType.Switch)
+        {
+            <SwitchControl Client="@Client" Device="@Device" Control="@Control"/>
+        }
         else if (Control!.Type == ControlType.Slider)
         {
             <SliderControl Client="@Client" Device="@Device" Control="@Control" />

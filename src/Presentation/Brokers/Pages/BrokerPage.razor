@@ -3,6 +3,7 @@
 @using Presentation.Devices;
 @using Presentation.Brokers;
 @using Presentation.Utils;
+@using Presentation.Controls.Implementations;
 
 @inject IClientService _clientService
 @inject IStringLocalizer<BrokerPage> _localizer
@@ -13,7 +14,7 @@
 
 <PageLoading FailedToLoad="!LoadedSuccessfully">
     <FailedToLoadContent>
-        <RefreshPageButton RefreshPage="LoadPage"/>
+        <RefreshPageButton RefreshPage="LoadPage" />
     </FailedToLoadContent>
     <LoadedContent>
         <MudGrid Class="m-0 p-3 w-100">
