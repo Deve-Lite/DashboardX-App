@@ -57,9 +57,7 @@
         if (!await ConfirmationDialog())
             return;
 
-        var topic = Control!.GetTopic(Device!);
-
-        await Client!.PublishAsync(topic, Control?.Attributes?.Payload!, Control!.QualityOfService);
+        await Client!.PublishAsync(Control!.GetTopic(Device!), Control?.Attributes?.Payload!, Control!.QualityOfService);
     }
 }
 

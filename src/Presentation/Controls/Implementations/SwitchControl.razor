@@ -45,6 +45,15 @@
 {
     public static string SwitchIcon => Icons.Material.Filled.SwitchLeft;
 
+    public string Value { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        Value = await Client!.TopicService.LastMessageOnTopicAsync(Client!.Id, Device!, Control!);
+    }
+
     public override string GetBackgroundColor()
     {
         if (!Control!.IsAvailable)
@@ -59,12 +68,21 @@
 
         var current = Client!.TopicService.LastMessageOnTopic(Client!.Id, Device!, Control);
 
-        var color = IsDarkMode ? AppTheme!.PaletteDark.Info.ToString() : AppTheme!.Palette.Info.ToString();
+        if (string.IsNullOrEmpty(current))
+            current = Value;
+
+        var color = Control!.Icon.BackgroundHex;
 
         if (current == Control.Attributes.OnPayload)
+        {
             color = IsDarkMode ? AppTheme!.PaletteDark.Success.ToString() : AppTheme!.Palette.Success.ToString();
+            color = color.Substring(0, color.Length - 2);
+        }
         else if (current == Control.Attributes.OffPayload)
+        {
             color = IsDarkMode ? AppTheme!.PaletteDark.Error.ToString() : AppTheme!.Palette.Error.ToString();
+            color = color.Substring(0, color.Length-2);
+        }
 
         return $"{color}80";
     }
@@ -81,12 +99,15 @@
 
         var current = Client!.TopicService.LastMessageOnTopic(Client!.Id, Device!, Control);
 
+        if (string.IsNullOrEmpty(current))
+            current = Value;
+
         if (current == Control.Attributes.OnPayload)
             return IsDarkMode ? AppTheme!.PaletteDark.Success.ToString() : AppTheme!.Palette.Success.ToString();
         else if (current == Control.Attributes.OffPayload)
             return IsDarkMode ? AppTheme!.PaletteDark.Error.ToString() : AppTheme!.Palette.Error.ToString();
 
-        return IsDarkMode ? AppTheme!.PaletteDark.Info.ToString() : AppTheme!.Palette.Info.ToString();
+        return Control!.Icon.BackgroundHex;
     }
 
 
@@ -109,7 +130,7 @@
         if (current == Control.Attributes.OnPayload)
             payload = Control.Attributes.OffPayload;
 
-        await Client!.PublishAsync(Topic, payload!, Control!.QualityOfService);
+        await Client!.PublishAsync(Control!.GetTopic(Device!), payload!, Control!.QualityOfService);
     }
 }
 

@@ -23,16 +23,6 @@ public partial class BaseControl : ComponentBase
     [CascadingParameter]
     protected bool IsDarkMode { get; set; }
 
-    protected string Topic { get; set; } = string.Empty;
-
-    protected override Task OnInitializedAsync()
-    {
-        Topic = Control!.GetTopic(Device!);
-
-        return base.OnInitializedAsync();
-    }
-
-
     public virtual string GetBackgroundColor()
     {
         if (!Control!.IsAvailable)
