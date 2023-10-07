@@ -1,4 +1,5 @@
 ﻿using Common.Controls.Models;
+using Microsoft.IdentityModel.Tokens;
 using MQTTnet.Client;
 using MQTTnet.Protocol;
 using Presentation.Brokers;
@@ -152,19 +153,30 @@ public class Client : IAsyncDisposable
         {
             var control = device.Controls.First(x => x.Id == newControl.Id);
 
-            var oldTopic = await TopicService.RemoveTopic(Broker.Id, device, control);
-            var topic = await TopicService.AddTopic(Broker.Id, device, control);
+            var newTopic = newControl.GetTopic(device);
+            var oldTopic = control.GetTopic(device);
+
+            if(newTopic != oldTopic)
+            {
+                var value = await TopicService.LastMessageOnTopicAsync(device.BrokerId, device, control);
+
+                if (!value.IsNullOrEmpty())
+                {
+                    await TopicService.UpdateMessageOnTopic(device.BrokerId, device, newControl, value);
+                    await TopicService.RemoveTopic(Broker.Id, device, control);
+                }
+
+            }
 
             control.Update(newControl);
 
-            var result = await MqttService.SubscribeAsync(topic, control.QualityOfService);
 
-            if (IsConnected)
-            {
-                await MqttService.UnsubscribeAsync(topic);
-                await MqttService.SubscribeAsync(topic, control.QualityOfService);
-            }
+            if (!IsConnected)
+                await ConnectAsync();
 
+            await MqttService.UnsubscribeAsync(oldTopic);
+            await MqttService.SubscribeAsync(newTopic, control.QualityOfService);
+            
             return true;
         }
         catch (Exception ex)

@@ -100,7 +100,7 @@ public class TopicService : ITopicService
     #region Privates    
     private string GetTopic(Device device, Control control) => control.GetTopic(device);
     private string Identifier(string brokerId, Device device, Control control) => Identifier(brokerId, control.GetTopic(device));
-    private string Identifier(string brokerId, string topic) => $"{brokerId}/{topic}";
+    private string Identifier(string brokerId, string topic) => $"{brokerId}{topic}";
 
     #endregion
 }
