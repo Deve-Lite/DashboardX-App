@@ -1,0 +1,48 @@
+﻿@inject IStringLocalizer<ConfirmDialog> _localizer;
+@inject IClientService _clientService;
+
+@inherits BaseDialog
+
+<MudDialog>
+    <DialogContent>
+
+        <MudText  Typo="Typo.body1">
+            @_localizer["Topic:"] @Topic
+        </MudText>
+
+        <br/>
+
+        <MudText Inline="false" Typo="Typo.body2">
+            @Value
+        </MudText>
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel"
+                   ButtonType="ButtonType.Submit"
+                   Variant="Variant.Filled"
+                   Color="Color.Warning">@_localizer["Ok"] </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code
+{
+    [Parameter]
+    public Client? Client { get; set; }
+
+    [Parameter]
+    public Device? Device { get; set; }
+
+    [Parameter]
+    public Control? Control { get; set; }
+
+    private string Value { get; set; } = string.Empty;
+    private string Topic { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        Topic = Control!.GetTopic(Device!);
+        Value = await Client!.TopicService.LastMessageOnTopicAsync(Client.Id, Device!, Control!);
+    }
+}

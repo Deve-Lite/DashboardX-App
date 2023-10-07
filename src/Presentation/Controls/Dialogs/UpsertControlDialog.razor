@@ -97,6 +97,7 @@
 
                                 <MudSelectItem Value="ControlType.Button">@_localizer["Button"]</MudSelectItem>
                                 <MudSelectItem Value="ControlType.Switch">@_localizer["Switch"]</MudSelectItem>
+                                <MudSelectItem Value="ControlType.Text">@_localizer["Text"]</MudSelectItem>
                                 <!--<MudSelectItem Value="ControlType.Slider">@_localizer["Slider"]</MudSelectItem> -->
                             </MudSelect>
                         </MudItem>
@@ -177,6 +178,14 @@
                             </MudItem>
 
                             <!-- TODO: Insert value button-->
+                        }
+                        else if (Control.Type == ControlType.Text)
+                        {
+                            <MudItem xs="12">
+                                <MudText>
+                                    @_localizer["Text control just displays last recveived data on topic."]
+                                </MudText>
+                            </MudItem>
                         }
                     </MudGrid>
                 </LoadedContent>

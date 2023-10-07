@@ -1,5 +1,6 @@
 ﻿@using Presentation.Controls.Implementations
 @using Presentation.Controls.Implementations.SliderComponents
+@using Presentation.Controls.Implementations.TextComponents
 @using Presentation.Utils;
 @inject IStringLocalizer<ControlFactory> _localizer;
 
@@ -35,6 +36,10 @@
         else if (Control!.Type == ControlType.Slider)
         {
             <SliderControl Client="@Client" Device="@Device" Control="@Control" />
+        }
+        else if(Control!.Type == ControlType.Text)
+        {
+            <TextControl Client="@Client" Device="@Device" Control="@Control" />
         }
         else
         {
