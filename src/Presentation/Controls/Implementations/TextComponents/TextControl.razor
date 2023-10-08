@@ -7,7 +7,7 @@
 <MudCard Elevation="1"
          Class="container container-fit-content p-0 m-0 w-100 h-100"
          Style="@($"border: 1px solid {GetBorderBackgroundColor()}; border-radius: 1rem; background-color: {GetBackgroundColor()};")">
-    <MudButton Class="p-0 m-0 w-100 h-100 bg-transparent" OnClick="ActionAsync">
+    <MudButton Class="p-0 m-0 w-100 h-100 bg-transparent" OnClick="Action">
         <MudGrid Class="p-0 m-0 w-100 h-100 d-flex flex-column">
 
             <MudItem xs="12" Style="position:absolute;"
@@ -43,21 +43,20 @@
 
 @code
 {
-    public static string ButtonIcon => Icons.Material.Filled.AdsClick;
+    public static string ButtonIcon => @Icons.Material.Filled.Textsms;
 
-#pragma warning disable CS0108
-    public async Task ActionAsync()
+    public void Action()
     {
-        if (!Control!.IsAvailable)
+        var topic = Control!.GetTopic(Device!);
+
+        var parameters = new DialogParameters<TextDialog> 
         {
-            _snackbar.Add(_localizer["Hey, this control is currently off!"]);
-            return;
-        }
+            { x => x.Client, Client },
+            { x => x.Device, Device },
+            { x => x.Control, Control }
+        };
 
-        if (!await ConfirmationDialog())
-            return;
-
-        await Client!.PublishAsync(Control!.GetTopic(Device!), Control?.Attributes?.Payload!, Control!.QualityOfService);
+        _dialogService.ShowAsync<TextDialog>(_localizer["Last Message"], parameters);
     }
 }
 

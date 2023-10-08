@@ -22,7 +22,7 @@ public class ControlAttributes
     public string? OnPayload { get; set; }
 
     // Used by: Switch
-    [JsonPropertyName("offpayload")]
+    [JsonPropertyName("offPayload")]
     public string? OffPayload { get; set; }
 
     // Used by: Slider, Color, DateTime

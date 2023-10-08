@@ -1,6 +1,8 @@
 ﻿@inject IStringLocalizer<ConfirmDialog> _localizer;
 @inject IClientService _clientService;
 
+@inherits BaseControl
+
 <MudDialog>
     <DialogContent>
 
@@ -43,10 +45,6 @@
 
     protected override void OnInitialized()
     {
-        //TODO: Remove after database update
-        MaxSliderValue = 100;
-        MinSliderValue = 0;
-
         Value = SliderValue;
 
         base.OnInitialized();
@@ -54,9 +52,10 @@
 
     private void SetValue(double value) 
     { 
-
         Value = value; 
     }
-    private void Cancel() => Dialog!.Cancel();
+    
+    public void Cancel() => Dialog!.Cancel();
+
     private void SubmitSliderValue() => Dialog!.Close(DialogResult.Ok(Value));
 }

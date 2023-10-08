@@ -21,9 +21,9 @@ public partial class BaseControl : ComponentBase
     protected MudTheme? AppTheme { get; set; }
 
     [CascadingParameter]
-    private bool IsDarkMode { get; set; }
+    protected bool IsDarkMode { get; set; }
 
-    public string GetBackgroundColor()
+    public virtual string GetBackgroundColor()
     {
         if (!Control!.IsAvailable)
         {
@@ -38,7 +38,7 @@ public partial class BaseControl : ComponentBase
         return $"{Control!.Icon.BackgroundHex}80";
     }
 
-    public string GetBorderBackgroundColor()
+    public virtual string GetBorderBackgroundColor()
     {
         if (!Control!.IsAvailable)
         {

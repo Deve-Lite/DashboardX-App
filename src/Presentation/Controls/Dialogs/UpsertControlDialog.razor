@@ -95,8 +95,9 @@
                                        T="ControlType"
                                        ValueChanged="TypeChanged">
 
-
                                 <MudSelectItem Value="ControlType.Button">@_localizer["Button"]</MudSelectItem>
+                                <MudSelectItem Value="ControlType.Switch">@_localizer["Switch"]</MudSelectItem>
+                                <MudSelectItem Value="ControlType.Text">@_localizer["Text"]</MudSelectItem>
                                 <!--<MudSelectItem Value="ControlType.Slider">@_localizer["Slider"]</MudSelectItem> -->
                             </MudSelect>
                         </MudItem>
@@ -123,11 +124,44 @@
                             </MudItem>
 
                         }
+                        else if (Control.Type == ControlType.Switch)
+                        {
+                            <MudItem xs="12">
+                                <MudText>
+                                    @_localizer["Switch control "]
+                                </MudText>
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="Control.Attributes.OnPayload"
+                                              T="string"
+                                              Lines="5"
+                                              Label="@_localizer["On Template"]"
+                                              Variant="Variant.Outlined"
+                                              OnlyValidateIfDirty="true"
+                                              Class="p-0 m-0"
+                                              HelperText="@_localizer["Patyload to be send when on action is performed."]"
+                                              For="@(() => Control.Attributes.OnPayload)" />
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="Control.Attributes.OffPayload"
+                                              T="string"
+                                              Lines="5"
+                                              Label="@_localizer["Off Template"]"
+                                              Variant="Variant.Outlined"
+                                              OnlyValidateIfDirty="true"
+                                              Class="p-0 m-0"
+                                              HelperText="@_localizer["Patyload to be send when off action is performed."]"
+                                              For="@(() => Control.Attributes.OffPayload)" />
+                            </MudItem>
+
+                        }
                         else if (Control.Type == ControlType.Slider)
                         {
                             <MudItem xs="12">
                                 <MudText>
-                                    @_localizer["Slider control sending payload is to broker when slided. Current slided value will be matched to !value! field."]
+                                    @_localizer["Slider control sending payload is to broker when slided. Current slided value will be matched to <<value>> field."]
                                 </MudText>
                             </MudItem>
 
@@ -144,6 +178,14 @@
                             </MudItem>
 
                             <!-- TODO: Insert value button-->
+                        }
+                        else if (Control.Type == ControlType.Text)
+                        {
+                            <MudItem xs="12">
+                                <MudText>
+                                    @_localizer["Text control just displays last recveived data on topic."]
+                                </MudText>
+                            </MudItem>
                         }
                     </MudGrid>
                 </LoadedContent>
@@ -195,6 +237,12 @@
         {
             case ControlType.Slider:
                 Control.Attributes.PayloadTemplate = string.Empty;
+                break;
+            case ControlType.Switch:
+                Control.Attributes.OnPayload = string.Empty;
+                Control.Attributes.OffPayload = string.Empty;
+                break;
+            case ControlType.Text:
                 break;
             default:
                 Control.Attributes.Payload = string.Empty;
