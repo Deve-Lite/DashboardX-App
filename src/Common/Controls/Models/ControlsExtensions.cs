@@ -9,6 +9,6 @@ public static class ControlExtensions
         if (string.IsNullOrEmpty(device.BaseDevicePath))
             return $"{control.Topic}";
 
-        return $"{device.BaseDevicePath}/{control.Topic}";
+        return $"{device.BaseDevicePath}{control.Topic}";
     }
 }

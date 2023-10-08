@@ -10,7 +10,7 @@
             @_localizer["Topic:"] @Topic
         </MudText>
 
-        <br/>
+        <MudProgressLinear Size="Size.Small" Color="Color.Primary" Rounded="true" Value="100" />
 
         <MudText Inline="false" Typo="Typo.body2">
             @Value
@@ -21,7 +21,7 @@
         <MudButton OnClick="Cancel"
                    ButtonType="ButtonType.Submit"
                    Variant="Variant.Filled"
-                   Color="Color.Warning">@_localizer["Ok"] </MudButton>
+                   Color="Color.Primary">@_localizer["Ok"] </MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -44,5 +44,8 @@
         await base.OnInitializedAsync();
         Topic = Control!.GetTopic(Device!);
         Value = await Client!.TopicService.LastMessageOnTopicAsync(Client.Id, Device!, Control!);
+
+        if (string.IsNullOrEmpty(Value))
+            Value = "No message or message was empty.";
     }
 }
