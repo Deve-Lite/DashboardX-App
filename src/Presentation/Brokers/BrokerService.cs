@@ -8,11 +8,10 @@ namespace Presentation.Brokers;
 public class BrokerService : AuthorizedService, IBrokerService
 {
     public BrokerService(HttpClient httpClient,
-                         ILocalStorageService localStorageService,
                          ILogger<BrokerService> logger,
                          NavigationManager navigationManager,
                          AuthenticationStateProvider authenticationState)
-        : base(httpClient, localStorageService, logger, navigationManager, authenticationState)
+        : base(httpClient, logger, navigationManager, authenticationState)
     {
     }
 
@@ -26,12 +25,6 @@ public class BrokerService : AuthorizedService, IBrokerService
 
         var response = await SendAsync<List<Broker>>(request);
 
-        //if (response.StatusCode == HttpStatusCode.OK)
-        //    await _localStorage.SetItemAsync(BrokerConstraints.BrokerListName, response.Data);
-
-        //if (response.StatusCode == HttpStatusCode.NotModified)
-        //    response.Data = await _localStorage.GetItemAsync<List<Broker>>(BrokerConstraints.BrokerListName);
-
         return response;
     }
 
@@ -44,28 +37,6 @@ public class BrokerService : AuthorizedService, IBrokerService
         };
 
         var response = await SendAsync<Broker>(request);
-
-        //if (response.StatusCode == HttpStatusCode.OK)
-        //    await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, response.Data);
-
-        //if (response.StatusCode == HttpStatusCode.NotModified)
-        //{
-        //    var list = await _localStorage.GetItemAsync<List<Broker>>(BrokerConstraints.BrokerListName);
-        //    response.Data = list.SingleOrDefault(b => b.Id == id)!;
-        //}
-
-        return response;
-    }
-
-    public async Task<IResult<BrokerCredentials>> GetBrokerCredentials(string id)
-    {
-        var request = new Request
-        {
-            Method = HttpMethod.Get,
-            Route = $"api/v1/brokers/{id}/credentials"
-        };
-
-        Result<BrokerCredentials> response = await SendAsync<BrokerCredentials>(request);
 
         return response;
     }
@@ -90,8 +61,6 @@ public class BrokerService : AuthorizedService, IBrokerService
             return Result<Broker>.Fail(itemResponse.StatusCode, itemResponse.Messages + " Pleace refresh page.");
 
         var broker = itemResponse.Data;
-
-        //await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, broker);
 
         return Result<Broker>.Success(broker, response.StatusCode);
     }
@@ -122,8 +91,6 @@ public class BrokerService : AuthorizedService, IBrokerService
 
         var broker = itemResponse.Data;
 
-        //await _localStorage.UpsertItemToList(BrokerConstraints.BrokerListName, broker);
-
         return Result<Broker>.Success(broker, response.StatusCode);
     }
 
@@ -137,9 +104,29 @@ public class BrokerService : AuthorizedService, IBrokerService
 
         var response = await SendAsync(request);
 
-        //if (response.Succeeded)
-        //    await _localStorage.RemoveItemFromList<Broker>(BrokerConstraints.BrokerListName, id);
-
         return response;
+    }
+
+    public async Task<IResult> UpdateBrokerCredentials(string brokerId, BrokerCredentialsDTO dto)
+    {
+        var request = new Request<BrokerCredentialsDTO>
+        {
+            Method = HttpMethod.Get,
+            Route = $"api/v1/brokers/{brokerId}/credentials",
+            Data = dto
+        };
+
+        return await SendAsync<BrokerCredentialsDTO>(request);
+    }
+
+    public async Task<IResult<BrokerCredentialsDTO>> GetBrokerCredentials(string id)
+    {
+        var request = new Request
+        {
+            Method = HttpMethod.Get,
+            Route = $"api/v1/brokers/{id}/credentials"
+        };
+
+        return await SendAsync<BrokerCredentialsDTO>(request);
     }
 }

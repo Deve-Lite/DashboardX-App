@@ -89,6 +89,16 @@
                                           For="@(() => Model.ClientId)" />
                         </MudItem>
 
+                        
+                    </MudGrid>
+                </MudForm>
+
+                <MudForm @ref="@CredentialsForm"
+                         Model="@CredentialsModel"
+                         Validation="@(CredentialsValidator.ValidateValue)"
+                         ValidationDelay="0"
+                         Class="m-0 p-0 w-100">
+                    <MudGrid Class="m-0 p-3 w-100">
                         <MudItem xs="12"
                                  Class="p-1 m-0">
                             <MudSwitch @bind-Checked="ShowAuthorizationFields"
@@ -100,26 +110,26 @@
                         {
                             <MudItem xs="12"
                                      Class="p-1 m-0">
-                                <MudTextField @bind-Value="Model.Username"
+                                <MudTextField @bind-Value="CredentialsModel.Username"
                                               T="string"
                                               Label="@_localizer["Username"]"
                                               Variant="Variant.Filled"
                                               OnlyValidateIfDirty="true"
                                               Clearable="true"
                                               Class="p-0 m-0"
-                                              For="@(() => Model.Username)" />
+                                              For="@(() => CredentialsModel.Username)" />
 
                             </MudItem>
 
                             <MudItem xs="12"
                                      Class="p-1 m-0">
-                                <MudTextField @bind-Value="Model.Password"
+                                <MudTextField @bind-Value="CredentialsModel.Password"
                                               Label="@_localizer["Password"]"
                                               Variant="Variant.Filled"
                                               OnlyValidateIfDirty="true"
                                               Clearable="true"
                                               Class="p-0 m-0"
-                                              For="@(() => Model.Password)"
+                                              For="@(() => CredentialsModel.Password)"
                                               InputType="@_passwordInput"
                                               Adornment="Adornment.End"
                                               AdornmentIcon="@_passwordInputIcon"
@@ -128,6 +138,7 @@
                         }
                     </MudGrid>
                 </MudForm>
+
             </LoadedContent>
         </DialogLoading>
     </DialogContent>
@@ -148,34 +159,38 @@
     [Parameter]
     public BrokerDTO Model { get; set; } = new();
 
+    private BrokerCredentialsDTO CredentialsModel { get; set; } = new();
+    private MudForm CredentialsForm = new();
     private BrokerValidator BrokerValidator = new();
+    private BrokerCredentialsValidator CredentialsValidator = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        Model.IsSSL = true;
+
+        var result = await _brokerService.GetBrokerCredentials(Model.Id);
+
+        if (result.Succeeded)
+        {
+            CredentialsModel.Username = result.Data.Username;
+            CredentialsModel.Password = result.Data.Password;
+
+            if (!string.IsNullOrEmpty(CredentialsModel.Password) || !string.IsNullOrEmpty(CredentialsModel.Username))
+                ShowAuthorizationFields = true;
+        }
+        else
+        {
+            _snackbar.Add(_localizer["Failed to fetch credentials, you will not be able to preview current values."], Severity.Error);
+            _snackbar.Add(_localizer["Credentials will not be updated if no value provided."], Severity.Info);
+        }
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        Model.IsSSL = true;
-
         if (Form is not null && firstRender && Form.IsValid)
             StateHasChanged();
-
-        if (firstRender && !string.IsNullOrEmpty(Model.Id))
-        {
-            var result = await _brokerService.GetBrokerCredentials(Model.Id);
-
-            if (result.Succeeded)
-            {
-                //TODO: If empty then leave false else set proper fields
-
-                Model.Username = result.Data.Username;
-                Model.Password = result.Data.Password;
-            }
-            else
-            {
-                //TODO: Thinkof
-            }
-
-            if (!string.IsNullOrEmpty(Model.Password) || !string.IsNullOrEmpty(Model.Username))
-                ShowAuthorizationFields = true;
-        }
 
         await base.OnAfterRenderAsync(firstRender);
     }
@@ -190,15 +205,23 @@
         if (!Form.IsValid)
             return;
 
+        await CredentialsForm!.Validate();
+
+        if (!CredentialsForm.IsValid)
+            return;
+
         IsLoading = true;
 
-        if (!ShowAuthorizationFields)
-        {
-            Model.Password = "";
-            Model.Username = "";
-        }
-
         var result = Result<Client>.Fail();
+
+
+
+        if (UpdateCredentials())
+        {
+            //TODO: this must be part of Client!!!
+            var credentialsResult = await _brokerService.UpdateBrokerCredentials(result.Data.Id, CredentialsModel);
+            //success = RequestHelpers.InvokeAfterRequest(_snackbar, result, _localizer["Successfully set broker credentials."]);
+        }
 
         if (string.IsNullOrEmpty(Model.Id))
             result = await _clientService.CreateClient(Model);
@@ -214,6 +237,8 @@
 
         Dialog!.Close(DialogResult.Ok(result));
     }
+
+    private bool UpdateCredentials() => !string.IsNullOrEmpty(CredentialsModel.Username) && !string.IsNullOrEmpty(CredentialsModel.Password);
 
     #region Form
 

@@ -18,12 +18,6 @@ public class BrokerValidator : BaseValidator<BrokerDTO>
             .MinimumLength(1)
             .MaximumLength(256);
 
-        RuleFor(x => x.Username)
-            .MaximumLength(32);
-
-        RuleFor(x => x.Password)
-            .MaximumLength(32);
-
         RuleFor(x => x.ClientId)
             .MinimumLength(3)
             .MaximumLength(64);

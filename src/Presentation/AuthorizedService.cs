@@ -7,18 +7,15 @@ namespace Presentation;
 
 public abstract class AuthorizedService : BaseService
 {
-    protected readonly ILocalStorageService _localStorage;
     protected readonly ApplicationStateProvider _applicationStateProvider;
     protected readonly NavigationManager _navigationManager;
     
-    protected AuthorizedService(HttpClient httpClient, 
-        ILocalStorageService localStorageService, 
+    protected AuthorizedService(HttpClient httpClient,
         ILogger<AuthorizedService> logger,
         NavigationManager navigationManager,
         AuthenticationStateProvider authenticationState) : base(httpClient, logger)
     {
         _navigationManager = navigationManager;
-        _localStorage = localStorageService;
         _applicationStateProvider = (ApplicationStateProvider)authenticationState;
     }
 

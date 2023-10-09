@@ -1,7 +1,7 @@
 ﻿
 namespace Common.Brokers.Models;
 
-public class BrokerCredentials
+public record BrokerCredentialsDTO
 {
     [JsonPropertyName("username")]
     public string Username { get; set; } = string.Empty;

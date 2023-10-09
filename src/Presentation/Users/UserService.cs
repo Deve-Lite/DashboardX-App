@@ -8,12 +8,11 @@ public class UserService : AuthorizedService, IUserService
     private readonly IPrefrenceService _prefrenceService;
 
     public UserService(HttpClient httpClient,
-        ILocalStorageService localStorageService,
         ILogger<UserService> logger,
         IPrefrenceService preferenceService,
         NavigationManager navigationManager,
         AuthenticationStateProvider authenticationState)
-        : base(httpClient, localStorageService, logger, navigationManager, authenticationState)
+        : base(httpClient, logger, navigationManager, authenticationState)
     {
         _prefrenceService = preferenceService;
     }
@@ -27,9 +26,7 @@ public class UserService : AuthorizedService, IUserService
             Data = dto
         };
 
-        var response = await SendAsync(request);
-
-        return response;
+        return await SendAsync(request);
     }
 
     public async Task<IResult<User>> GetUser()
@@ -41,12 +38,6 @@ public class UserService : AuthorizedService, IUserService
         };
 
         var response = await SendAsync<User>(request);
-
-        if (response.StatusCode == HttpStatusCode.OK)
-            await _localStorage.SetItemAsync(UserConstraints.PreferencesStorage, response.Data);
-
-        if (response.StatusCode == HttpStatusCode.NotModified)
-            response.Data = await _localStorage.GetItemAsync<User>(UserConstraints.PreferencesStorage);
 
         if (response.Succeeded)
         {
@@ -66,9 +57,7 @@ public class UserService : AuthorizedService, IUserService
             Data = dto
         };
 
-        var response = await SendAsync<ChangePasswordModel>(request);
-
-        return response;
+        return await SendAsync<ChangePasswordModel>(request);
     }
 
     public async Task<IResult> UpdatePreferences(Preferences dto)
