@@ -8,8 +8,8 @@ public interface IClientService
     Task<Result<List<Client>>> GetClients();
     Task<Result<Client>> GetClient(string clientId);
     Task<Result> RemoveClient(string clientId);
-    Task<Result<Client>> CreateClient(BrokerDTO broker);
-    Task<Result<Client>> UpdateClient(BrokerDTO broker);
+    Task<Result<Client>> CreateClient(BrokerDTO broker, BrokerCredentialsDTO brokerCredentialsDTO);
+    Task<Result<Client>> UpdateClient(BrokerDTO broker, BrokerCredentialsDTO brokerCredentialsDTO);
 
     Task<Result> RemoveDeviceFromClient(string clientId, Device device);
     Task<Result<Device>> CreateDeviceForClient(DeviceDTO device);

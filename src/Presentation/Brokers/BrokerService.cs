@@ -111,7 +111,7 @@ public class BrokerService : AuthorizedService, IBrokerService
     {
         var request = new Request<BrokerCredentialsDTO>
         {
-            Method = HttpMethod.Get,
+            Method = HttpMethod.Put,
             Route = $"api/v1/brokers/{brokerId}/credentials",
             Data = dto
         };

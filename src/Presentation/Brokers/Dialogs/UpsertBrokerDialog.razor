@@ -14,7 +14,7 @@
                          Validation="@(BrokerValidator.ValidateValue)"
                          ValidationDelay="0"
                          Class="m-0 p-0 w-100">
-                    <MudGrid Class="m-0 p-3 w-100">
+                    <MudGrid Class="m-0 p-3 pt-0 w-100">
 
                         <MudItem xs="3"
                                  Class="p-1 m-0">
@@ -98,7 +98,7 @@
                          Validation="@(CredentialsValidator.ValidateValue)"
                          ValidationDelay="0"
                          Class="m-0 p-0 w-100">
-                    <MudGrid Class="m-0 p-3 w-100">
+                    <MudGrid Class="m-0 p-3 pt-0 w-100">
                         <MudItem xs="12"
                                  Class="p-1 m-0">
                             <MudSwitch @bind-Checked="ShowAuthorizationFields"
@@ -170,20 +170,27 @@
 
         Model.IsSSL = true;
 
-        var result = await _brokerService.GetBrokerCredentials(Model.Id);
-
-        if (result.Succeeded)
+        if (!string.IsNullOrEmpty(Model.Id))
         {
-            CredentialsModel.Username = result.Data.Username;
-            CredentialsModel.Password = result.Data.Password;
+            var result = await _brokerService.GetBrokerCredentials(Model.Id);
 
-            if (!string.IsNullOrEmpty(CredentialsModel.Password) || !string.IsNullOrEmpty(CredentialsModel.Username))
-                ShowAuthorizationFields = true;
-        }
-        else
-        {
-            _snackbar.Add(_localizer["Failed to fetch credentials, you will not be able to preview current values."], Severity.Error);
-            _snackbar.Add(_localizer["Credentials will not be updated if no value provided."], Severity.Info);
+            if (result.Succeeded)
+            {
+                CredentialsModel.Username = result.Data.Username;
+                CredentialsModel.Password = result.Data.Password;
+
+                if (!string.IsNullOrEmpty(CredentialsModel.Password) || !string.IsNullOrEmpty(CredentialsModel.Username))
+                {
+                    ShowAuthorizationFields = true;
+                    StateHasChanged();
+                }
+
+            }
+            else
+            {
+                _snackbar.Add(_localizer["Failed to fetch credentials, you will not be able to preview current values."], Severity.Error);
+                _snackbar.Add(_localizer["Credentials will not be updated if no value provided."], Severity.Info);
+            }
         }
     }
 
@@ -214,19 +221,10 @@
 
         var result = Result<Client>.Fail();
 
-
-
-        if (UpdateCredentials())
-        {
-            //TODO: this must be part of Client!!!
-            var credentialsResult = await _brokerService.UpdateBrokerCredentials(result.Data.Id, CredentialsModel);
-            //success = RequestHelpers.InvokeAfterRequest(_snackbar, result, _localizer["Successfully set broker credentials."]);
-        }
-
         if (string.IsNullOrEmpty(Model.Id))
-            result = await _clientService.CreateClient(Model);
+            result = await _clientService.CreateClient(Model, CredentialsModel);
         else
-            result = await _clientService.UpdateClient(Model);
+            result = await _clientService.UpdateClient(Model, CredentialsModel);
 
         var success = RequestHelpers.InvokeAfterRequest(_snackbar, result, _localizer["Successfully updated broker."]);
 
@@ -238,7 +236,6 @@
         Dialog!.Close(DialogResult.Ok(result));
     }
 
-    private bool UpdateCredentials() => !string.IsNullOrEmpty(CredentialsModel.Username) && !string.IsNullOrEmpty(CredentialsModel.Password);
 
     #region Form
 
