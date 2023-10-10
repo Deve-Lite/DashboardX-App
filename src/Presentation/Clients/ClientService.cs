@@ -185,10 +185,7 @@ public class ClientService : IClientService
         if (!result.Succeeded)
             return Result<Client>.Fail(result.Messages, result.StatusCode);
 
-        IResult credResult = Result.Success();
-
-        if (UpdateCredentials(brokerCredentialsDTO))
-            credResult = await _brokerService.UpdateBrokerCredentials(result.Data.Id, brokerCredentialsDTO);
+        var credResult = await _brokerService.UpdateBrokerCredentials(result.Data.Id, brokerCredentialsDTO);
 
         var client = _clients.FirstOrDefault(x => x.Id == broker.Id)!;
 
@@ -208,10 +205,7 @@ public class ClientService : IClientService
         if (!result.Succeeded)
             return Result<Client>.Fail(result.Messages, result.StatusCode);
 
-        IResult credResult = Result.Success();
-
-        if (UpdateCredentials(brokerCredentialsDTO))
-            credResult = await _brokerService.UpdateBrokerCredentials(result.Data.Id, brokerCredentialsDTO);
+        var credResult = await _brokerService.UpdateBrokerCredentials(result.Data.Id, brokerCredentialsDTO);
 
         var client = new Client(_storageService, _clientLogger, _brokerService, _factory, result.Data);
         _clients.Add(client);
@@ -355,8 +349,6 @@ public class ClientService : IClientService
     #endregion
 
     #region Privates
-
-    private bool UpdateCredentials(BrokerCredentialsDTO brokerCredentialsDTO) => !string.IsNullOrEmpty(brokerCredentialsDTO.Username) && !string.IsNullOrEmpty(brokerCredentialsDTO.Password);
 
     private async Task<int> UpdateClientDevices(Client client, List<Device> devices)
     {

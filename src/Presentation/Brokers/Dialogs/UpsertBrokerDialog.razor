@@ -184,7 +184,6 @@
                     ShowAuthorizationFields = true;
                     StateHasChanged();
                 }
-
             }
             else
             {
@@ -211,6 +210,12 @@
 
         if (!Form.IsValid)
             return;
+
+        if (!ShowAuthorizationFields || string.IsNullOrEmpty(CredentialsModel.Password) || string.IsNullOrEmpty(CredentialsModel.Username))
+        {
+            CredentialsModel.Password = null;
+            CredentialsModel.Username = null;
+        }
 
         await CredentialsForm!.Validate();
 
