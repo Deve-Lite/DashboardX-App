@@ -1,6 +1,7 @@
 @page "/"
 @page "/auth/login"
 @using Presentation.Utils;
+@using Presentation.Shared;
 
 @attribute [AllowAnonymous]
 @inject IStringLocalizer<LoginPage> _localizer
@@ -10,10 +11,12 @@
 @inject IUserService _userService
 @inject IPrefrenceService _preferenceService
 
+@inherits BaseAuthPage
+
 <PageLoading>
     <LoadedContent>
         <MudCard Class="container d-flex container-fit-content p-5" Style="border-radius: 1rem;">
-            <MudForm @ref="@form"
+            <MudForm @ref="@Form"
                      Model="@LoginData"
                      Validation="@(LoginValidator.ValidateValue)"
                      ValidationDelay="0">
@@ -43,16 +46,10 @@
                                       For="@(() => LoginData.Email)" />
                     </MudItem>
                     <MudItem xs="12" Class="h">
-                        <MudTextField @bind-Value="LoginData.Password"
+                        <PasswordTextField @bind-Value="LoginData.Password"
                                       Label="@_localizer["Password"]"
                                       HelperText="@_localizer["Provide password for your account."]"
-                                      OnlyValidateIfDirty="true"
-                                      For="@(() => LoginData.Password)"
-                                      Variant="Variant.Filled"
-                                      InputType="@_passwordInput"
-                                      Adornment="Adornment.End"
-                                      AdornmentIcon="@_passwordInputIcon"
-                                      OnAdornmentClick="TogglePasswordVisibility" />
+                                      For="@(() => LoginData.Password)" />
                     </MudItem>
                     <MudItem xs="12" Class="d-flex justify-space-between align-center">
                         <MudLink Href="/account/forgot-password">@_localizer["Forgot password?"]</MudLink>
@@ -108,20 +105,14 @@
 
 @code
 {
-    public bool IsDebug { get; set; }
     private bool RememberMe { get; set; }
 
     private LoginModel LoginData = new();
     private LoginValidator LoginValidator = new();
-    MudForm? form;
 
     protected override async Task OnInitializedAsync()
     {
-
-#if DEBUG
-    IsDebug = true;
-#endif
-        //TODO: refactor it for using using(var xxx) 
+        await base.OnInitializedAsync();
 
         if (_loadingService.IsLoading)
             return;
@@ -156,9 +147,9 @@
         if (_loadingService.IsLoading)
             return;
 
-        await form!.Validate();
+        await Form!.Validate();
 
-        if (!form.IsValid)
+        if (!Form.IsValid)
             return;
 
         _loadingService.ShowLoading();
@@ -185,30 +176,6 @@
 
         _navigationManager.NavigateTo("/brokers");
     }
-
-    #region Form
-
-    private bool _passwordVisibility;
-    private InputType _passwordInput = InputType.Password;
-    private string _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
-
-    private void TogglePasswordVisibility()
-    {
-        if (_passwordVisibility)
-        {
-            _passwordVisibility = false;
-            _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
-            _passwordInput = InputType.Password;
-        }
-        else
-        {
-            _passwordVisibility = true;
-            _passwordInputIcon = Icons.Material.Filled.Visibility;
-            _passwordInput = InputType.Text;
-        }
-    }
-
-    #endregion
 
     #region Debug
 

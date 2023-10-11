@@ -1,16 +1,19 @@
 ﻿@page "/auth/register"
 @using Presentation.Utils;
+@using Presentation.Shared;
 
 @attribute [AllowAnonymous]
 
 @inject IAuthenticationService _authenticationService
 @inject IStringLocalizer<RegisterPage> _localizer
 
+@inherits BaseAuthPage
+
 <PageLoading>
     <LoadedContent>
         <MudCard Class="card p-5" style="border-radius: 1rem;">
             <MudGrid>
-                <MudForm @ref="@form"
+                <MudForm @ref="@Form"
                          Model="@Model"
                          Validation="@(Validator.ValidateValue)"
                          ValidationDelay="0">
@@ -50,18 +53,10 @@
                                           Label="@_localizer["Email"]" />
                         </MudItem>
                         <MudItem xs="12">
-                            <MudTextField @bind-Value="Model.Password"
-                                          T="string"
-                                          For="@(() => Model.Password)"
-                                          InputType="@_passwordInput"
-                                          Variant="Variant.Filled"
-                                          Adornment="Adornment.End"
-                                          OnlyValidateIfDirty="true"
-                                          Clearable="true"
-                                          AdornmentIcon="@_passwordInputIcon"
-                                          OnAdornmentClick="TogglePasswordVisibility"
-                                          Label="@_localizer["Password"]"
-                                          HelperText="@_localizer["Provide password for your account."]" />
+                            <PasswordTextField @bind-Value="Model.Password"
+                                               For="@(() => Model.Password)"
+                                               Label="@_localizer["Password"]"
+                                               HelperText="@_localizer["Provide password for your account."]" />
                         </MudItem>
                         <MudItem xs="12">
                             <MudTextField @bind-Value="Model.ConfirmPassword"
@@ -104,20 +99,20 @@
     </LoadedContent>
 </PageLoading>
 
-@code {
+@code
+{
+
     private RegisterModel Model = new();
     private RegisterValidator Validator = new();
-
-    MudForm? form;
 
     private async Task RegisterAsync()
     {
         if (_loadingService.IsLoading)
             return;
 
-        await form!.Validate();
+        await Form!.Validate();
 
-        if (!form.IsValid)
+        if (!Form.IsValid)
             return;
 
         _loadingService.ShowLoading();
