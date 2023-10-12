@@ -6,7 +6,6 @@
 @attribute [AllowAnonymous]
 @inject IStringLocalizer<LoginPage> _localizer
 @inject ILocalStorageService _localStorage
-@inject IAuthenticationService _authenticationService
 @inject AuthenticationStateProvider _authenticationStateProvider
 @inject IUserService _userService
 @inject IPrefrenceService _preferenceService
@@ -52,7 +51,7 @@
                                       For="@(() => LoginData.Password)" />
                     </MudItem>
                     <MudItem xs="12" Class="d-flex justify-space-between align-center">
-                        <MudLink Href="/account/forgot-password">@_localizer["Forgot password?"]</MudLink>
+                        <MudLink Href="/auth/forgot">@_localizer["Forgot password?"]</MudLink>
 
                         <MudCheckBox @bind-Checked="RememberMe"
                                      T="bool"
@@ -105,42 +104,8 @@
 
 @code
 {
-    private bool RememberMe { get; set; }
-
     private LoginModel LoginData = new();
     private LoginValidator LoginValidator = new();
-
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-
-        if (_loadingService.IsLoading)
-            return;
-
-        _loadingService.ShowLoading();
-
-        RememberMe = await _localStorage.GetItemAsync<bool>(AuthConstraints.RememberMeName);
-
-        if (!RememberMe)
-        {
-            _loadingService.HideLoading();
-            return;
-        }
-
-        var refreshToken = await _localStorage.GetItemAsync<string>(AuthConstraints.RefreshToken);
-
-        if (string.IsNullOrEmpty(refreshToken))
-        {
-            _loadingService.HideLoading();
-            return;
-        }
-
-        _loadingService.HideLoading();
-
-        var result = await _authenticationService.ReAuthenticate(refreshToken);
-
-        await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnSuccessfullLogin);
-    }
 
     private async Task LoginAsync()
     {
@@ -156,25 +121,11 @@
 
         await _localStorage.SetItemAsync(AuthConstraints.RememberMeName, RememberMe);
 
-        var result = await _authenticationService.Login(LoginData);
+        var result = await AuthenticationService.Login(LoginData);
 
         await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnSuccessfullLogin);
 
         _loadingService.HideLoading();
-    }
-
-    private async Task OnSuccessfullLogin()
-    {
-        var result = await _userService.GetUser();
-
-        if (!result.Succeeded)
-            _snackbar.Add(_localizer["Couldn't load user settings."], MudBlazor.Severity.Warning);
-
-        _snackbar.Add(_localizer["Hello there!"], MudBlazor.Severity.Success);
-
-        _loadingService.HideLoading();
-
-        _navigationManager.NavigateTo("/brokers");
     }
 
     #region Debug

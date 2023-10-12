@@ -4,7 +4,6 @@
 
 @attribute [AllowAnonymous]
 
-@inject IAuthenticationService _authenticationService
 @inject IStringLocalizer<RegisterPage> _localizer
 
 @inherits BaseAuthPage
@@ -12,12 +11,11 @@
 <PageLoading>
     <LoadedContent>
         <MudCard Class="card p-5" style="border-radius: 1rem;">
-            <MudGrid>
                 <MudForm @ref="@Form"
                          Model="@Model"
                          Validation="@(Validator.ValidateValue)"
                          ValidationDelay="0">
-                    <MudGrid>
+                    <MudGrid Class="w-100">
                         <MudItem xs="12">
                             <MudText Class="text-center"
                                      Color="Color.Primary"
@@ -94,7 +92,6 @@
                         </MudItem>
                     </MudGrid>
                 </MudForm>
-            </MudGrid>
         </MudCard>
     </LoadedContent>
 </PageLoading>
@@ -117,7 +114,7 @@
 
         _loadingService.ShowLoading();
 
-        var result = await _authenticationService.Register(Model);
+        var result = await AuthenticationService.Register(Model);
 
         await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnRegisteredSuccessfully);
 
@@ -136,28 +133,4 @@
         _navigationManager.NavigateTo("/auth/login");
         return Task.CompletedTask;
     }
-
-    #region Form
-
-    private bool _passwordVisibility;
-    private InputType _passwordInput = InputType.Password;
-    private string _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
-
-    private void TogglePasswordVisibility()
-    {
-        if (_passwordVisibility)
-        {
-            _passwordVisibility = false;
-            _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
-            _passwordInput = InputType.Password;
-        }
-        else
-        {
-            _passwordVisibility = true;
-            _passwordInputIcon = Icons.Material.Filled.Visibility;
-            _passwordInput = InputType.Text;
-        }
-    }
-
-    #endregion
 }
