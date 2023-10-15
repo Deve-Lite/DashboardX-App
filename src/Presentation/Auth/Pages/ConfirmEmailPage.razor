@@ -13,12 +13,13 @@
 
 @code
 {
+    [Parameter]
     public string Token { get; set; } = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
 #if DEBUG
-        IsDebug = true;
+    IsDebug = true;
 #endif
 
         if (LoadingService.IsLoading)
@@ -42,8 +43,8 @@
 
         var result = await CheckAuthenticationState();
 
-        LoadingService.HideLoading();
-
         await RequestHelpers.InvokeAfterRequest(Snackbar, result, OnSuccessfullLogin);
+
+        LoadingService.HideLoading();
     }
 }
