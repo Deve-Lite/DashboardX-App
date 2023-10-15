@@ -72,4 +72,56 @@ public class AuthenticationService : BaseService, IAuthenticationService
 
         return Result.Fail(response.StatusCode);
     }
+
+    public async Task<IResult> ForgotPassword(ForgetPasswordModel forgotPassword)
+    {
+        var request = new Request<ForgetPasswordModel>
+        {
+            Method = HttpMethod.Post,
+            Route = "api/v1/users/confirm",
+            Data = forgotPassword
+        };
+
+        var response = await SendAsync(request);
+
+        if (response.Succeeded)
+            return Result.Success(response.StatusCode);
+
+        return Result.Fail(response.StatusCode);
+    }
+
+    public async Task<IResult> ResetPassword(ResetPasswordModel resetPassword)
+    {
+        var request = new Request<ResetPasswordModel>
+        {
+            Method = HttpMethod.Post,
+            Route = "api/v1/users/confirm",
+            Data = resetPassword
+        };
+
+        var response = await SendAsync(request);
+
+        if (response.Succeeded)
+            return Result.Success(response.StatusCode);
+        
+        return Result.Fail(response.StatusCode);
+    }
+
+    public async Task<IResult> ConfirmEmail(string token)
+    {
+        var request = new Request
+        {
+            Method = HttpMethod.Post,
+            Route = "api/v1/users/confirm"
+        };
+
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", token);
+
+        var response = await SendAsync<Tokens>(request);
+
+        if (response.Succeeded)
+            return Result.Success(response.StatusCode);
+
+        return Result.Fail(response.StatusCode);
+    }
 }

@@ -178,20 +178,42 @@ public class ClientService : IClientService
         return Result<Client>.Warning(client, message: $"Failed to subsribe {failConnections} topics.");
     }
 
-    public async Task<Result<Client>> UpdateClient(BrokerDTO broker)
+    public async Task<Result<Client>> UpdateClient(BrokerDTO broker, BrokerCredentialsDTO brokerCredentialsDTO)
     {
         var result = await _brokerService.UpdateBroker(broker);
 
-        if (result.Succeeded)
-        {
-            var client = _clients.FirstOrDefault(x => x.Id == broker.Id)!;
+        if (!result.Succeeded)
+            return Result<Client>.Fail(result.Messages, result.StatusCode);
 
-            await client.UpdateBroker(result.Data);
+        var credResult = await _brokerService.UpdateBrokerCredentials(result.Data.Id, brokerCredentialsDTO);
 
-            return Result<Client>.Success(client, result.StatusCode);
-        }
+        var client = _clients.FirstOrDefault(x => x.Id == broker.Id)!;
 
-        return Result<Client>.Fail(result.Messages, result.StatusCode);
+        //TODO: Involve reconnect
+        await client.UpdateBroker(result.Data);
+
+        if (!credResult.Succeeded)
+            return Result<Client>.Warning(client, message: "Failed to update broker credentilas");
+
+        return Result<Client>.Success(client, result.StatusCode);
+    }
+
+    public async Task<Result<Client>> CreateClient(BrokerDTO broker, BrokerCredentialsDTO brokerCredentialsDTO)
+    {
+        var result = await _brokerService.CreateBroker(broker);
+
+        if (!result.Succeeded)
+            return Result<Client>.Fail(result.Messages, result.StatusCode);
+
+        var credResult = await _brokerService.UpdateBrokerCredentials(result.Data.Id, brokerCredentialsDTO);
+
+        var client = new Client(_storageService, _clientLogger, _brokerService, _factory, result.Data);
+        _clients.Add(client);
+
+        if (!credResult.Succeeded)
+            return Result<Client>.Warning(client, message: "Failed to create broker credentilas.");
+
+        return Result<Client>.Success(client, result.StatusCode);
     }
 
     public async Task<Result> RemoveClient(string brokerId)
@@ -208,21 +230,6 @@ public class ClientService : IClientService
         }
 
         return Result.Fail(result.Messages, result.StatusCode);
-    }
-
-    public async Task<Result<Client>> CreateClient(BrokerDTO broker)
-    {
-        var result = await _brokerService.CreateBroker(broker);
-
-        if (result.Succeeded)
-        {
-            var client = new Client(_storageService, _clientLogger, _brokerService, _factory, result.Data);
-            _clients.Add(client);
-
-            return Result<Client>.Success(client, result.StatusCode);
-        }
-
-        return Result<Client>.Fail(result.Messages, result.StatusCode);
     }
 
     #endregion

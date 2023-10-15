@@ -61,6 +61,9 @@ public class ApplicationStateProvider : AuthenticationStateProvider
         await _localStorage.RemoveItemAsync(AuthConstraints.AccessToken);
         await _localStorage.RemoveItemAsync(AuthConstraints.RefreshToken);
 
+        AccessToken = string.Empty;
+        RefreshToken = string.Empty;
+
         NotifyAuthenticationStateChanged(Task.FromResult(NoAuthState()));
     }
 
