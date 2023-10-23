@@ -3,11 +3,19 @@
 
 @inject IStringLocalizer<ButtonControl> _localizer;
 
-<BaseContr
+<BaseControlView Client="@Client" 
+    Device="@Device" 
+    Control="@Control"
+    Icon="@Icon"
+    BackgroundColor="GetBackgroundColor" 
+    BorderBackgroundColor="GetBorderBackgroundColor"
+    ActionAsync="ActionAsync">
+
+</BaseControlView>
 
 @code
 {
-    public static string SwitchIcon => Icons.Material.Filled.SwitchLeft;
+    public static string Icon => Icons.Material.Filled.SwitchLeft;
 
     public string Value { get; set; } = string.Empty;
 
@@ -74,8 +82,6 @@
         return Control!.Icon.BackgroundHex;
     }
 
-
-#pragma warning disable CS0108
     public async Task ActionAsync()
     {
         if (!Control!.IsAvailable)

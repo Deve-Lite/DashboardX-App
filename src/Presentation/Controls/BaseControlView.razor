@@ -7,12 +7,12 @@
     <MudCard Elevation="1"
              Class="container container-fit-content p-0 m-0 w-100 h-100"
              Style="@($"border: 1px solid {GetBorderBackgroundColor()}; border-radius: 1rem; background-color: {GetBackgroundColor()};")">
-        <MudButton Class="p-0 m-0 w-100 h-100 bg-transparent" OnClick="() => ActionAsync!()">
+        <MudButton Class="p-0 m-0 w-100 h-100 bg-transparent" OnClick="InvokeActionAsync">
             <MudGrid Class="p-0 m-0 w-100 h-100 d-flex flex-column">
 
                 <MudItem xs="12" Style="position:absolute;"
                          Class="m-0 p-2 d-flex justify-content-end align-items-center">
-                    <MudIcon Icon="Icon"
+                    <MudIcon Icon="@Icon"
                              Style="max-height:16px; max-width:16px;" />
                 </MudItem>
 
@@ -46,7 +46,6 @@ else
     @CustomView
 }
 
-
 @code 
 {
     [Parameter]
@@ -54,12 +53,12 @@ else
     [Parameter]
     public string Icon { get; set; } = IconUtils.DefualtIcon;
     [Parameter]
-    public Func<Task>? ActionAsync { get; set; }
+    public Func<Task> ActionAsync { get; set; } = default!;
 
     [Parameter]
-    public Func<string> BackgroundColor { get; set; }
+    public Func<string> BackgroundColor { get; set; } = default!;
     [Parameter]
-    public Func<string> BorderBackgroundColor { get; set; }
+    public Func<string> BorderBackgroundColor { get; set; } = default!;
     [Parameter]
     public Func<string> Name { get; set; }
 
@@ -69,4 +68,10 @@ else
         BorderBackgroundColor = GetBorderBackgroundColor;
         Name = GetName;
     }
+
+    public override string GetBackgroundColor() => BackgroundColor.Invoke();
+
+    public override string GetBorderBackgroundColor() => BorderBackgroundColor.Invoke();
+
+    public async Task InvokeActionAsync() => await ActionAsync();
 }

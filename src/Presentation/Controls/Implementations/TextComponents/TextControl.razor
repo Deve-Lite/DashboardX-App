@@ -3,49 +3,21 @@
 
 @inject IStringLocalizer<ButtonControl> _localizer;
 
+<BaseControlView Client="@Client"
+                 Device="@Device"
+                 Control="@Control"
+                 Icon="@Icon"
+                 BackgroundColor="GetBackgroundColor"
+                 BorderBackgroundColor="GetBorderBackgroundColor"
+                 ActionAsync="Action">
 
-<MudCard Elevation="1"
-         Class="container container-fit-content p-0 m-0 w-100 h-100"
-         Style="@($"border: 1px solid {GetBorderBackgroundColor()}; border-radius: 1rem; background-color: {GetBackgroundColor()};")">
-    <MudButton Class="p-0 m-0 w-100 h-100 bg-transparent" OnClick="Action">
-        <MudGrid Class="p-0 m-0 w-100 h-100 d-flex flex-column">
-
-            <MudItem xs="12" Style="position:absolute;"
-                     Class="m-0 p-2 d-flex justify-content-end align-items-center">
-                <MudIcon Icon="@ButtonIcon"
-                         Style="max-height:16px; max-width:16px;" />
-            </MudItem>
-
-            @if (Control!.DisplayName)
-            {
-                <MudItem xs="12" Class="pl-3 pr-3 m-0 pt-4 pb-3 d-flex justify-content-center align-items-center">
-                    <MudIcon Icon="@IconUtils.GetIcon(Control?.Icon?.Name!)" Size="Size.Large" />
-                </MudItem>
-
-                <MudItem xs="12" Class="p-1 d-flex justify-content-center align-items-center hide-overlapping-text">
-                    <MudText Typo="Typo.body1">
-                        @GetName()
-                    </MudText>
-                </MudItem>
-            }
-            else
-            {
-                <MudItem xs="12" Class="m-0 p-0 h-100 d-flex justify-content-center align-items-center">
-                    <MudElement Class="h-100 w-100">
-                        <MudIcon Icon="@IconUtils.GetIcon(Control?.Icon?.Name!)"
-                                 Size="Size.Large" />
-                    </MudElement>
-                </MudItem>
-            }
-        </MudGrid>
-    </MudButton>
-</MudCard>
+</BaseControlView>
 
 @code
 {
-    public static string ButtonIcon => @Icons.Material.Filled.Textsms;
+    public static string Icon => @Icons.Material.Filled.Textsms;
 
-    public void Action()
+    public Task Action()
     {
         var topic = Control!.GetTopic(Device!);
 
@@ -57,6 +29,8 @@
         };
 
         _dialogService.ShowAsync<TextDialog>(_localizer["Last Message"], parameters);
+
+        return Task.CompletedTask;
     }
 }
 
