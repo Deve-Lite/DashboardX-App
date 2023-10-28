@@ -43,10 +43,9 @@ public abstract class BaseService
     {
         try
         {
-
 #if DEBUG
             await Task.Delay(RequestDebugDelay);
-            _logger.LogInformation($"Sending request to: {message.RequestUri} with {message.Method}, {message.Version}");
+            _logger.LogInformation("Sending request to: {uri} wih {method}, {version}", message.RequestUri, message.Method, message.Version);
 #endif
 
             var response = await _client.SendAsync(message);
@@ -90,7 +89,7 @@ public abstract class BaseService
         }
         catch (Exception e)
         {
-            _logger.LogError($"Unexpected error occured. {e.Message}");
+            _logger.LogError("Unexpected error occured.", e.Message);
             return Result<T>.Fail(message: "Failed to fetch data");
         }
     }
@@ -126,7 +125,7 @@ public abstract class BaseService
         }
         catch (Exception e)
         {
-            _logger.LogError($"Unexpected error occured. {e.Message}");
+            _logger.LogError($"Unexpected error occured.", e.Message);
             return Result.Fail(message: "Failed to fetch data");
         }
     }
@@ -142,7 +141,7 @@ public abstract class BaseService
         message.Content = content;
 
 #if DEBUG
-        _logger.LogInformation($"New payload for Request: {data}");
+        _logger.LogInformation($"New payload for Request:", data);
 #endif
 
         return message;

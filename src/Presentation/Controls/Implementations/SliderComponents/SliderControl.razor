@@ -1,27 +1,22 @@
 ﻿@using Presentation.Utils;
+@using System.Text.RegularExpressions;
+@inject IStringLocalizer<SliderControl> _localizer;
+
 @inherits BaseControl
 
-<MudButton Class="p-0 m-0 w-100 bg-transparent" OnClick="ActionAsync">
-    <MudCard Elevation="5"
-             Class="container container-fit-content p-0 m-0 w-100 h-100"
-             Style="@($"border: 1px solid {Control!.Icon.BackgroundHex}; border-radius: 1rem; background-color: {GetBackgroundColor()};")">
-        <MudGrid Class="p-0 m-0 w-100 h-100 d-flex flex-column">
+<BaseControlView Client="@Client"
+                 Device="@Device"
+                 Control="@Control"
+                 Icon="@Icon"
+                 Name="@GetName"
+                 ActionAsync="@ActionAsync">
 
-            <MudItem xs="12" Class="pl-3 pr-3 m-0 pt-4 pb-3 d-flex justify-content-center align-items-center">
-                <MudIcon Icon="@IconUtils.GetIcon(Control?.Icon?.Name!)" Size="Size.Large" />
-            </MudItem>
-
-            <MudItem xs="12" Class="p-1 d-flex justify-content-center align-items-center hide-overlapping-text">
-                <MudText Typo="Typo.body1">
-                    @GetName()
-                </MudText>
-            </MudItem>
-        </MudGrid>
-    </MudCard>
-</MudButton>
+</BaseControlView>
 
 @code
 {
+    public string Icon = @Icons.Material.Filled.LinearScale;
+
     public double Value { get; set; }
 
     protected override async void OnInitialized()
@@ -31,31 +26,31 @@
         if (Control!.IsAvailable)
         {
             var value = await Client!.TopicService!.LastMessageOnTopicAsync(Client!.Id, Device!, Control!) ?? "empty";
-
-            if (double.TryParse(value, out double current))
-                Value = current;
-            else
-            {
-                //TODO: sygnalise invalid value
-            }
+            Value = CurrentValueAsync(value, true);
         }
     }
 
-#pragma warning disable CS0108
+    public override string GetName()
+    {
+        var value = Client!.TopicService!.LastMessageOnTopic(Client!.Id, Device!, Control!) ?? "empty";
+        Value = CurrentValueAsync(value);
+        var start = string.IsNullOrEmpty(Control?.Name) ? BaseLocalizer!["No name"] : Control.Name;
+        return $"{start} ({Value})";
+    }
+
     public async Task ActionAsync()
     {
+        var min = Convert.ToDouble(Control!.Attributes.MinValue);
+        var max = Convert.ToDouble(Control!.Attributes.MaxValue);
+
         var parameters = new DialogParameters<SliderControlDialog>
         {
             { x => x.SliderValue, Value },
-            { x => x.MinSliderValue, Control!.Attributes.MaxValue },
-            { x => x.MaxSliderValue, Control!.Attributes.MaxValue },
+            { x => x.MinSliderValue, min },
+            { x => x.MaxSliderValue, max },
         };
 
-        //TODO: Fix dialog
-
-        var options = new DialogOptions { NoHeader=true };
-
-        var dialog = await DialogService!.ShowAsync<SliderControlDialog>("No header", parameters, options);
+        var dialog = await DialogService!.ShowAsync<SliderControlDialog>(_localizer["Slide value"], parameters);
         var result = await dialog.Result;
 
         if (result.Canceled)
@@ -67,9 +62,28 @@
             return;
 
         var topic = Control!.GetTopic(Device!);
+        var payload = Control!.Attributes!.PayloadTemplate!.Replace("$value", $"{current}");
 
-        var payload = Control?.Attributes?.PayloadTemplate!.Replace("<<value>>", $"{current}");
+        await Client!.PublishAsync(topic, payload, Control!.QualityOfService);
+    }
 
-        await Client!.PublishAsync(topic, Control?.Attributes?.Payload!, Control!.QualityOfService);
+    private double CurrentValueAsync(string value, bool isInitilizing = false)
+    {
+        var regexPattern = Control!.Attributes!.PayloadTemplate!.Replace("$value", @"\d+(\.\d+)?");
+
+        List<double> occurences = Regex.Matches(regexPattern, Regex.Escape(value))
+                              .Where(x => double.TryParse(x.Value, out _))
+                              .Select(x => double.Parse(x.Value))
+                              .ToList();
+
+                              //TODO Check if value is found successfully
+        Console.WriteLine(occurences.First());
+
+        if (occurences.Any())
+            return occurences.First();
+
+        if (isInitilizing)
+            _snackbar.Add(_localizer["Failed to determinate slider value. Assuming minimal."], Severity.Warning);
+        return Convert.ToDouble(Control.Attributes.MinValue);
     }
 }

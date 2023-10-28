@@ -1,4 +1,5 @@
 ﻿using Common.Controls.Models;
+using FluentValidation;
 
 namespace Common.Controls.Validators;
 
@@ -31,6 +32,14 @@ public class ControlValidator : BaseValidator<Control>
         RuleFor(x => x.Attributes.PayloadTemplate)
             .Length(1, 256)
             .When(x => x.Type == ControlType.Slider);
+
+        RuleFor(x => x.Attributes.MinValue)
+            .LessThan(x => x.Attributes.MaxValue)
+            .When(x => x.Type == ControlType.Slider);
+
+        RuleFor(x => x.Attributes.MaxValue)
+             .GreaterThan(x => x.Attributes.MinValue)
+             .When(x => x.Type == ControlType.Slider);
 
         RuleFor(x => x.Attributes.OnPayload)
             .Length(1, 128)

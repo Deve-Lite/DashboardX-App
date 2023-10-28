@@ -6,22 +6,33 @@
 <MudDialog>
     <DialogContent>
 
-        <MudSlider Value="Value"
-                   ValueChanged="SetValue"
-                   T="double"
-                   Max="MaxSliderValue"
-                   Min="MinSliderValue"
-                   ValueLabel="true"
-                   Size="Size.Large">
-            Value
-        </MudSlider>
+        <MudGrid Class="p-3 m-0 w-100">
+
+            <MudSlider @bind-Value="Value"
+                       Class="p-1 m-0"
+                       Label="@_localizer["Slide value"]"
+                       T="double"
+                       Max="MaxSliderValue"
+                       Min="MinSliderValue"
+                       ValueLabel="true"
+                       Size="Size.Large">
+            </MudSlider>
+
+            <MudNumericField @bind-Value="Value"
+                             Class="p-1 m-0"
+                             Label="@_localizer["Provide exact numerical value"]"
+                             T="double"
+                             Variant="Variant.Filled"
+                             Min="MinSliderValue"
+                             Max="MaxSliderValue"/>
+        </MudGrid>
 
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel"
                    Variant="Variant.Filled"
                    Color="Color.Error">@_localizer["Cancel"]</MudButton>
-                   
+
         <MudButton OnClick="SubmitSliderValue"
                    ButtonType="ButtonType.Submit"
                    Variant="Variant.Filled"
@@ -50,11 +61,11 @@
         base.OnInitialized();
     }
 
-    private void SetValue(double value) 
-    { 
-        Value = value; 
+    private void SetValue(double value)
+    {
+        Value = value;
     }
-    
+
     public void Cancel() => Dialog!.Cancel();
 
     private void SubmitSliderValue() => Dialog!.Close(DialogResult.Ok(Value));

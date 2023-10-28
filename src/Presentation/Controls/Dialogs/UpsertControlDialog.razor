@@ -99,7 +99,7 @@
                                 <MudSelectItem Value="ControlType.Switch">@_localizer["Switch"]</MudSelectItem>
                                 <MudSelectItem Value="ControlType.Text">@_localizer["Text"]</MudSelectItem>
                                 <MudSelectItem Value="ControlType.Radio">@_localizer["Radio"]</MudSelectItem>
-                                <!--<MudSelectItem Value="ControlType.Slider">@_localizer["Slider"]</MudSelectItem> -->
+                                <MudSelectItem Value="ControlType.Slider">@_localizer["Slider"]</MudSelectItem>
                             </MudSelect>
                         </MudItem>
 
@@ -162,8 +162,28 @@
                         {
                             <MudItem xs="12">
                                 <MudText>
-                                    @_localizer["Slider control sending payload is to broker when slided. Current slided value will be matched to <<value>> field."]
+                                    @_localizer["Slider control sending payload is to broker when slided. Current slided value will be matched to $value field."]
                                 </MudText>
+                            </MudItem>
+
+                            <MudItem xs="6">
+                                <MudNumericField @bind-Value="Control.Attributes.MinValue"
+                                                 T="double?"
+                                                 Label="@_localizer["Slider Min"]"
+                                                 OnlyValidateIfDirty="true"
+                                                 HelperText="@_localizer["Minimal slider value."]"
+                                                 Variant="Variant.Filled"
+                                                 For="@(() => Control.Attributes.MinValue)" />
+                            </MudItem>
+
+                            <MudItem xs="6">
+                                <MudNumericField @bind-Value="Control.Attributes.MaxValue"
+                                                 T="double?"
+                                                 Label="@_localizer["Slider Max"]"
+                                                 OnlyValidateIfDirty="true"
+                                                 HelperText="@_localizer["Maximal slider value."]"
+                                                 Variant="Variant.Filled"
+                                                 For="@(() => Control.Attributes.MaxValue)" />
                             </MudItem>
 
                             <MudItem xs="12">
@@ -178,7 +198,11 @@
                                               For="@(() => Control.Attributes.PayloadTemplate)" />
                             </MudItem>
 
-                            <!-- TODO: Insert value button-->
+                            <MudItem xs="6">
+                                <MudButton Variant="Variant.Filled" Color="Color.Tertiary" OnClick="InsertMapping">
+                                    @_localizer["Insert $value"]
+                                </MudButton>
+                            </MudItem>
                         }
                         else if (Control.Type == ControlType.Text)
                         {
@@ -231,7 +255,7 @@
                             </MudItem>
 
                             <MudItem xs="12">
-                                <MudSimpleTable Class="m-0 mt-1 mb-1 w-100" Hover="true" Dense="true">
+                                <MudSimpleTable Hover="true" Dense="true">
 
                                     <MudTr>
                                         <MudTd>
@@ -306,6 +330,8 @@
         {
             case ControlType.Slider:
                 Control.Attributes.PayloadTemplate = string.Empty;
+                Control.Attributes.MinValue = 0;
+                Control.Attributes.MaxValue = 100;
                 break;
             case ControlType.Switch:
                 Control.Attributes.OnPayload = string.Empty;
@@ -390,4 +416,8 @@
         Control!.Attributes!.Payloads!.Remove(name);
     }
 
+    private void InsertMapping()
+    {
+        Control.Attributes.PayloadTemplate += "$value";
+    }
 }
