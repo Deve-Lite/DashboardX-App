@@ -1,0 +1,57 @@
+﻿@inject IStringLocalizer<RadioControlDialog> _localizer;
+
+@inherits BaseDialog
+
+<MudDialog>
+    <DialogContent>
+        <MudGrid>
+            <MudItem Class="m-2 p-2">
+                <MudText>
+                    @_localizer["Press mode to send information to your device!"]
+                </MudText>
+            </MudItem>
+            @foreach(var (name, payload) in Control.Attributes.Payloads ?? new Dictionary<string, string>())
+            {
+                <MudItem Class="m-2 p-2">
+                    @if (CurrentName == name)
+                    {
+                        <MudButton Color="Color.Secondary" Class="text-start p-1 m-1" OnClick="(() => ModeSelected(name))">
+                            @name
+                        </MudButton>
+                    }
+                    else
+                    {
+                        <MudButton Color="Color.Primary" Class="text-start p-1 m-1" OnClick="(() => ModeSelected(name))">
+                            @name
+                        </MudButton>
+                    }
+                </MudItem>
+            }
+
+            @*        <MudList Clickable=true>
+            @foreach (var (key, value) in Payloads)
+            {
+            <MudListItem OnClick="(()=> ReturnKey(key))">
+            <MudText>@key</MudText>
+            <MudText>@value</MudText>
+            </MudListItem>
+            }
+            </MudList>*@
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary">@_localizer["Cancel"] </MudButton>
+    </DialogActions>
+</MudDialog>
+@code
+{
+    [Parameter]
+    public Control Control { get; set; } = new();
+
+    [Parameter]
+    public string CurrentName { get; set; } = string.Empty;
+
+    public void ModeSelected(string name) => Dialog!.Close(DialogResult.Ok(name));
+}

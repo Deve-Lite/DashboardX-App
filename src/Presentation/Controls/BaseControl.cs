@@ -6,7 +6,7 @@ namespace Presentation.Controls;
 public partial class BaseControl : ComponentBase
 {
     [Inject]
-    protected IStringLocalizer<BaseControl>? Localizer { get; set; }
+    protected IStringLocalizer<BaseControl> BaseLocalizer { get; set; } = default!;
     [Inject]
     protected IDialogService? DialogService { get; set; }
 
@@ -51,17 +51,17 @@ public partial class BaseControl : ComponentBase
         return Control!.Icon.BackgroundHex;
     }
 
-    public string GetName() => string.IsNullOrEmpty(Control?.Name) ? Localizer!["No name"] : Control.Name;
+    public virtual string GetName() => string.IsNullOrEmpty(Control?.Name) ? BaseLocalizer!["No name"] : Control.Name;
 
-    public async Task<bool> ConfirmationDialog() 
+    public async Task<bool> ConfirmationDialog(string title, string question)
     {
         if (Control!.IsConfiramtionRequired)
         {
             var parameters = new DialogParameters<ConfirmDialog>
             {
-                { x => x.Description, Localizer!["You are required to confirm before sending data."] }
+                { x => x.Description, question }
             };
-            var dialog = await DialogService!.ShowAsync<ConfirmDialog>(Localizer["Confirmation"]!, parameters);
+            var dialog = await DialogService!.ShowAsync<ConfirmDialog>(title, parameters);
             var result = await dialog.Result;
 
             if (result.Canceled)
@@ -75,5 +75,8 @@ public partial class BaseControl : ComponentBase
 
         return true;
     }
+    public async Task<bool> ConfirmationDialog(string question) => await ConfirmationDialog(BaseLocalizer!["Action Requires Confirmation"], question);
+
+    public async Task<bool> ConfirmationDialog() => await ConfirmationDialog(BaseLocalizer!["Action Requires Confirmation"], BaseLocalizer!["You are required to confirm before sending data."]);
 
 }

@@ -187,6 +187,14 @@
                                 </MudText>
                             </MudItem>
                         }
+                        else if(Control.Type == ControlType.Radio)
+                        {
+                            <MudItem xs="12">
+                                <MudText>
+                                    @_localizer["Text control just displays last recveived data on topic."]
+                                </MudText>
+                            </MudItem>
+                        }
                     </MudGrid>
                 </LoadedContent>
             </DialogLoading>
@@ -243,6 +251,9 @@
                 Control.Attributes.OffPayload = string.Empty;
                 break;
             case ControlType.Text:
+                break;
+            case ControlType.Radio:
+                Control.Attributes.Payloads = new();
                 break;
             default:
                 Control.Attributes.Payload = string.Empty;

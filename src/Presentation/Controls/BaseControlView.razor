@@ -56,9 +56,9 @@ else
     public Func<Task> ActionAsync { get; set; } = default!;
 
     [Parameter]
-    public Func<string> BackgroundColor { get; set; } = default!;
+    public Func<string> BackgroundColor { get; set; }
     [Parameter]
-    public Func<string> BorderBackgroundColor { get; set; } = default!;
+    public Func<string> BorderBackgroundColor { get; set; }
     [Parameter]
     public Func<string> Name { get; set; }
 
@@ -69,9 +69,29 @@ else
         Name = GetName;
     }
 
-    public override string GetBackgroundColor() => BackgroundColor.Invoke();
+    public override string GetBackgroundColor()
+    {
+        if(BackgroundColor is not null)
+           return BackgroundColor.Invoke();
 
-    public override string GetBorderBackgroundColor() => BorderBackgroundColor.Invoke();
+        return base.GetBackgroundColor();
+    }
+
+    public override string GetBorderBackgroundColor()
+    {
+        if (BorderBackgroundColor is not null)
+            return BorderBackgroundColor.Invoke();
+
+        return base.GetBackgroundColor();
+    }
+
+    public override string GetName()
+    {
+        if (Name is not null)
+            return Name.Invoke();
+
+        return base.GetBackgroundColor();
+    }
 
     public async Task InvokeActionAsync() => await ActionAsync();
 }

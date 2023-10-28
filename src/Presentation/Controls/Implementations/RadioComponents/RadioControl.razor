@@ -1,0 +1,59 @@
+﻿@inject IStringLocalizer<ConfirmDialog> _localizer;
+@inject IClientService _clientService;
+
+@inherits BaseControl
+
+<BaseControlView Client="@Client"
+                 Device="@Device"
+                 Control="@Control"
+                 Icon="@Icon"
+                 BackgroundColor="GetBackgroundColor"
+                 BorderBackgroundColor="GetBorderBackgroundColor"
+                 ActionAsync="ActionAsync">
+
+</BaseControlView>
+
+@code
+{
+    public string Icon = @Icons.Material.Filled.FormatListNumbered;
+
+    public string Value { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        Value = await Client!.TopicService.LastMessageOnTopicAsync(Client!.Id, Device!, Control!);
+    }
+
+    public async Task ActionAsync()
+    {
+        if (!Control!.IsAvailable)
+        {
+            _snackbar.Add(_localizer["Hey, this control is currently off!"]);
+            return;
+        }
+
+        var currentName = Control!.Attributes!.Payloads!.FirstOrDefault(x => x.Value == Value).Value;
+
+        var parameters = new DialogParameters<RadioControlDialog>
+        {
+            { x => x.Control, Control },
+            { x => x.CurrentName, currentName}
+        };
+
+        var dialog = await DialogService!.ShowAsync<RadioControlDialog>("Select option", parameters);
+        var result = await dialog.Result;
+
+        if (result.Canceled)
+            return;
+
+        var newName = result.Data as string;
+
+        if (!await ConfirmationDialog())
+            return;
+
+        var payload = Control!.Attributes!.Payloads!.First(x => x.Key == newName).Value;
+        await Client!.PublishAsync(Control!.GetTopic(Device!), payload!, Control!.QualityOfService);
+    }
+}

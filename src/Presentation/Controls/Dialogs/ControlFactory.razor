@@ -1,4 +1,5 @@
 ﻿@using Presentation.Controls.Implementations
+@using Presentation.Controls.Implementations.RadioComponents
 @using Presentation.Controls.Implementations.SliderComponents
 @using Presentation.Controls.Implementations.TextComponents
 @using Presentation.Utils;
@@ -40,6 +41,10 @@
         else if(Control!.Type == ControlType.Text)
         {
             <TextControl Client="@Client" Device="@Device" Control="@Control" />
+        }
+        else if (Control!.Type == ControlType.Radio)
+        {
+            <RadioControl Client="@Client" Device="@Device" Control="@Control" />
         }
         else
         {
