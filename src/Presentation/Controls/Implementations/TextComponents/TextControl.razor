@@ -21,14 +21,14 @@
     {
         var topic = Control!.GetTopic(Device!);
 
-        var parameters = new DialogParameters<TextDialog> 
+        var parameters = new DialogParameters<TextControlDialog> 
         {
             { x => x.Client, Client },
             { x => x.Device, Device },
             { x => x.Control, Control }
         };
 
-        _dialogService.ShowAsync<TextDialog>(_localizer["Last Message"], parameters);
+        _dialogService.ShowAsync<TextControlDialog>(_localizer["Last Message"], parameters);
 
         return Task.CompletedTask;
     }

@@ -4,39 +4,35 @@
 
 <MudDialog>
     <DialogContent>
-        <MudGrid>
-            <MudItem Class="m-2 p-2">
+        <MudGrid Class="m-0 p-1 w-100">
+            <MudItem xs="12" Class="m-1 p-1">
                 <MudText>
                     @_localizer["Press mode to send information to your device!"]
                 </MudText>
             </MudItem>
-            @foreach(var (name, payload) in Control.Attributes.Payloads ?? new Dictionary<string, string>())
+            @foreach (var (name, payload) in Control.Attributes.Payloads ?? new Dictionary<string, string>())
             {
-                <MudItem Class="m-2 p-2">
+                <MudItem Class="m-0 p-0">
                     @if (CurrentName == name)
                     {
-                        <MudButton Color="Color.Secondary" Class="text-start p-1 m-1" OnClick="(() => ModeSelected(name))">
+                        <MudButton Color="Color.Secondary"
+                                   Class="text-start m-1"
+                                   Variant="Variant.Filled"
+                                   OnClick="(() => ModeSelected(name))">
                             @name
                         </MudButton>
                     }
                     else
                     {
-                        <MudButton Color="Color.Primary" Class="text-start p-1 m-1" OnClick="(() => ModeSelected(name))">
+                        <MudButton Color="Color.Primary"
+                                   Variant="Variant.Filled"
+                                   Class="text-start m-1"
+                                   OnClick="(() => ModeSelected(name))">
                             @name
                         </MudButton>
                     }
                 </MudItem>
             }
-
-            @*        <MudList Clickable=true>
-            @foreach (var (key, value) in Payloads)
-            {
-            <MudListItem OnClick="(()=> ReturnKey(key))">
-            <MudText>@key</MudText>
-            <MudText>@value</MudText>
-            </MudListItem>
-            }
-            </MudList>*@
         </MudGrid>
     </DialogContent>
     <DialogActions>

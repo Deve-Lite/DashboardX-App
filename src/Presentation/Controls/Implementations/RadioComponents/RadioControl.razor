@@ -1,4 +1,4 @@
-﻿@inject IStringLocalizer<ConfirmDialog> _localizer;
+﻿@inject IStringLocalizer<RadioControl> _localizer;
 @inject IClientService _clientService;
 
 @inherits BaseControl
@@ -7,8 +7,7 @@
                  Device="@Device"
                  Control="@Control"
                  Icon="@Icon"
-                 BackgroundColor="GetBackgroundColor"
-                 BorderBackgroundColor="GetBorderBackgroundColor"
+                 Name="@GetName"
                  ActionAsync="ActionAsync">
 
 </BaseControlView>
@@ -24,6 +23,18 @@
         await base.OnInitializedAsync();
 
         Value = await Client!.TopicService.LastMessageOnTopicAsync(Client!.Id, Device!, Control!);
+    }
+
+    public override string GetName()
+    {
+        Value = Client!.TopicService.LastMessageOnTopic(Client!.Id, Device!, Control!);
+
+        var current = Control!.Attributes!.Payloads!.FirstOrDefault(x => x.Value == Value);
+
+        if (current.Key is not null)
+            return current.Key;
+
+        return string.IsNullOrEmpty(Control?.Name) ? _localizer["Unknown Mode"] : Control.Name;
     }
 
     public async Task ActionAsync()

@@ -89,7 +89,7 @@
                         <MudItem xs="12">
                             <MudSelect Label="Broker"
                                        For="(() => Control.Type)"
-                                       Variant="Variant.Outlined"
+                                       Variant="Variant.Filled"
                                        AnchorOrigin="Origin.BottomCenter"
                                        Disabled="@(!string.IsNullOrEmpty(Control.Id))"
                                        T="ControlType"
@@ -98,6 +98,7 @@
                                 <MudSelectItem Value="ControlType.Button">@_localizer["Button"]</MudSelectItem>
                                 <MudSelectItem Value="ControlType.Switch">@_localizer["Switch"]</MudSelectItem>
                                 <MudSelectItem Value="ControlType.Text">@_localizer["Text"]</MudSelectItem>
+                                <MudSelectItem Value="ControlType.Radio">@_localizer["Radio"]</MudSelectItem>
                                 <!--<MudSelectItem Value="ControlType.Slider">@_localizer["Slider"]</MudSelectItem> -->
                             </MudSelect>
                         </MudItem>
@@ -118,7 +119,7 @@
                                               Lines="5"
                                               OnlyValidateIfDirty="true"
                                               Class="p-0 m-0"
-                                              Variant="Variant.Outlined"
+                                              Variant="Variant.Filled"
                                               HelperText="@_localizer["Provide payload to be send on click."]"
                                               For="@(() => Control.Attributes.Payload)" />
                             </MudItem>
@@ -128,7 +129,7 @@
                         {
                             <MudItem xs="12">
                                 <MudText>
-                                    @_localizer["Switch control "]
+                                    @_localizer["Switch control allows to determinate state in device as yes or no."]
                                 </MudText>
                             </MudItem>
 
@@ -137,7 +138,7 @@
                                               T="string"
                                               Lines="5"
                                               Label="@_localizer["On Template"]"
-                                              Variant="Variant.Outlined"
+                                              Variant="Variant.Filled"
                                               OnlyValidateIfDirty="true"
                                               Class="p-0 m-0"
                                               HelperText="@_localizer["Patyload to be send when on action is performed."]"
@@ -149,7 +150,7 @@
                                               T="string"
                                               Lines="5"
                                               Label="@_localizer["Off Template"]"
-                                              Variant="Variant.Outlined"
+                                              Variant="Variant.Filled"
                                               OnlyValidateIfDirty="true"
                                               Class="p-0 m-0"
                                               HelperText="@_localizer["Patyload to be send when off action is performed."]"
@@ -170,7 +171,7 @@
                                               T="string"
                                               Lines="5"
                                               Label="@_localizer["Payload Template"]"
-                                              Variant="Variant.Outlined"
+                                              Variant="Variant.Filled"
                                               OnlyValidateIfDirty="true"
                                               Class="p-0 m-0"
                                               HelperText="@_localizer["Provide payload to be send on click with inserted value."]"
@@ -187,12 +188,72 @@
                                 </MudText>
                             </MudItem>
                         }
-                        else if(Control.Type == ControlType.Radio)
+                        else if (Control.Type == ControlType.Radio)
                         {
                             <MudItem xs="12">
                                 <MudText>
-                                    @_localizer["Text control just displays last recveived data on topic."]
+                                    @_localizer["Radio control allows to represent few actions as one, ex. device mode."]
                                 </MudText>
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="Control.Attributes.NewPayload"
+                                              T="string"
+                                              Lines="4"
+                                              OnlyValidateIfDirty="true"
+                                              Class="p-0 m-0"
+                                              Label="@_localizer["Payload"]"
+                                              Variant="Variant.Filled"
+                                              HelperText="@_localizer["Provide payload to be send on click."]"
+                                              For="@(() => Control.Attributes.NewPayload)" />
+                            </MudItem>
+
+                            <MudItem xs="8">
+                                <MudTextField @bind-Value="Control.Attributes.NewName"
+                                              T="string"
+                                              Label="@_localizer["Option Name"]"
+                                              Variant="Variant.Filled"
+                                              OnlyValidateIfDirty="true"
+                                              Clearable="true"
+                                              Class="p-0 m-0"
+                                              HelperText="@_localizer["Provide meaningful name for option."]"
+                                              For="@(() => Control.Attributes.NewName)" />
+                            </MudItem>
+
+                            <MudItem xs="4" Class="d-flex justify-content-center align-items-center">
+                                <MudButton OnClick="AddOption"
+                                           Size="Size.Medium"
+                                           Variant="Variant.Filled"
+                                           Color="Color.Tertiary"
+                                           EndIcon="@Icons.Material.Filled.Add">
+                                    @_localizer["Add"]
+                                </MudButton>
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudSimpleTable Class="m-0 mt-1 mb-1 w-100" Hover="true" Dense="true">
+
+                                    <MudTr>
+                                        <MudTd>
+                                            @_localizer["Name"]
+                                        </MudTd>
+                                        <MudTd>
+                                            @_localizer["Options"]
+                                        </MudTd>
+                                    </MudTr>
+
+                                    @foreach (var option in Control!.Attributes!.Payloads!)
+                                    {
+                                        <MudTr>
+                                            <MudTd>@option.Key</MudTd>
+                                            <MudTd>
+                                                <MudIconButton Icon="@Icons.Material.Filled.Edit" OnClick="()=>EditOption(option.Key)" />
+                                                <MudIconButton Icon="@Icons.Material.Filled.Remove" OnClick="()=>RemoveOption(option.Key)" />
+                                            </MudTd>
+                                        </MudTr>
+                                    }
+
+                                </MudSimpleTable>
                             </MudItem>
                         }
                     </MudGrid>
@@ -203,7 +264,7 @@
     <DialogActions>
         <MudButton OnClick="Cancel"
                    Disabled="IsLoading">
-                   @_localizer["Cancel"]
+            @_localizer["Cancel"]
         </MudButton>
         <MudButton OnClick="SubmitAsync"
                    Disabled="IsLoading"
@@ -226,7 +287,7 @@
 
     protected override void OnInitialized()
     {
-        if(!string.IsNullOrEmpty(Control.Id))
+        if (!string.IsNullOrEmpty(Control.Id))
         {
             Control = Control.Copy();
             StateHasChanged();
@@ -291,4 +352,42 @@
 
         Dialog!.Close(DialogResult.Ok(result));
     }
+
+    private async Task AddOption()
+    {
+        await Form.Validate();
+
+        if (!Form.IsValid)
+            return;
+
+        if (Control!.Attributes!.Payloads!.ContainsKey(Control.Attributes.NewName))
+        {
+            _snackbar.Add(_localizer["This option already exists."], Severity.Warning);
+            return;
+        }
+
+        if (Control!.Attributes!.Payloads!.ContainsValue(Control.Attributes.NewPayload))
+        {
+            _snackbar.Add(_localizer["This payload already is used."], Severity.Warning);
+            return;
+        }
+
+        Control!.Attributes!.Payloads!.Add(Control.Attributes.NewName, Control.Attributes.NewPayload);
+    }
+
+    private void EditOption(string name)
+    {
+        var payload = Control!.Attributes!.Payloads![name];
+
+        Control!.Attributes!.NewName = name;
+        Control!.Attributes!.NewPayload = payload;
+
+        Control!.Attributes!.Payloads!.Remove(name);
+    }
+
+    private void RemoveOption(string name)
+    {
+        Control!.Attributes!.Payloads!.Remove(name);
+    }
+
 }

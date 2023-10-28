@@ -47,7 +47,6 @@ public abstract class BaseService
 #if DEBUG
             await Task.Delay(RequestDebugDelay);
             _logger.LogInformation($"Sending request to: {message.RequestUri} with {message.Method}, {message.Version}");
-            _logger.LogInformation($"Payload: {message.Content?.ReadAsStream().ToString()}");
 #endif
 
             var response = await _client.SendAsync(message);
@@ -141,6 +140,10 @@ public abstract class BaseService
         var data = JsonSerializer.Serialize(request.Data, options);
         var content = new StringContent(data, Encoding.UTF8, "application/json");
         message.Content = content;
+
+#if DEBUG
+        _logger.LogInformation($"New payload for Request: {data}");
+#endif
 
         return message;
     }

@@ -52,9 +52,9 @@ else
     public RenderFragment? CustomView { get; set; }
     [Parameter]
     public string Icon { get; set; } = IconUtils.DefualtIcon;
+
     [Parameter]
     public Func<Task> ActionAsync { get; set; } = default!;
-
     [Parameter]
     public Func<string> BackgroundColor { get; set; }
     [Parameter]
@@ -64,34 +64,16 @@ else
 
     public BaseControlView()
     {
-        BackgroundColor = GetBackgroundColor;
-        BorderBackgroundColor = GetBorderBackgroundColor;
-        Name = GetName;
+        BackgroundColor = base.GetBackgroundColor;
+        BorderBackgroundColor = base.GetBorderBackgroundColor;
+        Name = base.GetName;
     }
 
-    public override string GetBackgroundColor()
-    {
-        if(BackgroundColor is not null)
-           return BackgroundColor.Invoke();
+    public override string GetBackgroundColor() => BackgroundColor.Invoke();
 
-        return base.GetBackgroundColor();
-    }
+    public override string GetBorderBackgroundColor() => BorderBackgroundColor.Invoke();
 
-    public override string GetBorderBackgroundColor()
-    {
-        if (BorderBackgroundColor is not null)
-            return BorderBackgroundColor.Invoke();
-
-        return base.GetBackgroundColor();
-    }
-
-    public override string GetName()
-    {
-        if (Name is not null)
-            return Name.Invoke();
-
-        return base.GetBackgroundColor();
-    }
+    public override string GetName() => Name.Invoke();
 
     public async Task InvokeActionAsync() => await ActionAsync();
 }
