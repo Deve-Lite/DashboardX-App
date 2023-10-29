@@ -26,12 +26,12 @@ public class ControlValidator : BaseValidator<Control>
             .MaximumLength(64);
 
         RuleFor(x => x.Attributes.Payload)
-            .Length(1, 256)
+            .Length(1, 128)
             .When(x => x.Type == ControlType.Button);
 
         RuleFor(x => x.Attributes.PayloadTemplate)
             .Length(1, 256)
-            .When(x => x.Type == ControlType.Slider);
+            .When(x => x.Type == ControlType.Slider || x.Type == ControlType.DateTime);
 
         RuleFor(x => x.Attributes.MinValue)
             .LessThan(x => x.Attributes.MaxValue)

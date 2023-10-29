@@ -1,4 +1,5 @@
 ﻿@using Presentation.Controls.Implementations
+@using Presentation.Controls.Implementations.DateTimeComponents
 @using Presentation.Controls.Implementations.RadioComponents
 @using Presentation.Controls.Implementations.SliderComponents
 @using Presentation.Controls.Implementations.TextComponents
@@ -46,10 +47,14 @@
         {
             <RadioControl Client="@Client" Device="@Device" Control="@Control" />
         }
+        else if (Control!.Type == ControlType.DateTime)
+        {
+            <DateTimeControl Client="@Client" Device="@Device" Control="@Control" />
+        }
         else
         {
             <MudText>
-                @_localizer["Sorry this control is not yet implemented."]
+                @_localizer["Not implemented."]
             </MudText>
         }
     </MudElement>

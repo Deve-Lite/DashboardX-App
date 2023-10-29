@@ -8,13 +8,13 @@ public class Control : BaseModel
 
     public Control()
     {
-        Type = ControlType.Button;
+        Type = ControlType.Text;
     }
 
     public Control(string deviceId)
     {
         DeviceId = deviceId;
-        Type = ControlType.Button;
+        Type = ControlType.Text;
     }
 
     #endregion

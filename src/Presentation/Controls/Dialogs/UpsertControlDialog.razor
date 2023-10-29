@@ -18,13 +18,13 @@
                     <MudGrid Class="m-0 p-3 w-100">
 
                         <MudItem xs="3"
-                                 Class="p-1 m-0">
+                                 Class="p-2 m-0">
                             <IconSelector @bind-IconName="@Control.Icon.Name"
                                           Label="Icon" />
                         </MudItem>
 
                         <MudItem xs="9"
-                                 Class="p-1 m-0">
+                                 Class="p-2 m-0">
                             <ColorSelector @bind-Value="@Control.Icon.BackgroundHex"
                                            Label="Device Theme" />
                         </MudItem>
@@ -87,19 +87,21 @@
                         </MudItem>
 
                         <MudItem xs="12">
-                            <MudSelect Label="Broker"
+                            <MudSelect Label="@_localizer["Control Type"]"
                                        For="(() => Control.Type)"
                                        Variant="Variant.Filled"
                                        AnchorOrigin="Origin.BottomCenter"
                                        Disabled="@(!string.IsNullOrEmpty(Control.Id))"
                                        T="ControlType"
+                                       Value="Control.Type"
                                        ValueChanged="TypeChanged">
 
-                                <MudSelectItem Value="ControlType.Button">@_localizer["Button"]</MudSelectItem>
-                                <MudSelectItem Value="ControlType.Switch">@_localizer["Switch"]</MudSelectItem>
-                                <MudSelectItem Value="ControlType.Text">@_localizer["Text"]</MudSelectItem>
-                                <MudSelectItem Value="ControlType.Radio">@_localizer["Radio"]</MudSelectItem>
-                                <MudSelectItem Value="ControlType.Slider">@_localizer["Slider"]</MudSelectItem>
+                                <MudSelectItem Value="ControlType.Text">@_localizer["Text (One Way Source)"]</MudSelectItem>
+                                <MudSelectItem Value="ControlType.Button">@_localizer["Button (One Way)"]</MudSelectItem>
+                                <MudSelectItem Value="ControlType.DateTime">@_localizer["Date Time (One Way)"]</MudSelectItem>
+                                <MudSelectItem Value="ControlType.Radio">@_localizer["Radio (Two Way)"]</MudSelectItem>
+                                <MudSelectItem Value="ControlType.Slider">@_localizer["Slider (Two Way)"]</MudSelectItem>
+                                <MudSelectItem Value="ControlType.Switch">@_localizer["Switch (Two Way)"]</MudSelectItem>
                             </MudSelect>
                         </MudItem>
 
@@ -138,7 +140,7 @@
                                 <MudTextField @bind-Value="Control.Attributes.OnPayload"
                                               T="string"
                                               Lines="5"
-                                              Label="@_localizer["On Template"]"
+                                              Label="@_localizer["On Payload"]"
                                               Variant="Variant.Filled"
                                               OnlyValidateIfDirty="true"
                                               Class="p-0 m-0"
@@ -150,7 +152,7 @@
                                 <MudTextField @bind-Value="Control.Attributes.OffPayload"
                                               T="string"
                                               Lines="5"
-                                              Label="@_localizer["Off Template"]"
+                                              Label="@_localizer["Off Payload"]"
                                               Variant="Variant.Filled"
                                               OnlyValidateIfDirty="true"
                                               Class="p-0 m-0"
@@ -291,6 +293,38 @@
                                 </MudSimpleTable>
                             </MudItem>
                         }
+                        else if (Control.Type == ControlType.DateTime)
+                        {
+                            <MudItem xs="12">
+                                <MudText>
+                                    @_localizer["This control allows to send date into device."]
+                                </MudText>
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="Control.Attributes.PayloadTemplate"
+                                              T="string"
+                                              Lines="5"
+                                              Label="@_localizer["Payload Template"]"
+                                              Variant="Variant.Filled"
+                                              OnlyValidateIfDirty="true"
+                                              Class="p-0 m-0"
+                                              HelperText="@_localizer["Provide payload to be send on click with inserted value."]"
+                                              For="@(() => Control.Attributes.PayloadTemplate)" />
+                            </MudItem>
+
+                            <MudItem xs="7">
+                                <MudSwitch @bind-Checked="Control.Attributes.SendAsTicks"
+                                           Label="@_localizer["Send Date as Ticks"]"
+                                           Color="Color.Primary" />
+                            </MudItem>
+
+                            <MudItem xs="5">
+                                <MudButton Variant="Variant.Filled" Color="Color.Tertiary" OnClick="InsertMapping">
+                                    @_localizer["Insert $value"]
+                                </MudButton>
+                            </MudItem>
+                        }
                     </MudGrid>
                 </LoadedContent>
             </DialogLoading>
@@ -329,7 +363,7 @@
         if (!string.IsNullOrEmpty(Control.Id))
         {
             Control = Control.Copy();
-            StateHasChanged();
+        StateHasChanged();
         }
 
         Control.DeviceId = DeviceId;
@@ -352,13 +386,17 @@
                 Control.Attributes.OnPayload = string.Empty;
                 Control.Attributes.OffPayload = string.Empty;
                 break;
-            case ControlType.Text:
+            case ControlType.Button:
+                Control.Attributes.Payload = string.Empty;
                 break;
             case ControlType.Radio:
                 Control.Attributes.Payloads = new();
                 break;
+            case ControlType.DateTime:
+                Control.Attributes.SendAsTicks = false;
+                Control.Attributes.PayloadTemplate = string.Empty;
+                break;
             default:
-                Control.Attributes.Payload = string.Empty;
                 break;
         }
     }
@@ -370,10 +408,21 @@
         if (IsLoading)
             return;
 
-        var validationResult = await Validator.ValidateAsync(Control);
+        await Form.Validate();
 
-        if (!validationResult.IsValid)
-            return;
+        if(Control.Type == ControlType.Radio)
+        {
+            RadioOptions = new();
+            var validationResult = await Validator.ValidateAsync(Control);
+
+            if (!validationResult.IsValid)
+                return;
+        }
+        else
+        {
+            if (!Form.IsValid)
+                return;
+        }
 
         IsLoading = true;
 
