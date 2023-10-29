@@ -88,10 +88,4 @@ public class ControlAttributes
             MinValue = MinValue
         };
     }
-
-    // Additions: Radio
-    [JsonIgnore]
-    public string NewName { get; set; } = string.Empty;
-    [JsonIgnore]
-    public string NewPayload { get; set; } = string.Empty;
 }

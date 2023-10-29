@@ -48,13 +48,5 @@ public class ControlValidator : BaseValidator<Control>
         RuleFor(x => x.Attributes.OffPayload)
             .Length(1, 128)
             .When(x => x.Type == ControlType.Switch);
-
-        RuleFor(x => x.Attributes.NewName)
-            .Length(1, 64)
-            .When(x => x.Type == ControlType.Radio);
-
-        RuleFor(x => x.Attributes.NewPayload)
-            .Length(1, 256)
-            .When(x => x.Type == ControlType.Radio);
     }
 }

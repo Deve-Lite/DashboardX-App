@@ -120,6 +120,7 @@
                                               OnlyValidateIfDirty="true"
                                               Class="p-0 m-0"
                                               Variant="Variant.Filled"
+                                              Label="@_localizer["Payload"]"
                                               HelperText="@_localizer["Provide payload to be send on click."]"
                                               For="@(() => Control.Attributes.Payload)" />
                             </MudItem>
@@ -221,37 +222,47 @@
                             </MudItem>
 
                             <MudItem xs="12">
-                                <MudTextField @bind-Value="Control.Attributes.NewPayload"
-                                              T="string"
-                                              Lines="4"
-                                              OnlyValidateIfDirty="true"
-                                              Class="p-0 m-0"
-                                              Label="@_localizer["Payload"]"
-                                              Variant="Variant.Filled"
-                                              HelperText="@_localizer["Provide payload to be send on click."]"
-                                              For="@(() => Control.Attributes.NewPayload)" />
-                            </MudItem>
+                                <MudForm @ref="RadioForm"
+                                         Class="m-0 p-0 w-100"
+                                         Model="@RadioOptions"
+                                         Validation="@(RadioValidator.ValidateValue)"
+                                         ValidationDelay="0">
+                                    <MudGrid Class="m-0 p-0 w-100">
+                                        <MudItem xs="12" Class="m-0 p-0 pt-2">
+                                            <MudTextField @bind-Value="RadioOptions.Payload"
+                                                          T="string"
+                                                          Lines="4"
+                                                          OnlyValidateIfDirty="true"
+                                                          Class="p-0 m-0"
+                                                          Label="@_localizer["Payload"]"
+                                                          Variant="Variant.Filled"
+                                                          HelperText="@_localizer["Provide payload to be send on click."]"
+                                                          For="@(() => RadioOptions.Payload)" />
+                                        </MudItem>
 
-                            <MudItem xs="8">
-                                <MudTextField @bind-Value="Control.Attributes.NewName"
-                                              T="string"
-                                              Label="@_localizer["Option Name"]"
-                                              Variant="Variant.Filled"
-                                              OnlyValidateIfDirty="true"
-                                              Clearable="true"
-                                              Class="p-0 m-0"
-                                              HelperText="@_localizer["Provide meaningful name for option."]"
-                                              For="@(() => Control.Attributes.NewName)" />
-                            </MudItem>
+                                        <MudItem xs="8" Class="m-0 p-0 pt-2">
+                                            <MudTextField @bind-Value="RadioOptions.Name"
+                                                          T="string"
+                                                          Label="@_localizer["Option Name"]"
+                                                          Variant="Variant.Filled"
+                                                          OnlyValidateIfDirty="true"
+                                                          Clearable="true"
+                                                          Class="p-0 m-0"
+                                                          HelperText="@_localizer["Provide meaningful name for option."]"
+                                                          For="@(() => RadioOptions.Name)" />
+                                        </MudItem>
 
-                            <MudItem xs="4" Class="d-flex justify-content-center align-items-center">
-                                <MudButton OnClick="AddOption"
-                                           Size="Size.Medium"
-                                           Variant="Variant.Filled"
-                                           Color="Color.Tertiary"
-                                           EndIcon="@Icons.Material.Filled.Add">
-                                    @_localizer["Add"]
-                                </MudButton>
+                                        <MudItem xs="4" Class="d-flex justify-content-center align-items-center m-0 p-0 pt-2">
+                                            <MudButton OnClick="AddOption"
+                                                       Size="Size.Medium"
+                                                       Variant="Variant.Filled"
+                                                       Color="Color.Tertiary"
+                                                       EndIcon="@Icons.Material.Filled.Add">
+                                                @_localizer["Add"]
+                                            </MudButton>
+                                        </MudItem>
+                                    </MudGrid>
+                                </MudForm>
                             </MudItem>
 
                             <MudItem xs="12">
@@ -268,7 +279,7 @@
 
                                     @foreach (var option in Control!.Attributes!.Payloads!)
                                     {
-                                        <MudTr>
+                                        <MudTr Class="p-0 m-0">
                                             <MudTd>@option.Key</MudTd>
                                             <MudTd>
                                                 <MudIconButton Icon="@Icons.Material.Filled.Edit" OnClick="()=>EditOption(option.Key)" />
@@ -308,6 +319,10 @@
     public string ClientId { get; set; } = string.Empty;
 
     public ControlValidator Validator = new();
+
+    public MudForm RadioForm = new();
+    public RadioOption RadioOptions = new();
+    public RadioOptionValidator RadioValidator = new();
 
     protected override void OnInitialized()
     {
@@ -355,9 +370,9 @@
         if (IsLoading)
             return;
 
-        await Form.Validate();
+        var validationResult = await Validator.ValidateAsync(Control);
 
-        if (!Form.IsValid)
+        if (!validationResult.IsValid)
             return;
 
         IsLoading = true;
@@ -381,32 +396,33 @@
 
     private async Task AddOption()
     {
-        await Form.Validate();
+        await RadioForm.Validate();
 
-        if (!Form.IsValid)
+        if (!RadioForm.IsValid)
             return;
 
-        if (Control!.Attributes!.Payloads!.ContainsKey(Control.Attributes.NewName))
+        if (Control!.Attributes!.Payloads!.ContainsKey(RadioOptions.Name))
         {
             _snackbar.Add(_localizer["This option already exists."], Severity.Warning);
             return;
         }
 
-        if (Control!.Attributes!.Payloads!.ContainsValue(Control.Attributes.NewPayload))
+        if (Control!.Attributes!.Payloads!.ContainsValue(RadioOptions.Payload))
         {
             _snackbar.Add(_localizer["This payload already is used."], Severity.Warning);
             return;
         }
 
-        Control!.Attributes!.Payloads!.Add(Control.Attributes.NewName, Control.Attributes.NewPayload);
+        Control!.Attributes!.Payloads!.Add(RadioOptions.Name, RadioOptions.Payload);
+        RadioOptions = new();
     }
 
     private void EditOption(string name)
     {
         var payload = Control!.Attributes!.Payloads![name];
 
-        Control!.Attributes!.NewName = name;
-        Control!.Attributes!.NewPayload = payload;
+        RadioOptions.Name = name;
+        RadioOptions.Payload = payload;
 
         Control!.Attributes!.Payloads!.Remove(name);
     }
