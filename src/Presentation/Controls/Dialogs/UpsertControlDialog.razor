@@ -102,6 +102,7 @@
                                 <MudSelectItem Value="ControlType.Radio">@_localizer["Radio (Two Way)"]</MudSelectItem>
                                 <MudSelectItem Value="ControlType.Slider">@_localizer["Slider (Two Way)"]</MudSelectItem>
                                 <MudSelectItem Value="ControlType.Switch">@_localizer["Switch (Two Way)"]</MudSelectItem>
+                                <MudSelectItem Value="ControlType.Color">@_localizer["Color (Two Way)"]</MudSelectItem>
                             </MudSelect>
                         </MudItem>
 
@@ -325,6 +326,44 @@
                                 </MudButton>
                             </MudItem>
                         }
+                        else if (Control.Type == ControlType.Color)
+                        {
+                            <MudItem xs="12">
+                                <MudText>
+                                    @_localizer["This control allows to send color into device."]
+                                </MudText>
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="Control.Attributes.PayloadTemplate"
+                                              T="string"
+                                              Lines="5"
+                                              Label="@_localizer["Payload Template"]"
+                                              Variant="Variant.Filled"
+                                              OnlyValidateIfDirty="true"
+                                              Class="p-0 m-0"
+                                              HelperText="@_localizer["Provide payload to be send on click with inserted value."]"
+                                              For="@(() => Control.Attributes.PayloadTemplate)" />
+                            </MudItem>
+
+                            <MudItem xs="7">
+                                <MudSelect @bind-Value="Control.Attributes.ColorFormatEnum" 
+                                        Label="@_localizer["Format Type"]"
+                                           Variant="Variant.Filled"
+                                           AnchorOrigin="Origin.BottomCenter"
+                                           Disabled="@(!string.IsNullOrEmpty(Control.Id))"
+                                           T="ColorFormat">
+
+                                    <MudSelectItem Value="ColorFormat.HexRGB">@_localizer["Hex RGB (#FFFFFF)"]</MudSelectItem>
+                                </MudSelect>
+                            </MudItem>
+
+                            <MudItem xs="5">
+                                <MudButton Variant="Variant.Filled" Color="Color.Tertiary" OnClick="InsertMapping">
+                                    @_localizer["Insert $value"]
+                                </MudButton>
+                            </MudItem>
+                        }
                     </MudGrid>
                 </LoadedContent>
             </DialogLoading>
@@ -363,7 +402,7 @@
         if (!string.IsNullOrEmpty(Control.Id))
         {
             Control = Control.Copy();
-        StateHasChanged();
+            StateHasChanged();
         }
 
         Control.DeviceId = DeviceId;
@@ -395,6 +434,10 @@
             case ControlType.DateTime:
                 Control.Attributes.SendAsTicks = false;
                 Control.Attributes.PayloadTemplate = string.Empty;
+                break;
+            case ControlType.Color:
+                Control.Attributes.PayloadTemplate = string.Empty;
+                Control.Attributes.ColorFormatEnum = ColorFormat.HexRGB;
                 break;
             default:
                 break;

@@ -2,7 +2,7 @@
 
 public class ControlAttributes
 {
-    // Out controls: Button
+    // Out controls: Button, DateTime
 
     //Used by: Button
     [JsonPropertyName("payload")]
@@ -10,7 +10,7 @@ public class ControlAttributes
 
     // In Controls: Text
 
-    //Two way controls: Switch, Slider, Color, DateTime, State, Radio
+    //Two way controls: Switch, Slider, Color, State, Radio
 
     //Used by: Radio
 
@@ -48,15 +48,15 @@ public class ControlAttributes
         {
             return StringColorFormat switch
             {
-                "rgb" => ColorFormat.RGB,
-                _ => ColorFormat.RGB,
+                "rgb" => ColorFormat.HexRGB,
+                _ => ColorFormat.HexRGB,
             };
         }
         set
         {
             StringColorFormat = value switch
             {
-                ColorFormat.RGB => "rgb",
+                ColorFormat.HexRGB => "rgb",
                 _ => "rgb"
             };
         }

@@ -31,7 +31,7 @@ public class ControlValidator : BaseValidator<Control>
 
         RuleFor(x => x.Attributes.PayloadTemplate)
             .Length(1, 256)
-            .When(x => x.Type == ControlType.Slider || x.Type == ControlType.DateTime);
+            .When(x => x.Type == ControlType.Slider || x.Type == ControlType.DateTime || x.Type == ControlType.Color);
 
         RuleFor(x => x.Attributes.MinValue)
             .LessThan(x => x.Attributes.MaxValue)

@@ -1,0 +1,122 @@
+﻿@using Presentation.Utils;
+@using System.Text.RegularExpressions;
+@inject IStringLocalizer<ColorControl> _localizer;
+
+@inherits BaseControl
+
+<BaseControlView Client="@Client"
+                 Device="@Device"
+                 Control="@Control"
+                 Icon="@Icon"
+                 BackgroundColor="@GetBackgroundColor"
+                 BorderBackgroundColor="@GetBorderBackgroundColor"
+                 ActionAsync="@ActionAsync">
+
+</BaseControlView>
+
+@code
+{
+    public string Icon = @Icons.Material.Filled.DateRange;
+
+    public string Value { get; set; } = string.Empty;
+
+    protected override async void OnInitialized()
+    {
+        base.OnInitialized();
+
+        var value = await Client!.TopicService!.LastMessageOnTopicAsync(Client!.Id, Device!, Control!);
+        Value = CurrentValue(value);
+    }
+
+    public override string GetBackgroundColor()
+    {
+        if (!Control!.IsAvailable)
+        {
+            var background = AppTheme!.Palette.DrawerBackground;
+            if (IsDarkMode)
+                background = AppTheme!.PaletteDark.DrawerBackground;
+
+            background.SetAlpha(background.A * 0.5);
+            return background.ToString();
+        }
+
+        var value =  Client!.TopicService!.LastMessageOnTopic(Client!.Id, Device!, Control!);
+        Value = CurrentValue(value);
+
+        if(string.IsNullOrEmpty(Value))
+            return $"{Control!.Icon.BackgroundHex}80";
+
+        return $"{Value}80";
+    }
+
+    public override string GetBorderBackgroundColor()
+    {
+        if (!Control!.IsAvailable)
+        {
+            if (IsDarkMode)
+                return AppTheme!.PaletteDark.Error.ToString();
+
+            return AppTheme!.Palette.Error.ToString();
+        }
+
+        var value = Client!.TopicService!.LastMessageOnTopic(Client!.Id, Device!, Control!);
+        Value = CurrentValue(value);
+
+        if (string.IsNullOrEmpty(Value))
+            return Control!.Icon.BackgroundHex;
+
+        return Value;
+    }
+
+    public async Task ActionAsync()
+    {
+        var dialog = await DialogService!.ShowAsync<ColorSelectorDialog>(_localizer["Select color to be send"]);
+        var result = await dialog.Result;
+
+        if (result.Canceled)
+            return;
+
+        var hexColor = result.Data as string ?? ThemeColors.ColorPrimary;
+
+        if (!await ConfirmationDialog())
+            return;
+
+        var topic = Control!.GetTopic(Device!);
+        var formattedValue = FormatColor(hexColor);
+        var payload = Control!.Attributes!.PayloadTemplate!.Replace("$value", $"{formattedValue}");
+
+        await Client!.PublishAsync(topic, payload, Control!.QualityOfService);
+    }
+
+    public string FormatColor(string hex) => Control!.Attributes!.StringColorFormat! switch
+    {
+        _ => hex
+    };
+
+    private string CurrentValue(string value, bool isInitilizing = false)
+    {
+        var index = Control!.Attributes!.PayloadTemplate!.IndexOf("$value");
+
+        if (index == -1 || value.Length < index)
+        {
+            if (isInitilizing)
+                _snackbar.Add(_localizer["Failed to determinate slider value. Assuming default."], Severity.Warning);
+
+            return string.Empty;
+        }
+
+        value = value.Substring(index);
+
+        var occurences = Regex.Matches(value, FormatRegex());
+
+        if (occurences.Any())
+            return occurences.First().Value;
+
+        return string.Empty;
+    }
+
+    private string FormatRegex() => Control!.Attributes!.StringColorFormat! switch
+    {
+        _ => @"#([0-9A-Fa-f]{6})"
+    };
+}

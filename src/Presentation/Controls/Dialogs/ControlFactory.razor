@@ -1,4 +1,5 @@
 ﻿@using Presentation.Controls.Implementations
+@using Presentation.Controls.Implementations.ColorComponents
 @using Presentation.Controls.Implementations.DateTimeComponents
 @using Presentation.Controls.Implementations.RadioComponents
 @using Presentation.Controls.Implementations.SliderComponents
@@ -50,6 +51,10 @@
         else if (Control!.Type == ControlType.DateTime)
         {
             <DateTimeControl Client="@Client" Device="@Device" Control="@Control" />
+        }
+        else if (Control!.Type == ControlType.Color)
+        {
+            <ColorControl Client="@Client" Device="@Device" Control="@Control" />
         }
         else
         {
