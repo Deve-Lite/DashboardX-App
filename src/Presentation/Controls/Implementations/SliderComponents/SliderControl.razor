@@ -69,21 +69,23 @@
 
     private double CurrentValueAsync(string value, bool isInitilizing = false)
     {
-        var regexPattern = Control!.Attributes!.PayloadTemplate!.Replace("$value", @"\d+(\.\d+)?");
+        var index = Control!.Attributes!.PayloadTemplate!.IndexOf("$value");
 
-        List<double> occurences = Regex.Matches(regexPattern, Regex.Escape(value))
-                              .Where(x => double.TryParse(x.Value, out _))
-                              .Select(x => double.Parse(x.Value))
-                              .ToList();
+        if (index == -1 || value.Length < index)
+        {
+            if (isInitilizing)
+                _snackbar.Add(_localizer["Failed to determinate slider value. Assuming minimal."], Severity.Warning);
 
-                              //TODO Check if value is found successfully
-        Console.WriteLine(occurences.First());
+            return Convert.ToDouble(Control!.Attributes!.MinValue!);
+        }
 
-        if (occurences.Any())
-            return occurences.First();
+        value = value.Substring(index);
 
-        if (isInitilizing)
-            _snackbar.Add(_localizer["Failed to determinate slider value. Assuming minimal."], Severity.Warning);
-        return Convert.ToDouble(Control.Attributes.MinValue);
+        var occurences = Regex.Matches(value, @"[-+]?\d*\.?\d+");
+
+        if (occurences.Any() && double.TryParse(occurences.First().Value, out double actual))
+            return actual;
+
+        return Convert.ToDouble(Control!.Attributes!.MinValue!);
     }
 }
