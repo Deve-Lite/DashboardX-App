@@ -13,15 +13,14 @@ public class ControlAttributes
     //Two way controls: Switch, Slider, Color, State, Radio
 
     //Used by: Radio
-
     [JsonPropertyName("payloads")]
     public Dictionary<string, string>? Payloads { get; set; }
 
-    // Used by: Switch
+    // Used by: Switch, State
     [JsonPropertyName("onPayload")]
     public string? OnPayload { get; set; }
 
-    // Used by: Switch
+    // Used by: Switch, State
     [JsonPropertyName("offPayload")]
     public string? OffPayload { get; set; }
 
@@ -66,10 +65,6 @@ public class ControlAttributes
     [JsonPropertyName("sendAsTicks")]
     public bool? SendAsTicks { get; set; } = null;
 
-    // Used by: State
-    [JsonPropertyName("secondSpan")]
-    public int? SecondSpan { get; set; } = null;
-
     public ControlAttributes Copy()
     {
         var payloads = Payloads == null ? null : new Dictionary<string, string>(Payloads);
@@ -82,7 +77,6 @@ public class ControlAttributes
             OffPayload = OffPayload,
             PayloadTemplate = PayloadTemplate,
             StringColorFormat = StringColorFormat,
-            SecondSpan = SecondSpan,
             SendAsTicks = SendAsTicks,
             MaxValue = MaxValue,
             MinValue = MinValue

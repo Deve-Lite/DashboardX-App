@@ -2,6 +2,7 @@
 @using Presentation.Brokers
 @using Presentation.Controls.Dialogs
 @using Presentation.Controls;
+@using Presentation.Controls.Implementations.StateComponents
 
 @inject IClientService _clientService
 @inject NavigationManager _navigationManager
@@ -112,6 +113,8 @@
                                    OnClick="() => DevicePagesUtils.RemoveDevice(Device, _dialogService, _localizer, _navigationManager, _runtime)">
                             @_localizer["Delete"]
                         </MudButton>
+
+                        <StateControl Client="@Client" Device="@Device"/>
 
                         <BrokerConnectionSwitch Client="Client" />
 

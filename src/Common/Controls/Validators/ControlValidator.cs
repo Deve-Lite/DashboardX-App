@@ -43,10 +43,10 @@ public class ControlValidator : BaseValidator<Control>
 
         RuleFor(x => x.Attributes.OnPayload)
             .Length(1, 128)
-            .When(x => x.Type == ControlType.Switch);
+            .When(x => x.Type == ControlType.Switch || x.Type == ControlType.State);
 
         RuleFor(x => x.Attributes.OffPayload)
             .Length(1, 128)
-            .When(x => x.Type == ControlType.Switch);
+            .When(x => x.Type == ControlType.Switch || x.Type == ControlType.State);
     }
 }

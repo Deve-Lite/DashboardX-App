@@ -1,0 +1,40 @@
+﻿@inject IStringLocalizer<StateControlDialog> _localizer;
+@inject IClientService _clientService;
+
+@inherits BaseControl
+
+<MudDialog Class="p-0 m-0">
+    <DialogContent>
+        <MudGrid Class="p-0 m-0 w-100">
+
+            <MudItem xs="6">
+                <MudButton Color="Color.Error"
+                Variant="Variant.Filled"
+                           StartIcon="@Icons.Material.Filled.TvOff"
+                           OnClick="() => SubmitState(false)">
+                    @_localizer["Off"]
+                </MudButton>
+            </MudItem>
+
+            <MudItem xs="6">
+                <MudButton Color="Color.Success"
+                           Variant="Variant.Filled"
+                           StartIcon="@Icons.Material.Filled.LiveTv"
+                           OnClick="() => SubmitState(true)">
+                    @_localizer["On"]
+                </MudButton>
+            </MudItem>
+
+        </MudGrid>
+    </DialogContent>
+</MudDialog>
+
+@code
+{
+    [CascadingParameter]
+    private MudDialogInstance? Dialog { get; set; }
+
+    public void Cancel() => Dialog!.Cancel();
+
+    private void SubmitState(bool onPayload) => Dialog!.Close(DialogResult.Ok(onPayload));
+}

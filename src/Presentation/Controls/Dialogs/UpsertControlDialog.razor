@@ -103,6 +103,7 @@
                                 <MudSelectItem Value="ControlType.Slider">@_localizer["Slider (Two Way)"]</MudSelectItem>
                                 <MudSelectItem Value="ControlType.Switch">@_localizer["Switch (Two Way)"]</MudSelectItem>
                                 <MudSelectItem Value="ControlType.Color">@_localizer["Color (Two Way)"]</MudSelectItem>
+                                <MudSelectItem Value="ControlType.State">@_localizer["State (Two Way)"]</MudSelectItem>
                             </MudSelect>
                         </MudItem>
 
@@ -364,6 +365,39 @@
                                 </MudButton>
                             </MudItem>
                         }
+                        else if (Control.Type == ControlType.State)
+                        {
+                            <MudItem xs="12">
+                                <MudText>
+                                    @_localizer["State control purpos is to determinate if device is on or off and affect device state."]
+                                </MudText>
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="Control.Attributes.OnPayload"
+                                              T="string"
+                                              Lines="5"
+                                              Label="@_localizer["On Payload"]"
+                                              Variant="Variant.Filled"
+                                              OnlyValidateIfDirty="true"
+                                              Class="p-0 m-0"
+                                              HelperText="@_localizer["When this payload is seen device is on."]"
+                                              For="@(() => Control.Attributes.OnPayload)" />
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="Control.Attributes.OffPayload"
+                                              T="string"
+                                              Lines="5"
+                                              Label="@_localizer["Off Payload"]"
+                                              Variant="Variant.Filled"
+                                              OnlyValidateIfDirty="true"
+                                              Class="p-0 m-0"
+                                              HelperText="@_localizer["When this payload is seen device is off."]"
+                                              For="@(() => Control.Attributes.OffPayload)" />
+                            </MudItem>
+
+                        }
                     </MudGrid>
                 </LoadedContent>
             </DialogLoading>
@@ -421,7 +455,7 @@
                 Control.Attributes.MinValue = 0;
                 Control.Attributes.MaxValue = 100;
                 break;
-            case ControlType.Switch:
+            case ControlType.Switch or ControlType.State:
                 Control.Attributes.OnPayload = string.Empty;
                 Control.Attributes.OffPayload = string.Empty;
                 break;
