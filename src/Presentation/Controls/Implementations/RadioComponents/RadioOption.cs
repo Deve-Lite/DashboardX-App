@@ -1,4 +1,4 @@
-﻿namespace Presentation.Controls;
+﻿namespace Presentation.Controls.Implementations.RadioComponents;
 
 public class RadioOption
 {

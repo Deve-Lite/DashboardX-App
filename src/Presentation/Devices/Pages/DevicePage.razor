@@ -107,14 +107,18 @@
                             @_localizer["Broker"]
                         </MudButton>
 
-                        <MudButton Class="z-10 m-0 ml-2 mr-2"
+                        <MudButton Class="z-10 m-0 ml-2"
                                    Variant="Variant.Filled"
                                    Color="Color.Error"
                                    OnClick="() => DevicePagesUtils.RemoveDevice(Device, _dialogService, _localizer, _navigationManager, _runtime)">
                             @_localizer["Delete"]
                         </MudButton>
 
-                        <StateControl Client="@Client" Device="@Device"/>
+
+                        <StateControl Class="z-10 m-0 ml-2 mr-2"
+                                      Client="@Client"
+                                      Device="@Device" />
+
 
                         <BrokerConnectionSwitch Client="Client" />
 
@@ -136,7 +140,7 @@
                             <ControlFactory Client="@Client"
                                             Device="@Device"
                                             Control="@control"
-                                            RefreshList="StateHasChanged"/>
+                                            RefreshList="StateHasChanged" />
                         </MudItem>
                     }
                 </MudElement>

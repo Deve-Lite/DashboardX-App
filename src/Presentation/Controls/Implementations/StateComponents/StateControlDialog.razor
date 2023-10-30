@@ -1,7 +1,7 @@
 ﻿@inject IStringLocalizer<StateControlDialog> _localizer;
 @inject IClientService _clientService;
 
-@inherits BaseControl
+@inherits BaseDialog
 
 <MudDialog Class="p-0 m-0">
     <DialogContent>
@@ -27,14 +27,25 @@
 
         </MudGrid>
     </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel"
+                   Variant="Variant.Filled"
+                   Color="Color.Error">@_localizer["Cancel"]</MudButton>
+
+        <MudButton OnClick="async() => await ControlPagesUtils.UpdateControl(_dialogService, Control!, Client!.Id, StateHasChanged, _localizer)"
+                   ButtonType="ButtonType.Submit"
+                   Variant="Variant.Filled"
+                   Color="Color.Warning">@_localizer["Edit"] </MudButton>
+    </DialogActions>
 </MudDialog>
 
 @code
 {
-    [CascadingParameter]
-    private MudDialogInstance? Dialog { get; set; }
+    [Parameter]
+    public Control? Control { get; set; }
 
-    public void Cancel() => Dialog!.Cancel();
+    [Parameter]
+    public Client? Client { get; set; }
 
     private void SubmitState(bool onPayload) => Dialog!.Close(DialogResult.Ok(onPayload));
 }

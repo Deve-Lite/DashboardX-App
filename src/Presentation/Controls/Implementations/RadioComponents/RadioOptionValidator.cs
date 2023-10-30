@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace Presentation.Controls;
+namespace Presentation.Controls.Implementations.RadioComponents;
 
 public class RadioOptionValidator : BaseValidator<RadioOption>
 {

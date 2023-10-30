@@ -1,10 +1,12 @@
-﻿@inject IStringLocalizer<StateControl> _localizer
+﻿@using Presentation.Utils;
+@inject IStringLocalizer<StateControl> _localizer
 
 @inherits BaseControl
 
 @if (Condition == StateControlCondition.None)
 {
     <MudButton Variant="Variant.Filled"
+               Class="@Class"
                StartIcon="@Icons.Material.Filled.CloudOff"
                OnClick="NotAvaliableToast"
                Color="Color.Warning">
@@ -14,6 +16,7 @@
 else
 {
     <MudButton Variant="Variant.Filled"
+               Class="@Class"
                Style="@($"border: 2px solid {GetBorderBackgroundColor()}; background-color: {GetBackgroundColor()};")"
                StartIcon="@GetIcon()"
                OnClick="ActionAsync">
@@ -23,6 +26,9 @@ else
 
 @code
 {
+    [Parameter]
+    public string Class { get; set; } = string.Empty;
+
     private StateControlCondition Condition = StateControlCondition.None;
     private string Value { get; set; } = string.Empty;
 
@@ -111,7 +117,7 @@ else
         else if (Control!.Attributes!.OnPayload == Value)
             return Icons.Material.Filled.CloudQueue;
 
-        return Icons.Material.Filled.CloudSync;
+        return IconUtils.GetIcon(Control.Icon.Name);
     }
 
     public async Task ActionAsync()
@@ -121,8 +127,14 @@ else
             _snackbar.Add(_localizer["Hey, this control is currently off!"]);
             return;
         }
+        
+        var parameters = new DialogParameters<StateControlDialog>
+        {
+            { x => x.Control, Control },
+            { x => x.Client, Client }
+        };
 
-        var dialog = await DialogService!.ShowAsync<StateControlDialog>(_localizer["Device state"]);
+        var dialog = await DialogService!.ShowAsync<StateControlDialog>(_localizer["Device state"], parameters);
         var result = await dialog.Result;
 
         if (result.Canceled)
