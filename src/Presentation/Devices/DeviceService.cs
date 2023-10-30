@@ -23,8 +23,9 @@ public class DeviceService : AuthorizedService, IDeviceService
             Route = $"api/v1/devices?brokerId={brokerId}"
         };
 
-
-        return await SendAsync<List<Device>>(request);
+        var response = await SendAsync<List<Device>>(request);
+        
+        return response;
     }
 
     public async Task<IResult<Device>> GetDevice(string id)
@@ -35,7 +36,9 @@ public class DeviceService : AuthorizedService, IDeviceService
             Route = $"api/v1/devices/{id}"
         };
 
-        return await SendAsync<Device>(request);
+        var response = await SendAsync<Device>(request);
+
+        return response;
     }
 
     public async Task<IResult<List<Device>>> GetDevices()
@@ -46,7 +49,9 @@ public class DeviceService : AuthorizedService, IDeviceService
             Route = "api/v1/devices"
         };
 
-        return await SendAsync<List<Device>>(request);
+        var response = await SendAsync<List<Device>>(request);
+
+        return response;
     }
 
     public async Task<IResult<Device>> CreateDevice(DeviceDTO dto)
@@ -113,7 +118,9 @@ public class DeviceService : AuthorizedService, IDeviceService
             Route = $"api/v1/devices/{deviceId}"
         };
 
-        return await SendAsync(request);
+        var response = await SendAsync(request);
+
+        return response;
     }
 
     #region DeviceControls
@@ -126,7 +133,9 @@ public class DeviceService : AuthorizedService, IDeviceService
             Route = $"api/v1/devices/{deviceId}/controls"
         };
 
-        return await SendAsync<List<Control>>(request);
+        var response = await SendAsync<List<Control>>(request);
+
+        return response;
     }
 
     public async Task<IResult> RemoveDeviceControls(string deviceId, string controlId)
@@ -137,7 +146,10 @@ public class DeviceService : AuthorizedService, IDeviceService
             Route = $"api/v1/devices/{deviceId}/controls/{controlId}",
         };
 
-        return await SendAsync(request);
+        var response = await SendAsync(request);
+
+        return response;
+
     }
 
     public async Task<IResult<Control>> CreateDeviceControl(Control control)

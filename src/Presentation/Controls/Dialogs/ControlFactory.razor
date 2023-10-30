@@ -1,58 +1,71 @@
 ﻿@using Presentation.Controls.Implementations
+@using Presentation.Controls.Implementations.ColorComponents
+@using Presentation.Controls.Implementations.DateTimeComponents
+@using Presentation.Controls.Implementations.RadioComponents
 @using Presentation.Controls.Implementations.SliderComponents
 @using Presentation.Controls.Implementations.TextComponents
 @using Presentation.Utils;
 @inject IStringLocalizer<ControlFactory> _localizer;
 
-<MudPaper Class="p-0 m-0 w-100 d-flex" Style="border-radius: 1rem;">
+@if(Control!.Type != ControlType.State)
+{
+    <MudPaper Class="p-0 m-0 w-100 d-flex" Style="border-radius: 1rem;">
 
-    <MudElement Class="p-0 m-0 d-flex flex-column flex-wrap justify-content-center align-items-center" Style="width:80px;">
+        <MudElement Class="p-0 m-0 d-flex flex-column flex-wrap justify-content-center align-items-center" Style="width:80px;">
 
-        <MudIconButton Size="Size.Medium"
-                       Icon="@IconUtils.DefaultEditIcon"
-                       Class="m-0"
-                       OnClick="async() => await ControlPagesUtils.UpdateControl(_dialogService, Control!, Client!.Id, StateHasChanged, _localizer)" />
+            <MudIconButton Size="Size.Medium"
+                           Icon="@IconUtils.DefaultEditIcon"
+                           Class="m-0"
+                           OnClick="async() => await ControlPagesUtils.UpdateControl(_dialogService, Control!, Client!.Id, StateHasChanged, _localizer)" />
 
-        <MudIconButton Size="Size.Medium"
-                       Icon="@IconUtils.DefaultRemoveIcon"
-                       Class="m-0"
-                       OnClick="async() => await ControlPagesUtils.RemoveControl(_dialogService, Control!, Client!.Id, _localizer, RefreshList!)" />
+            <MudIconButton Size="Size.Medium"
+                           Icon="@IconUtils.DefaultRemoveIcon"
+                           Class="m-0"
+                           OnClick="async() => await ControlPagesUtils.RemoveControl(_dialogService, Control!, Client!.Id, _localizer, RefreshList!)" />
 
-    </MudElement>
+        </MudElement>
 
-    <MudElement Class="p-0 m-0 d-flex w-100 justify-content-center align-items-center">
-        @if (Control!.Type == ControlType.State)
-        {
-            <!--TODO: Thinkof state control placing -->
-        }
-        else if (Control!.Type == ControlType.Button)
-        {
-            <ButtonControl Client="@Client" Device="@Device" Control="@Control" />
-        }
-        else if (Control!.Type == ControlType.Switch)
-        {
-            <SwitchControl Client="@Client" Device="@Device" Control="@Control"/>
-        }
-        else if (Control!.Type == ControlType.Slider)
-        {
-            <SliderControl Client="@Client" Device="@Device" Control="@Control" />
-        }
-        else if(Control!.Type == ControlType.Text)
-        {
-            <TextControl Client="@Client" Device="@Device" Control="@Control" />
-        }
-        else
-        {
-            <MudText>
-                @_localizer["Sorry this control is not yet implemented."]
-            </MudText>
-        }
-    </MudElement>
-</MudPaper>
+        <MudElement Class="p-0 m-0 d-flex w-100 justify-content-center align-items-center">
+            @if (Control!.Type == ControlType.Button)
+            {
+                <ButtonControl Client="@Client" Device="@Device" Control="@Control" />
+            }
+            else if (Control!.Type == ControlType.Switch)
+            {
+                <SwitchControl Client="@Client" Device="@Device" Control="@Control" />
+            }
+            else if (Control!.Type == ControlType.Slider)
+            {
+                <SliderControl Client="@Client" Device="@Device" Control="@Control" />
+            }
+            else if (Control!.Type == ControlType.Text)
+            {
+                <TextControl Client="@Client" Device="@Device" Control="@Control" />
+            }
+            else if (Control!.Type == ControlType.Radio)
+            {
+                <RadioControl Client="@Client" Device="@Device" Control="@Control" />
+            }
+            else if (Control!.Type == ControlType.DateTime)
+            {
+                <DateTimeControl Client="@Client" Device="@Device" Control="@Control" />
+            }
+            else if (Control!.Type == ControlType.Color)
+            {
+                <ColorControl Client="@Client" Device="@Device" Control="@Control" />
+            }
+            else
+            {
+                <MudText>
+                    @_localizer["Not implemented."]
+                </MudText>
+            }
+        </MudElement>
+    </MudPaper>
+}
 
 @code
 {
-
     [Parameter]
     public Control? Control { get; set; }
 

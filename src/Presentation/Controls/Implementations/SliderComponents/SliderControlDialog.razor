@@ -6,22 +6,41 @@
 <MudDialog>
     <DialogContent>
 
-        <MudSlider Value="Value"
-                   ValueChanged="SetValue"
-                   T="double"
-                   Max="MaxSliderValue"
-                   Min="MinSliderValue"
-                   ValueLabel="true"
-                   Size="Size.Large">
-            Value
-        </MudSlider>
+        <MudGrid Class="p-1 m-0 w-100">
+
+            <MudItem xs="12" lg="7">
+                <MudText>@_localizer["You may slide value or provde it using numerical field."]</MudText>
+            </MudItem>
+
+            <MudItem xs="12" lg="5">
+                <MudNumericField @bind-Value="Value"
+                                 Class="p-0 m-0"
+                                 Label="@_localizer["Exact Vlue"]"
+                                 T="double"
+                                 Variant="Variant.Filled"
+                                 Min="MinSliderValue"
+                                 Max="MaxSliderValue" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudSlider @bind-Value="Value"
+                           Class="p-0 m-0"
+                           T="double"
+                           Max="MaxSliderValue"
+                           Min="MinSliderValue"
+                           Step="0.01"
+                           ValueLabel="true"
+                           Size="Size.Large">
+                </MudSlider>
+            </MudItem>
+        </MudGrid>
 
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel"
                    Variant="Variant.Filled"
                    Color="Color.Error">@_localizer["Cancel"]</MudButton>
-                   
+
         <MudButton OnClick="SubmitSliderValue"
                    ButtonType="ButtonType.Submit"
                    Variant="Variant.Filled"
@@ -50,11 +69,11 @@
         base.OnInitialized();
     }
 
-    private void SetValue(double value) 
-    { 
-        Value = value; 
+    private void SetValue(double value)
+    {
+        Value = value;
     }
-    
+
     public void Cancel() => Dialog!.Cancel();
 
     private void SubmitSliderValue() => Dialog!.Close(DialogResult.Ok(Value));

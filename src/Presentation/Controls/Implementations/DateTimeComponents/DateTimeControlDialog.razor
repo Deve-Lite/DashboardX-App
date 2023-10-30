@@ -1,0 +1,53 @@
+﻿@inject IStringLocalizer<DateTimeControlDialog> _localizer;
+@inject IClientService _clientService;
+
+@inherits BaseControl
+
+<MudDialog>
+    <DialogContent>
+
+        <MudCarousel Style="width:400px; height:450px;"
+                     ShowArrows="true"
+                     ShowBullets="true"
+                     EnableSwipeGesture="true"
+                     AutoCycle="false"
+                     TData="object">
+            <MudCarouselItem Transition="Transition.Fade">
+                <MudElement Class="m-0 p-0 w-100 d-flex align-items-center justify-content-center">
+                    <MudDatePicker @bind-Date="DateToSend"
+                                   PickerVariant="PickerVariant.Static" />
+                </MudElement>
+            </MudCarouselItem>
+            <MudCarouselItem Transition="Transition.Fade">
+                <MudElement Class="m-0 p-0 w-100 d-flex align-items-center justify-content-center">
+                    <MudTimePicker @bind-Time="TimeToSend"
+                                   PickerVariant="PickerVariant.Static" />
+                </MudElement>
+            </MudCarouselItem>
+        </MudCarousel>
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel"
+                   Variant="Variant.Filled"
+                   Color="Color.Error">@_localizer["Cancel"]</MudButton>
+
+        <MudButton OnClick="SubmitSliderValue"
+                   ButtonType="ButtonType.Submit"
+                   Variant="Variant.Filled"
+                   Color="Color.Warning">@_localizer["Submit"] </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code
+{
+    [CascadingParameter]
+    private MudDialogInstance? Dialog { get; set; }
+
+    public DateTime? DateToSend { get; set; } = DateTime.Now;
+    public TimeSpan? TimeToSend { get; set; } = DateTime.Now.TimeOfDay;
+
+    public void Cancel() => Dialog!.Cancel();
+
+    private void SubmitSliderValue() => Dialog!.Close(DialogResult.Ok(DateToSend + TimeToSend));
+}

@@ -2,7 +2,7 @@
 
 public class ControlAttributes
 {
-    // Out controls: Button
+    // Out controls: Button, DateTime
 
     //Used by: Button
     [JsonPropertyName("payload")]
@@ -10,18 +10,17 @@ public class ControlAttributes
 
     // In Controls: Text
 
-    //Two way controls: Switch, Slider, Color, DateTime, State, Radio
+    //Two way controls: Switch, Slider, Color, State, Radio
 
     //Used by: Radio
-
     [JsonPropertyName("payloads")]
     public Dictionary<string, string>? Payloads { get; set; }
 
-    // Used by: Switch
+    // Used by: Switch, State
     [JsonPropertyName("onPayload")]
     public string? OnPayload { get; set; }
 
-    // Used by: Switch
+    // Used by: Switch, State
     [JsonPropertyName("offPayload")]
     public string? OffPayload { get; set; }
 
@@ -48,15 +47,15 @@ public class ControlAttributes
         {
             return StringColorFormat switch
             {
-                "rgb" => ColorFormat.RGB,
-                _ => ColorFormat.RGB,
+                "rgb" => ColorFormat.HexRGB,
+                _ => ColorFormat.HexRGB,
             };
         }
         set
         {
             StringColorFormat = value switch
             {
-                ColorFormat.RGB => "rgb",
+                ColorFormat.HexRGB => "rgb",
                 _ => "rgb"
             };
         }
@@ -65,10 +64,6 @@ public class ControlAttributes
     // Used by: DateTime
     [JsonPropertyName("sendAsTicks")]
     public bool? SendAsTicks { get; set; } = null;
-
-    // Used by: State
-    [JsonPropertyName("secondSpan")]
-    public int? SecondSpan { get; set; } = null;
 
     public ControlAttributes Copy()
     {
@@ -82,7 +77,6 @@ public class ControlAttributes
             OffPayload = OffPayload,
             PayloadTemplate = PayloadTemplate,
             StringColorFormat = StringColorFormat,
-            SecondSpan = SecondSpan,
             SendAsTicks = SendAsTicks,
             MaxValue = MaxValue,
             MinValue = MinValue

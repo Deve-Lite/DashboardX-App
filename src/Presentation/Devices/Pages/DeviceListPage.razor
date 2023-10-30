@@ -1,4 +1,5 @@
 ﻿@page "/devices"
+@using Presentation.Controls.Implementations.StateComponents
 @using Presentation.Utils;
 @using Presentation.Controls.Implementations;
 @inject IClientService _clientService
@@ -93,7 +94,7 @@
                                         </MudText>
                                     </MudItem>
                                     <MudItem xs="3" Class="d-flex m-0 p-0 align-items-center justify-content-center">
-                                        <DeviceStateControl Client="client"
+                                        <StateControl Client="client"
                                                             Device="device" />
                                     </MudItem>
                                     <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-evenly">

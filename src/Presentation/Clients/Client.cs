@@ -73,7 +73,7 @@ public class Client : IAsyncDisposable
         }
         catch (Exception e)
         {
-            _logger.LogError($"Failed to send request {e.Message}");
+            _logger.LogError("Failed to send request", e.Message);
 
             return new MqttClientPublishResult();
         }
@@ -89,10 +89,10 @@ public class Client : IAsyncDisposable
 
             return Result.Success();
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
             IsConnected = false;
-            _logger.LogError($"Failed to connect to broker. {ex.Message}");
+            _logger.LogError("Failed to connect to broker.", e.Message);
 
             return Result.Fail(message: "Failed to connect to broker.");
         }
@@ -140,7 +140,7 @@ public class Client : IAsyncDisposable
             }
             catch (Exception e)
             {
-                _logger.LogError($"Failed to unsubscribe: {e}");
+                _logger.LogError("Failed to unsubscribe to topic.", e.Message);
             }
         }
 
@@ -179,9 +179,9 @@ public class Client : IAsyncDisposable
             
             return true;
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            _logger.LogError("." + ex.Message);
+            _logger.LogError("Failed to resubscribe to topic.", e.Message);
             return false;
         }
     }
@@ -225,7 +225,7 @@ public class Client : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogError("." + ex.Message);
+            _logger.LogError("Failed to subscribe to topic.", ex.Message);
             return false;
         }
     }
@@ -321,7 +321,7 @@ public class Client : IAsyncDisposable
             var topic = e.ApplicationMessage.Topic;
             var message = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
             await TopicService.UpdateMessageOnTopic(Broker.Id, topic, message);
-            _logger.LogInformation($"Message received on topic: {topic}. Message: {message}");
+            _logger.LogInformation("Message received. {topic} {message}", topic, message);
             RerenderPage?.Invoke();
         };
 
@@ -330,11 +330,11 @@ public class Client : IAsyncDisposable
             if (!IsConnected)
                 return;
 
-            _logger.LogWarning($"Client {Broker.Id} disconnected. Reconnecting...");
+            _logger.LogWarning("Client disconnected. Reconnecting...", Broker.Id);
             RerenderPage?.Invoke();
             await MqttService.ReconnectAsync();
             RerenderPage?.Invoke();
-            _logger.LogWarning($"Client {Broker.Id} reconnected.");
+            _logger.LogWarning("Client reconnected.", Broker.Id);
         };
     }
 

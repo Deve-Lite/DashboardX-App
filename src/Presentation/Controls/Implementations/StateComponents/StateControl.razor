@@ -1,0 +1,161 @@
+﻿@using Presentation.Utils;
+@inject IStringLocalizer<StateControl> _localizer
+
+@inherits BaseControl
+
+@if (Condition == StateControlCondition.None)
+{
+    <MudButton Variant="Variant.Filled"
+               Class="@Class"
+               StartIcon="@Icons.Material.Filled.CloudOff"
+               OnClick="NotAvaliableToast"
+               Color="Color.Warning">
+        @_localizer["Inaccessible"]
+    </MudButton>
+}
+else
+{
+    <MudButton Variant="Variant.Filled"
+               Class="@Class"
+               Style="@($"border: 2px solid {GetBorderBackgroundColor()}; background-color: {GetBackgroundColor()};")"
+               StartIcon="@GetIcon()"
+               OnClick="ActionAsync">
+        @GetName()
+    </MudButton>
+}
+
+@code
+{
+    [Parameter]
+    public string Class { get; set; } = string.Empty;
+
+    private StateControlCondition Condition = StateControlCondition.None;
+    private string Value { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var control = Device!.Controls.FirstOrDefault(x => x.Type == ControlType.State);
+
+        if (control is null)
+            return;
+
+        Control = control;
+        Value = await Client!.TopicService.LastMessageOnTopicAsync(Client!.Id, Device!, Control!);
+
+        if (Control!.Attributes!.OffPayload == Value)
+            Condition = StateControlCondition.Off;
+        else if (Control!.Attributes!.OnPayload == Value)
+            Condition = StateControlCondition.On;
+        else
+            Condition = StateControlCondition.Unknown;
+    }
+
+    public override string GetName()
+    {
+        Value = Client!.TopicService.LastMessageOnTopic(Client!.Id, Device!, Control!);
+
+        if (Control!.Attributes!.OffPayload == Value)
+            return _localizer["Off"];
+        else if (Control!.Attributes!.OnPayload == Value)
+            return _localizer["On"];
+
+        return _localizer["Unk"];
+    }
+
+    public override string GetBackgroundColor()
+    {
+        if (!Control!.IsAvailable)
+        {
+            var background = AppTheme!.Palette.DrawerBackground;
+            if (IsDarkMode)
+                background = AppTheme!.PaletteDark.DrawerBackground;
+
+            background.SetAlpha(background.A * 0.5);
+            return background.ToString();
+        }
+
+        Value = Client!.TopicService.LastMessageOnTopic(Client!.Id, Device!, Control!);
+
+        if (Control!.Attributes!.OffPayload == Value)
+        {
+            var color = IsDarkMode ? AppTheme!.PaletteDark.Error : AppTheme!.Palette.Error;
+            return color.SetAlpha(128).ToString();
+        }
+        else if (Control!.Attributes!.OnPayload == Value)
+        {
+            var color = IsDarkMode ? AppTheme!.PaletteDark.Success : AppTheme!.Palette.Success;
+            return color.SetAlpha(128).ToString();
+        }
+
+        return $"{Control!.Icon.BackgroundHex}80";
+    }
+
+    public override string GetBorderBackgroundColor()
+    {
+        if (!Control!.IsAvailable)
+        {
+            if (IsDarkMode)
+                return AppTheme!.PaletteDark.Error.ToString();
+
+            return AppTheme!.Palette.Error.ToString();
+        }
+
+        Value = Client!.TopicService.LastMessageOnTopic(Client!.Id, Device!, Control!);
+
+        if (Control!.Attributes!.OffPayload == Value)
+            return $"{(IsDarkMode ? AppTheme!.PaletteDark.Error : AppTheme!.Palette.Error)}";
+        else if (Control!.Attributes!.OnPayload == Value)
+            return $"{(IsDarkMode ? AppTheme!.PaletteDark.Success : AppTheme!.Palette.Success)}";
+
+        return Control!.Icon.BackgroundHex;
+    }
+
+    public string GetIcon()
+    {
+        if (Control!.Attributes!.OffPayload == Value)
+            return Icons.Material.Filled.Cloud;
+        else if (Control!.Attributes!.OnPayload == Value)
+            return Icons.Material.Filled.CloudQueue;
+
+        return IconUtils.GetIcon(Control.Icon.Name);
+    }
+
+    public async Task ActionAsync()
+    {
+        if (!Control!.IsAvailable)
+        {
+            _snackbar.Add(_localizer["Hey, this control is currently off!"]);
+            return;
+        }
+        
+        var parameters = new DialogParameters<StateControlDialog>
+        {
+            { x => x.Control, Control },
+            { x => x.Client, Client }
+        };
+
+        var dialog = await DialogService!.ShowAsync<StateControlDialog>(_localizer["Device state"], parameters);
+        var result = await dialog.Result;
+
+        if (result.Canceled)
+            return;
+
+        var onPayload = Convert.ToBoolean(result.Data);
+
+        if (!await ConfirmationDialog())
+            return;
+
+        var topic = Control!.GetTopic(Device!);
+        var payload = Control.Attributes.OffPayload;
+
+        if (onPayload)
+            payload = Control.Attributes.OnPayload;
+
+        await Client!.PublishAsync(topic, payload!, Control!.QualityOfService);
+    }
+
+    public void NotAvaliableToast()
+    {
+        _snackbar.Add(_localizer["This device doesn't have state control."], Severity.Warning);
+    }
+}

@@ -1,4 +1,5 @@
 ﻿using Common.Controls.Models;
+using FluentValidation;
 
 namespace Common.Controls.Validators;
 
@@ -25,11 +26,27 @@ public class ControlValidator : BaseValidator<Control>
             .MaximumLength(64);
 
         RuleFor(x => x.Attributes.Payload)
-            .Length(1, 256)
+            .Length(1, 128)
             .When(x => x.Type == ControlType.Button);
 
         RuleFor(x => x.Attributes.PayloadTemplate)
             .Length(1, 256)
+            .When(x => x.Type == ControlType.Slider || x.Type == ControlType.DateTime || x.Type == ControlType.Color);
+
+        RuleFor(x => x.Attributes.MinValue)
+            .LessThan(x => x.Attributes.MaxValue)
             .When(x => x.Type == ControlType.Slider);
+
+        RuleFor(x => x.Attributes.MaxValue)
+             .GreaterThan(x => x.Attributes.MinValue)
+             .When(x => x.Type == ControlType.Slider);
+
+        RuleFor(x => x.Attributes.OnPayload)
+            .Length(1, 128)
+            .When(x => x.Type == ControlType.Switch || x.Type == ControlType.State);
+
+        RuleFor(x => x.Attributes.OffPayload)
+            .Length(1, 128)
+            .When(x => x.Type == ControlType.Switch || x.Type == ControlType.State);
     }
 }

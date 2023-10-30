@@ -1,0 +1,50 @@
+﻿@using Presentation.Utils;
+@using System.Text.RegularExpressions;
+@inject IStringLocalizer<DateTimeControl> _localizer;
+
+@inherits BaseControl
+
+<BaseControlView Client="@Client"
+                 Device="@Device"
+                 Control="@Control"
+                 Icon="@Icon"
+                 ActionAsync="@ActionAsync">
+
+</BaseControlView>
+
+@code
+{
+    public string Icon = @Icons.Material.Filled.DateRange;
+
+    public double Value { get; set; }
+
+    protected override async void OnInitialized()
+    {
+        base.OnInitialized();
+
+        if (Control!.IsAvailable)
+        {
+            var value = await Client!.TopicService!.LastMessageOnTopicAsync(Client!.Id, Device!, Control!) ?? "empty";
+        }
+    }
+
+    public async Task ActionAsync()
+    {
+        var dialog = await DialogService!.ShowAsync<DateTimeControlDialog>(_localizer["Select date to send."]);
+        var result = await dialog.Result;
+
+        if (result.Canceled)
+            return;
+
+        var current = Convert.ToDateTime(result.Data);
+
+        if (!await ConfirmationDialog())
+            return;
+
+        var topic = Control!.GetTopic(Device!);
+        var payload = Control!.Attributes!.PayloadTemplate!
+        .Replace("$value", $"{(Control.Attributes.SendAsTicks.HasValue && Control.Attributes.SendAsTicks.Value ? current.Ticks : current)}");
+
+        await Client!.PublishAsync(topic, payload, Control!.QualityOfService);
+    }
+}

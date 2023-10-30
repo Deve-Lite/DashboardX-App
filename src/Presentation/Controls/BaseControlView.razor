@@ -1,0 +1,79 @@
+﻿@using Presentation.Utils;
+
+@inherits BaseControl
+
+@if(CustomView == null)
+{
+    <MudCard Elevation="1"
+             Class="container container-fit-content p-0 m-0 w-100 h-100"
+             Style="@($"border: 2px solid {GetBorderBackgroundColor()}; border-radius: 1rem; background-color: {GetBackgroundColor()};")">
+        <MudButton Class="p-0 m-0 w-100 h-100 bg-transparent" OnClick="InvokeActionAsync">
+            <MudGrid Class="p-0 m-0 w-100 h-100 d-flex flex-column">
+
+                <MudItem xs="12" Style="position:absolute;"
+                         Class="m-0 p-2 d-flex justify-content-end align-items-center">
+                    <MudIcon Icon="@Icon"
+                             Style="max-height:16px; max-width:16px;" />
+                </MudItem>
+
+                @if (Control!.DisplayName)
+                {
+                    <MudItem xs="12" Class="pl-3 pr-3 m-0 pt-4 pb-3 d-flex justify-content-center align-items-center">
+                        <MudIcon Icon="@IconUtils.GetIcon(Control?.Icon?.Name!)" Size="Size.Large" />
+                    </MudItem>
+
+                    <MudItem xs="12" Class="p-1 d-flex justify-content-center align-items-center hide-overlapping-text">
+                        <MudText Typo="Typo.body1">
+                            @GetName()
+                        </MudText>
+                    </MudItem>
+                }
+                else
+                {
+                    <MudItem xs="12" Class="m-0 p-0 h-100 d-flex justify-content-center align-items-center">
+                        <MudElement Class="h-100 w-100">
+                            <MudIcon Icon="@IconUtils.GetIcon(Control?.Icon?.Name!)"
+                                     Size="Size.Large" />
+                        </MudElement>
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudButton>
+    </MudCard>
+}
+else
+{
+    @CustomView
+}
+
+@code 
+{
+    [Parameter]
+    public RenderFragment? CustomView { get; set; }
+    [Parameter]
+    public string Icon { get; set; } = IconUtils.DefualtIcon;
+
+    [Parameter]
+    public Func<Task> ActionAsync { get; set; } = default!;
+    [Parameter]
+    public Func<string> BackgroundColor { get; set; }
+    [Parameter]
+    public Func<string> BorderBackgroundColor { get; set; }
+    [Parameter]
+    public Func<string> Name { get; set; }
+
+    public BaseControlView()
+    {
+        BackgroundColor = base.GetBackgroundColor;
+        BorderBackgroundColor = base.GetBorderBackgroundColor;
+        Name = base.GetName;
+    }
+
+    public override string GetBackgroundColor() => BackgroundColor.Invoke();
+
+    public override string GetBorderBackgroundColor() => BorderBackgroundColor.Invoke();
+
+    public override string GetName() => Name.Invoke();
+
+    public async Task InvokeActionAsync() => await ActionAsync();
+}

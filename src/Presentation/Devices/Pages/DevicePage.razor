@@ -2,6 +2,7 @@
 @using Presentation.Brokers
 @using Presentation.Controls.Dialogs
 @using Presentation.Controls;
+@using Presentation.Controls.Implementations.StateComponents
 
 @inject IClientService _clientService
 @inject NavigationManager _navigationManager
@@ -115,6 +116,10 @@
 
                         <BrokerConnectionSwitch Client="Client" />
 
+                        <StateControl Class="z-10 m-0 ml-2"
+                                      Client="@Client"
+                                      Device="@Device" />
+
                     </MudCardActions>
 
                 </MudCard>
@@ -133,7 +138,7 @@
                             <ControlFactory Client="@Client"
                                             Device="@Device"
                                             Control="@control"
-                                            RefreshList="StateHasChanged"/>
+                                            RefreshList="StateHasChanged" />
                         </MudItem>
                     }
                 </MudElement>
