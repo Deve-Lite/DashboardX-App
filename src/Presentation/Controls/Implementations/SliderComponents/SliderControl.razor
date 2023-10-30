@@ -81,7 +81,7 @@
 
         value = value.Substring(index);
 
-        var occurences = Regex.Matches(value, @"[-+]?\d*\.?\d+");
+        var occurences = Regex.Matches(value, @"[-+]?\d*[.,]?\d+");
 
         if (occurences.Any() && double.TryParse(occurences.First().Value, out double actual))
             return actual;
