@@ -6,25 +6,33 @@
 <MudDialog>
     <DialogContent>
 
-        <MudGrid Class="p-3 m-0 w-100">
+        <MudGrid Class="p-1 m-0 w-100">
 
-            <MudSlider @bind-Value="Value"
-                       Class="p-1 m-0"
-                       Label="@_localizer["Slide value"]"
-                       T="double"
-                       Max="MaxSliderValue"
-                       Min="MinSliderValue"
-                       ValueLabel="true"
-                       Size="Size.Large">
-            </MudSlider>
+            <MudItem xs="12" lg="7">
+                <MudText>@_localizer["You may slide value or provde it using numerical field."]</MudText>
+            </MudItem>
 
-            <MudNumericField @bind-Value="Value"
-                             Class="p-1 m-0"
-                             Label="@_localizer["Provide exact numerical value"]"
-                             T="double"
-                             Variant="Variant.Filled"
-                             Min="MinSliderValue"
-                             Max="MaxSliderValue"/>
+            <MudItem xs="12" lg="5">
+                <MudNumericField @bind-Value="Value"
+                                 Class="p-0 m-0"
+                                 Label="@_localizer["Exact Vlue"]"
+                                 T="double"
+                                 Variant="Variant.Filled"
+                                 Min="MinSliderValue"
+                                 Max="MaxSliderValue" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudSlider @bind-Value="Value"
+                           Class="p-0 m-0"
+                           T="double"
+                           Max="MaxSliderValue"
+                           Min="MinSliderValue"
+                           Step="0.01"
+                           ValueLabel="true"
+                           Size="Size.Large">
+                </MudSlider>
+            </MudItem>
         </MudGrid>
 
     </DialogContent>
