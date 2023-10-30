@@ -13,10 +13,6 @@ public class BrokerDTO : BaseModel
 
     [JsonPropertyName("isSsl")]
     public bool IsSSL { get; set; }
-    [JsonPropertyName("username")]
-    public string Username { get; set; } = string.Empty;
-    [JsonPropertyName("password")]
-    public string Password { get; set; } = string.Empty;
 
     [JsonPropertyName("clientId")]
     public string ClientId { get; set; } = string.Empty;
@@ -25,20 +21,6 @@ public class BrokerDTO : BaseModel
 
     [JsonPropertyName("updatedAt")]
     public DateTime EditedAt { get; set; }
-
-    public Broker Copy() => new()
-    {
-        ClientId = ClientId,
-        EditedAt = EditedAt,
-        Icon = Icon.Copy(),
-        Id = Id,
-        IsSSL = IsSSL,
-        KeepAlive = KeepAlive,
-        Name = Name,
-        Port = Port,
-        Server = Server,
-    };
-
 }
 
 

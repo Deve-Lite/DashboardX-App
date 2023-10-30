@@ -1,0 +1,50 @@
+@page "/auth/confirm/{Token}"
+@using Presentation.Utils;
+@attribute [AllowAnonymous]
+
+@inject IStringLocalizer<ConfirmEmailPage> _localizer
+
+@inherits BaseAuthPage
+
+<PageLoading>
+    <LoadedContent>
+    </LoadedContent>
+</PageLoading>
+
+@code
+{
+    [Parameter]
+    public string Token { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+#if DEBUG
+    IsDebug = true;
+#endif
+
+        if (LoadingService.IsLoading)
+            return;
+
+        LoadingService.ShowLoading();
+
+        if (!string.IsNullOrEmpty(Token))
+        {
+            var confirmResult = AuthenticationService.ConfirmEmail(Token);
+
+            if (confirmResult.IsCompletedSuccessfully)
+            {
+                Snackbar.Add(_localizer["Successfully confirmed email."], Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add(_localizer["Filed to confirm email."], Severity.Error);
+            }
+        }
+
+        var result = await CheckAuthenticationState();
+
+        await RequestHelpers.InvokeAfterRequest(Snackbar, result, OnSuccessfullLogin);
+
+        LoadingService.HideLoading();
+    }
+}

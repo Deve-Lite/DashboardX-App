@@ -8,11 +8,10 @@ namespace Presentation.Devices;
 public class DeviceService : AuthorizedService, IDeviceService
 {
     public DeviceService(HttpClient httpClient, 
-                         ILocalStorageService localStorageService, 
                          ILogger<DeviceService> logger,
                          NavigationManager navigationManager, 
                          AuthenticationStateProvider authenticationState)
-        : base(httpClient, localStorageService, logger, navigationManager, authenticationState)
+        : base(httpClient, logger, navigationManager, authenticationState)
     {
     }
 
@@ -25,7 +24,7 @@ public class DeviceService : AuthorizedService, IDeviceService
         };
 
         var response = await SendAsync<List<Device>>(request);
-
+        
         return response;
     }
 
@@ -70,6 +69,8 @@ public class DeviceService : AuthorizedService, IDeviceService
             return Result<Device>.Fail( response.Messages, response.StatusCode);
 
         var itemResponse = await GetDevice(response.Data.Id);
+
+        //TODO: Fail to get however added
 
         if (!itemResponse.Succeeded)
             return Result<Device>.Fail(itemResponse.Messages, itemResponse.StatusCode);
@@ -148,6 +149,7 @@ public class DeviceService : AuthorizedService, IDeviceService
         var response = await SendAsync(request);
 
         return response;
+
     }
 
     public async Task<IResult<Control>> CreateDeviceControl(Control control)
@@ -195,12 +197,6 @@ public class DeviceService : AuthorizedService, IDeviceService
 
         return Result<Control>.Success(control, response.StatusCode);
     }
-
-    #endregion
-
-    #region Privates
-
-    public static string ControlStoragePath(string deviceId) => $"{deviceId}{DeviceConstants.ControlsListName}";
 
     #endregion
 }
