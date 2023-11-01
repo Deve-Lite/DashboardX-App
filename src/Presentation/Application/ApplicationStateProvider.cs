@@ -25,6 +25,7 @@ public class ApplicationStateProvider : AuthenticationStateProvider
         RefreshToken = string.Empty;
     }
 
+
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         if (string.IsNullOrEmpty(AccessToken))

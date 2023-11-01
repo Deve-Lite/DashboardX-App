@@ -64,27 +64,20 @@ public class BaseAuthPage : BasePage
 
     protected async Task<IResult> CheckAuthenticationState()
     {
-
-        var authState = await AuthenticationState.GetAuthenticationStateAsync();
-        var user = authState.User;
-
-        if (IsAuthorized(user))
-            return Result.Success();
-
         RememberMe = await LocalStorage.GetItemAsync<bool>(AuthConstraints.RememberMeName);
-
-        if (!RememberMe)
-            return Result.Fail();
 
         var refreshToken = await SessionStorage.GetItemAsync<string>(AuthConstraints.RefreshToken);
 
-        if (string.IsNullOrEmpty(refreshToken))
+        if (string.IsNullOrEmpty(refreshToken) && RememberMe)
             refreshToken = await LocalStorage.GetItemAsync<string>(AuthConstraints.RefreshToken);
 
         if (string.IsNullOrEmpty(refreshToken))
             return Result.Fail();
-        
-        return await AuthenticationService.ReAuthenticate(refreshToken);
+
+        LoadingService.HideLoading();
+        var resp = await AuthenticationService.ReAuthenticate(refreshToken);
+
+        return resp;
     }
 
     private bool IsAuthorized(ClaimsPrincipal user)

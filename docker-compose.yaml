@@ -7,6 +7,6 @@ services:
       dockerfile: dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - API_URL=http://localhost:3000
+      - API_URL=https://dashboard.docker:3000
     ports:
-      - "8080:80"
+      - "443:443"
