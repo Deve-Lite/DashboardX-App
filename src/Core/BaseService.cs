@@ -46,6 +46,8 @@ public abstract class BaseService
 #if DEBUG
             await Task.Delay(RequestDebugDelay);
             _logger.LogInformation("Sending request to: {uri} wih {method}, {version}", message.RequestUri, message.Method, message.Version);
+
+            _logger.LogDebug($"Token: {_client.DefaultRequestHeaders.Authorization}");
 #endif
 
             var response = await _client.SendAsync(message);
@@ -101,6 +103,9 @@ public abstract class BaseService
 #if DEBUG
             await Task.Delay(RequestDebugDelay);
             _logger.LogInformation($"Sending request to: {message.RequestUri} with {message.Method}, {message.Version}");
+
+            _logger.LogDebug($"Token: {_client.DefaultRequestHeaders.Authorization}");
+
 #endif
 
             var response = await _client.SendAsync(message);
