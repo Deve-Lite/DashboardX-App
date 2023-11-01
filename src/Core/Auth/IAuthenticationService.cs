@@ -7,7 +7,7 @@ public interface IAuthenticationService
     Task<IResult> ReAuthenticate(string currentRefreshToken);
 
     Task<IResult> ForgotPassword(ForgetPasswordModel forgotPassword);
-    Task<IResult> ResetPassword(ResetPasswordModel resetPassword);
+    Task<IResult> SetNewPassword(ResetPasswordModel resetPassword);
     Task<IResult> ConfirmEmail(string Token);
 }
 

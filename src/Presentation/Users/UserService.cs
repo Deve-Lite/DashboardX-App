@@ -9,10 +9,11 @@ public class UserService : AuthorizedService, IUserService
 
     public UserService(HttpClient httpClient,
         ILogger<UserService> logger,
+        ILoadingService loadingService,
         IPrefrenceService preferenceService,
         NavigationManager navigationManager,
         AuthenticationStateProvider authenticationState)
-        : base(httpClient, logger, navigationManager, authenticationState)
+        : base(httpClient, loadingService, logger, navigationManager, authenticationState)
     {
         _prefrenceService = preferenceService;
     }

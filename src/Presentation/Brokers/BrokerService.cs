@@ -9,9 +9,10 @@ public class BrokerService : AuthorizedService, IBrokerService
 {
     public BrokerService(HttpClient httpClient,
                          ILogger<BrokerService> logger,
+                         ILoadingService loadingService,    
                          NavigationManager navigationManager,
                          AuthenticationStateProvider authenticationState)
-        : base(httpClient, logger, navigationManager, authenticationState)
+        : base(httpClient, loadingService, logger, navigationManager, authenticationState)
     {
     }
 

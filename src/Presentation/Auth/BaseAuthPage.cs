@@ -79,13 +79,5 @@ public class BaseAuthPage : BasePage
 
         return resp;
     }
-
-    private bool IsAuthorized(ClaimsPrincipal user)
-    {
-        return user.Identity != null &&
-            user.Identity.IsAuthenticated &&
-            user.HasClaim(c => c.Type == ClaimTypes.Role && (c.Value == RolesConstraints.User || c.Value == RolesConstraints.Admin));
-    }
-
 }
 

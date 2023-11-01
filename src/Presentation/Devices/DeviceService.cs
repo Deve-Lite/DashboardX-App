@@ -2,6 +2,7 @@
 using System.Net;
 using System.Text.Json.Serialization;
 using System.Text.Json;
+using Presentation.Application;
 
 namespace Presentation.Devices;
 
@@ -9,9 +10,10 @@ public class DeviceService : AuthorizedService, IDeviceService
 {
     public DeviceService(HttpClient httpClient, 
                          ILogger<DeviceService> logger,
+                         ILoadingService loadingService,
                          NavigationManager navigationManager, 
                          AuthenticationStateProvider authenticationState)
-        : base(httpClient, logger, navigationManager, authenticationState)
+        : base(httpClient, loadingService, logger, navigationManager, authenticationState)
     {
     }
 
