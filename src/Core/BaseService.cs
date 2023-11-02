@@ -18,6 +18,13 @@ public abstract class BaseService
         _logger = logger;
     }
 
+    protected virtual async Task<Result> SendAsync(Request request, JsonSerializerOptions? options = null)
+    {
+        var message = CreateMessage(request);
+        var results = await Run(message);
+        return results;
+    }
+
     protected virtual async Task<Result<T>> SendAsync<T>(Request request, JsonSerializerOptions? options = null) where T : class, new()
     {
         var message = CreateMessage(request);

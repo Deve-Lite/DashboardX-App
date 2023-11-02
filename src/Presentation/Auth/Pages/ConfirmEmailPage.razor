@@ -1,4 +1,4 @@
-@page "/auth/confirm/{Token}"
+@page "/auth/confirm/"
 @using Presentation.Utils;
 @attribute [AllowAnonymous]
 
@@ -18,9 +18,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-#if DEBUG
-    IsDebug = true;
-#endif
+        Token = UrlUtils.GetParamFromCurrentUrl(NavigationManager, "token");
 
         if (LoadingService.IsLoading)
             return;
@@ -29,22 +27,20 @@
 
         if (!string.IsNullOrEmpty(Token))
         {
-            var confirmResult = AuthenticationService.ConfirmEmail(Token);
+            var confirmResult = await AuthenticationService.ConfirmEmail(Token);
 
-            if (confirmResult.IsCompletedSuccessfully)
-            {
-                Snackbar.Add(_localizer["Successfully confirmed email."], Severity.Success);
-            }
+            if (confirmResult.Succeeded)
+               Snackbar.Add(_localizer["Successfully confirmed email."], Severity.Success);
             else
-            {
-                Snackbar.Add(_localizer["Filed to confirm email."], Severity.Error);
-            }
+               Snackbar.Add(_localizer["Filed to confirm email."], Severity.Error);
+            
         }
 
-        var result = await CheckAuthenticationState();
-
-        await RequestHelpers.InvokeAfterRequest(Snackbar, result, OnSuccessfullLogin);
-
         LoadingService.HideLoading();
+
+        NavigationManager.NavigateTo("/auth/login");
+
+
+        //TODO: If fail button to resend email else move to login page
     }
 }

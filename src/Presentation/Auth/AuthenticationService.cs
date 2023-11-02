@@ -73,8 +73,6 @@ public class AuthenticationService : BaseService, IAuthenticationService
         return Result.Fail(response.StatusCode);
     }
 
-
-    //TODO: FIX IT
     public async Task<IResult> ForgotPassword(ForgetPasswordModel forgotPassword)
     {
         var request = new Request<ForgetPasswordModel>
@@ -91,6 +89,7 @@ public class AuthenticationService : BaseService, IAuthenticationService
 
         return Result.Fail(response.StatusCode);
     }
+    
     public async Task<IResult> ResetPassword(ResetPasswordModel resetPassword)
     {
         var request = new Request<ResetPasswordModel>
@@ -107,17 +106,17 @@ public class AuthenticationService : BaseService, IAuthenticationService
 
         return Result.Fail(response.StatusCode);
     }
-    //ENDFIX
 
-
-    public async Task<IResult> SetNewPassword(ResetPasswordModel resetPassword)
+    public async Task<IResult> SetNewPassword(ResetPasswordModel resetPassword, string token)
     {
         var request = new Request<ResetPasswordModel>
         {
             Method = HttpMethod.Patch,
-            Route = "api/v1/users/me/password",
+            Route = "api/v1/users/reset-password",
             Data = resetPassword
         };
+
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         var response = await SendAsync(request);
 
@@ -135,9 +134,9 @@ public class AuthenticationService : BaseService, IAuthenticationService
             Route = "api/v1/users/confirm-account"
         };
 
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", token);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        var response = await SendAsync<Tokens>(request);
+        Result response = await SendAsync(request);
 
         if (response.Succeeded)
             return Result.Success(response.StatusCode);
