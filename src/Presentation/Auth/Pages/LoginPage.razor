@@ -16,7 +16,7 @@
     <LoadedContent>
         <MudCard Class="container d-flex container-fit-content p-5" Style="border-radius: 1rem;">
             <MudForm @ref="@Form"
-                     Model="@LoginData"
+                     Model="@Model"
                      Validation="@(LoginValidator.ValidateValue)"
                      ValidationDelay="0">
                 <MudGrid>
@@ -36,19 +36,19 @@
                     </MudItem>
 
                     <MudItem xs="12">
-                        <MudTextField @bind-Value="LoginData.Email"
+                        <MudTextField @bind-Value="Model.Email"
                                       T="string"
                                       OnlyValidateIfDirty="true"
                                       Variant="Variant.Filled"
                                       HelperText="@_localizer["Provide email for your account."]"
                                       Label="@_localizer["Email"]"
-                                      For="@(() => LoginData.Email)" />
+                                      For="@(() => Model.Email)" />
                     </MudItem>
                     <MudItem xs="12" Class="h">
-                        <PasswordTextField @bind-Value="LoginData.Password"
+                        <PasswordTextField @bind-Value="Model.Password"
                                       Label="@_localizer["Password"]"
                                       HelperText="@_localizer["Provide password for your account."]"
-                                      For="@(() => LoginData.Password)" />
+                                      For="@(() => Model.Password)" />
                     </MudItem>
                     <MudItem xs="12" Class="d-flex justify-space-between align-center">
                         <MudLink Href="/auth/forgot">@_localizer["Forgot password?"]</MudLink>
@@ -60,6 +60,18 @@
                                      Class="ml-n1" />
                     </MudItem>
                     <MudItem xs="7">
+
+                        @if (ResendButtonVisible)
+                        {
+                            <MudButton Variant="Variant.Filled"
+                                       OnClick="ResendConfirmEmail"
+                                       Color="Color.Primary"
+                                       Size="Size.Large"
+                                       EndIcon="@Icons.Material.Filled.Email"
+                                       Style="width: 100%;">
+                                @_localizer["Resend confirm email"]
+                            </MudButton>
+                        }
 
                     </MudItem>
                     <MudItem xs="5" Class="d-flex justify-end">
@@ -104,8 +116,10 @@
 
 @code
 {
-    private LoginModel LoginData = new();
+    private LoginModel Model = new();
     private LoginValidator LoginValidator = new();
+
+    private bool ResendButtonVisible { get; set; } = false;
 
     private async Task LoginAsync()
     {
@@ -121,25 +135,46 @@
 
         await _localStorage.SetItemAsync(AuthConstraints.RememberMeName, RememberMe);
 
-        var result = await AuthenticationService.Login(LoginData);
+        var result = await AuthenticationService.Login(Model);
 
-        await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnSuccessfullLogin);
+        if (result.StatusCode == System.Net.HttpStatusCode.Conflict)
+        {
+            _snackbar.Add(_localizer["Please confirm your email before logging."], Severity.Info);
+            ResendButtonVisible = true;
+        }
+        else
+            await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnSuccessfullLogin);
 
         _loadingService.HideLoading();
+    }
+
+    private async Task ResendConfirmEmail()
+    {
+        var dto = new ResendConfirmEmailModel
+            {
+                Email = Model.Email
+            };
+
+        var result = await AuthenticationService.ResendConfirmEmail(dto);
+
+        if (result.Succeeded)
+            _snackbar.Add(_localizer["Email resend to"] + $" {dto.Email}", Severity.Info);
+        else
+            _snackbar.Add(_localizer["Faild to resend email"], Severity.Error);
     }
 
     #region Debug
 
     private void FillAdministratorCredentials()
     {
-        LoginData.Email = "psp515@wp.pl";
-        LoginData.Password = "Admin123!";
+        Model.Email = "psp515@wp.pl";
+        Model.Password = "Admin123!";
     }
 
     private void FillBasicUserCredentials()
     {
-        LoginData.Email = "dred@gmail.pl";
-        LoginData.Password = "User123!";
+        Model.Email = "dred@gmail.pl";
+        Model.Password = "User123!";
     }
 
     #endregion

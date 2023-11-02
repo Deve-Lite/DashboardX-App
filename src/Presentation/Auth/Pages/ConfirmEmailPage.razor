@@ -20,27 +20,24 @@
     {
         Token = UrlUtils.GetParamFromCurrentUrl(NavigationManager, "token");
 
-        if (LoadingService.IsLoading)
-            return;
-
-        LoadingService.ShowLoading();
-
         if (!string.IsNullOrEmpty(Token))
         {
+
+            if (LoadingService.IsLoading)
+                return;
+
+            LoadingService.ShowLoading();
+
             var confirmResult = await AuthenticationService.ConfirmEmail(Token);
 
             if (confirmResult.Succeeded)
-               Snackbar.Add(_localizer["Successfully confirmed email."], Severity.Success);
+                Snackbar.Add(_localizer["Successfully confirmed email."], Severity.Success);
             else
-               Snackbar.Add(_localizer["Filed to confirm email."], Severity.Error);
-            
+                Snackbar.Add(_localizer["Failed to confirm email. Please try to login."], Severity.Error);
+
+            LoadingService.HideLoading();
         }
 
-        LoadingService.HideLoading();
-
         NavigationManager.NavigateTo("/auth/login");
-
-
-        //TODO: If fail button to resend email else move to login page
     }
 }

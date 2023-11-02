@@ -84,10 +84,7 @@ public class AuthenticationService : BaseService, IAuthenticationService
 
         var response = await SendAsync(request);
 
-        if (response.Succeeded)
-            return Result.Success(response.StatusCode);
-
-        return Result.Fail(response.StatusCode);
+        return response;
     }
     
     public async Task<IResult> ResetPassword(ResetPasswordModel resetPassword)
@@ -101,10 +98,7 @@ public class AuthenticationService : BaseService, IAuthenticationService
 
         var response = await SendAsync(request);
 
-        if (response.Succeeded)
-            return Result.Success(response.StatusCode);
-
-        return Result.Fail(response.StatusCode);
+        return response;
     }
 
     public async Task<IResult> SetNewPassword(ResetPasswordModel resetPassword, string token)
@@ -119,11 +113,8 @@ public class AuthenticationService : BaseService, IAuthenticationService
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         var response = await SendAsync(request);
-
-        if (response.Succeeded)
-            return Result.Success(response.StatusCode);
         
-        return Result.Fail(response.StatusCode);
+        return response;
     }
 
     public async Task<IResult> ConfirmEmail(string token)
@@ -136,27 +127,22 @@ public class AuthenticationService : BaseService, IAuthenticationService
 
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        Result response = await SendAsync(request);
+        var response = await SendAsync(request);
 
-        if (response.Succeeded)
-            return Result.Success(response.StatusCode);
-
-        return Result.Fail(response.StatusCode);
+        return response;
     }
 
-    public async Task<IResult> ResendConfirmEmail()
+    public async Task<IResult> ResendConfirmEmail(ResendConfirmEmailModel model)
     {
-        var request = new Request
+        var request = new Request<ResendConfirmEmailModel>
         {
             Method = HttpMethod.Post,
-            Route = "api/v1/users/confirm-account/resend"
+            Route = "api/v1/users/confirm-account/resend",
+            Data = model
         };
 
-        var response = await SendAsync<Tokens>(request);
+        var response = await SendAsync(request);
 
-        if (response.Succeeded)
-            return Result.Success(response.StatusCode);
-
-        return Result.Fail(response.StatusCode);
+        return response;
     }
 }

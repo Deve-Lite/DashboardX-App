@@ -45,7 +45,7 @@ public static class ControlPagesUtils
             refreshUI.Invoke();
     }
 
-    public static async Task RemoveControl(IDialogService dialogService, Control control, string ClientId, IStringLocalizer<object> localizer, Action refreshList)
+    public static async Task<bool> RemoveControl(IDialogService dialogService, Control control, string ClientId, IStringLocalizer<object> localizer, Action refreshList = null)
     {
         var parameters = new DialogParameters<RemoveControlDialog>
         {
@@ -58,11 +58,14 @@ public static class ControlPagesUtils
         var result = await dialog.Result;
 
         if (result.Canceled)
-            return;
+            return false;
 
         var x = result.Data as Result ?? Result.Fail(message: localizer["Couldn't parse response."]);
 
-        if (x.Succeeded)
-            refreshList.Invoke();
+        if (!x.Succeeded)
+            return false;
+
+        refreshList?.Invoke();
+        return true;
     }
 }

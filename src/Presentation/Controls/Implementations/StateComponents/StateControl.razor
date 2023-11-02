@@ -29,6 +29,9 @@ else
     [Parameter]
     public string Class { get; set; } = string.Empty;
 
+    [Parameter]
+    public Action? RerenderPage { get; set; }
+
     private StateControlCondition Condition = StateControlCondition.None;
     private string Value { get; set; } = string.Empty;
 
@@ -131,7 +134,8 @@ else
         var parameters = new DialogParameters<StateControlDialog>
         {
             { x => x.Control, Control },
-            { x => x.Client, Client }
+            { x => x.Client, Client },
+            { x => x.RerenderPage, RerenderPage}
         };
 
         var dialog = await DialogService!.ShowAsync<StateControlDialog>(_localizer["Device state"], parameters);
