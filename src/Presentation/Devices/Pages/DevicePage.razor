@@ -155,7 +155,7 @@
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
 
-    public Client? Client { get; set; }
+    public IClient? Client { get; set; }
     public Device Device { get; set; } = new();
 
     protected override async Task OnInitializedAsync()

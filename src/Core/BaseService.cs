@@ -35,6 +35,7 @@ public abstract class BaseService
     protected virtual async Task<Result> SendAsync<T>(Request<T> request, JsonSerializerOptions? options = null) where T : class, new()
     {
         var message = CreateMessage(request);
+
         var results = await Run(message);
         return results;
     }
@@ -117,6 +118,11 @@ public abstract class BaseService
 
             var response = await _client.SendAsync(message);
 
+            response.Headers.TryGetValues("Set-Cookie", out var setCookie);
+
+            foreach (var cookie in setCookie ?? new List<string>())
+                _logger.LogInformation($"{cookie}");
+
             var payload = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode)
@@ -147,7 +153,6 @@ public abstract class BaseService
         options ??= new();
 
         HttpRequestMessage message = new(request.Method, request.Route);
-
         var data = JsonSerializer.Serialize(request.Data, options);
         var content = new StringContent(data, Encoding.UTF8, "application/json");
         message.Content = content;

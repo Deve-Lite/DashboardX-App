@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using Microsoft.AspNetCore.Components.WebAssembly.Http;
+using System.Net.Http.Headers;
 
 namespace Presentation.Auth;
 
@@ -113,7 +114,7 @@ public class AuthenticationService : BaseService, IAuthenticationService
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         var response = await SendAsync(request);
-        
+
         return response;
     }
 

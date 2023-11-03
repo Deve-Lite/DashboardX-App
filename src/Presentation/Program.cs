@@ -1,9 +1,9 @@
 using Presentation;
 using Presentation.Auth;
 using Presentation.Brokers;
-using Presentation.Clients;
 using Presentation.Devices;
 using Presentation.Users;
+using System.Net;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -16,10 +16,11 @@ var apiUrl = builder.Configuration.GetValue<string>("Api:Url")!;
 if (isProduction)
     apiUrl = builder.Configuration.GetValue<string>("API_URL")!;
 
-builder.Services.AddSingleton(sp => new HttpClient
+builder.Services.AddSingleton(sp => new HttpClient()
 {
     Timeout = TimeSpan.FromSeconds(Convert.ToDouble(builder.Configuration.GetValue<string>("Api:MaxRequestTimeSeconds")!)),
-    BaseAddress = new Uri(apiUrl)
+    BaseAddress = new Uri(apiUrl),
+
 });
 
 builder.Services.AddMudServices(config =>
@@ -37,10 +38,13 @@ builder.Services.AddMudServices(config =>
 
 builder.Services.AddAuthorizationCore();
 
+// move it to feature services configuration ??
+
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IBrokerService, BrokerService>();
 builder.Services.AddScoped<IClientService, ClientService>();
+builder.Services.AddScoped<IClientFactory, ClientFactory>();
 builder.Services.AddScoped<IDeviceService, DeviceService>();
 builder.Services.AddScoped<AuthenticationStateProvider, ApplicationStateProvider>();
 

@@ -13,7 +13,7 @@ public partial class BaseControl : ComponentBase
     [Parameter]
     public Control? Control { get; set; }
     [Parameter]
-    public Client? Client { get; set; }
+    public IClient? Client { get; set; }
     [Parameter]
     public Device? Device { get; set; }
 

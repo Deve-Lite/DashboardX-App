@@ -45,7 +45,7 @@ public static class ControlPagesUtils
             refreshUI.Invoke();
     }
 
-    public static async Task<bool> RemoveControl(IDialogService dialogService, Control control, string ClientId, IStringLocalizer<object> localizer, Action refreshList = null)
+    public static async Task<bool> RemoveControl(IDialogService dialogService, Control control, string ClientId, IStringLocalizer<object> localizer, Action? refreshList = null)
     {
         var parameters = new DialogParameters<RemoveControlDialog>
         {

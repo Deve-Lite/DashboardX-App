@@ -34,7 +34,7 @@
 
     public bool LoadedSuccessfully { get; set; } = true;
 
-    private List<Client> Clients { get; set; } = new();
+    private List<IClient> Clients { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {

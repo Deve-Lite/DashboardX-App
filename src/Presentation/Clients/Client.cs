@@ -1,18 +1,16 @@
-﻿using Common.Controls.Models;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
 using MQTTnet.Client;
 using MQTTnet.Protocol;
-using Presentation.Brokers;
 using System.Text;
 
 namespace Presentation.Clients;
 
-public class Client : IAsyncDisposable
+public class Client : IClient, IAsyncDisposable
 {
     private readonly ILogger<Client> _logger;
-    private readonly MqttFactory _factory;
-    public readonly ITopicService TopicService;
-    public readonly IMqttClient MqttService;
+    private readonly ITopicService topicService;
+    public ITopicService TopicService => topicService;
+    public readonly IMqttClient MqttClient;
     public readonly IBrokerService BrokerService;
 
     public string Id => Broker.Id;
@@ -23,15 +21,17 @@ public class Client : IAsyncDisposable
 
     public Func<Task> RerenderPage { get; set; }
 
-    public Client(ILocalStorageService storage, ILogger<Client> clientLogger, IBrokerService brokerService,  MqttFactory factory, Broker broker)
+    public Client(ITopicService topic,
+                  IMqttClient mqttClient,
+                  IBrokerService brokerService,
+                  ILogger<Client> clientLogger,
+                  Broker broker)
     {
         Broker = broker;
-        MqttService = factory.CreateMqttClient();
+        MqttClient = mqttClient;
         BrokerService = brokerService;
+        topicService = topic;
 
-        TopicService = new TopicService(storage);
-
-        _factory = factory;
         _logger = clientLogger;
 
         InitializeCallbacks();
@@ -43,7 +43,7 @@ public class Client : IAsyncDisposable
 
     public async Task UpdateBroker(Broker broker)
     {
-        var connected = MqttService.IsConnected;
+        var connected = MqttClient.IsConnected;
 
         if (connected)
             await DisconnectAsync();
@@ -60,7 +60,7 @@ public class Client : IAsyncDisposable
 
         try
         {
-            if (!MqttService.IsConnected)
+            if (!MqttClient.IsConnected)
                 await ConnectAsync();
 
             var mqttMessage = new MqttApplicationMessageBuilder()
@@ -69,7 +69,7 @@ public class Client : IAsyncDisposable
                    .WithQualityOfServiceLevel(quality)
                    .Build();
 
-            return await MqttService.PublishAsync(mqttMessage);
+            return await MqttClient.PublishAsync(mqttMessage);
         }
         catch (Exception e)
         {
@@ -84,7 +84,7 @@ public class Client : IAsyncDisposable
         try
         {
             var options = await Options();
-            var response = await MqttService.ConnectAsync(options);
+            var response = await MqttClient.ConnectAsync(options);
             IsConnected = true;
 
             return Result.Success();
@@ -101,7 +101,7 @@ public class Client : IAsyncDisposable
     public async Task DisconnectAsync()
     {
         IsConnected = false;
-        await MqttService.DisconnectAsync();
+        await MqttClient.DisconnectAsync();
     }
 
     /// <summary>
@@ -113,8 +113,8 @@ public class Client : IAsyncDisposable
     {
         foreach (var control in device.Controls)
         {
-            var topic = await TopicService.RemoveTopic(Broker.Id, device, control);
-            await MqttService.UnsubscribeAsync(topic);
+            var topic = await topicService.RemoveTopic(Broker.Id, device, control);
+            await MqttClient.UnsubscribeAsync(topic);
         }
 
         Devices.Remove(device);
@@ -130,13 +130,13 @@ public class Client : IAsyncDisposable
     {
         var device = Devices.First(x => x.Id == deviceId);
         var control = device.Controls.First(x => x.Id == controlId);
-        var topic = await TopicService.RemoveTopic(Broker.Id, device, control);
-        
-        if(IsConnected)
+        var topic = await topicService.RemoveTopic(Broker.Id, device, control);
+
+        if (IsConnected)
         {
-            try 
-            { 
-                await MqttService.UnsubscribeAsync(topic); 
+            try
+            {
+                await MqttClient.UnsubscribeAsync(topic);
             }
             catch (Exception e)
             {
@@ -156,14 +156,14 @@ public class Client : IAsyncDisposable
             var newTopic = newControl.GetTopic(device);
             var oldTopic = control.GetTopic(device);
 
-            if(newTopic != oldTopic)
+            if (newTopic != oldTopic)
             {
-                var value = await TopicService.LastMessageOnTopicAsync(device.BrokerId, device, control);
+                var value = await topicService.LastMessageOnTopicAsync(device.BrokerId, device, control);
 
                 if (!value.IsNullOrEmpty())
                 {
-                    await TopicService.UpdateMessageOnTopic(device.BrokerId, device, newControl, value);
-                    await TopicService.RemoveTopic(Broker.Id, device, control);
+                    await topicService.UpdateMessageOnTopic(device.BrokerId, device, newControl, value);
+                    await topicService.RemoveTopic(Broker.Id, device, control);
                 }
 
             }
@@ -174,9 +174,9 @@ public class Client : IAsyncDisposable
             if (!IsConnected)
                 await ConnectAsync();
 
-            await MqttService.UnsubscribeAsync(oldTopic);
-            await MqttService.SubscribeAsync(newTopic, control.QualityOfService);
-            
+            await MqttClient.UnsubscribeAsync(oldTopic);
+            await MqttClient.SubscribeAsync(newTopic, control.QualityOfService);
+
             return true;
         }
         catch (Exception e)
@@ -210,16 +210,16 @@ public class Client : IAsyncDisposable
     {
         try
         {
-            if (TopicService.ConatinsTopic(Id, device, control))
+            if (topicService.ConatinsTopic(Id, device, control))
                 return true;
 
-            var topic = await TopicService.AddTopic(Broker.Id, device, control);
+            var topic = await topicService.AddTopic(Broker.Id, device, control);
 
-            if (!MqttService.IsConnected)
+            if (!MqttClient.IsConnected)
                 await ConnectAsync();
 
             device.Controls.Add(control);
-            var result = await MqttService.SubscribeAsync(topic, control.QualityOfService);
+            var result = await MqttClient.SubscribeAsync(topic, control.QualityOfService);
 
             return true;
         }
@@ -257,13 +257,13 @@ public class Client : IAsyncDisposable
                     if (!isSync)
                         await UnsubscribeAsync(device.Id, existingControl!.Id);
 
-                    var topic = await TopicService.AddTopic(Broker.Id, device, control);
+                    var topic = await topicService.AddTopic(Broker.Id, device, control);
 
-                    if (!MqttService.IsConnected)
+                    if (!MqttClient.IsConnected)
                         await ConnectAsync();
 
                     device.Controls.Add(control);
-                    await MqttService.SubscribeAsync(topic);
+                    await MqttClient.SubscribeAsync(topic);
                 }
 
                 usedControls.Add(control.Id);
@@ -277,8 +277,8 @@ public class Client : IAsyncDisposable
         foreach (var control in device.Controls)
             if (!usedControls.Contains(control.Id))
             {
-                var topic = await TopicService.RemoveTopic(Broker.Id, device, control);
-                await MqttService.UnsubscribeAsync(topic);
+                var topic = await topicService.RemoveTopic(Broker.Id, device, control);
+                await MqttClient.UnsubscribeAsync(topic);
                 device.Controls.Remove(control);
             }
 
@@ -289,17 +289,17 @@ public class Client : IAsyncDisposable
     {
         foreach (var device in Devices)
             foreach (var control in device.Controls)
-                await TopicService.RemoveTopic(Broker.Id, device, control);
+                await topicService.RemoveTopic(Broker.Id, device, control);
 
-        await MqttService.DisconnectAsync();
-        MqttService.Dispose();
+        await MqttClient.DisconnectAsync();
+        MqttClient.Dispose();
     }
 
     #region Privates
 
     private async Task<MqttClientOptions> Options()
     {
-        var optionsBuilder = _factory.CreateClientOptionsBuilder()
+        var optionsBuilder = new MqttClientOptionsBuilder()
             .WithClientId(Broker.ClientId)
             .WithWebSocketServer($"wss://{Broker.Server}:{Broker.Port}/mqtt")
             .WithCleanSession(false);
@@ -316,23 +316,23 @@ public class Client : IAsyncDisposable
 
     private void InitializeCallbacks()
     {
-        MqttService.ApplicationMessageReceivedAsync += async (e) =>
+        MqttClient.ApplicationMessageReceivedAsync += async (e) =>
         {
             var topic = e.ApplicationMessage.Topic;
             var message = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
-            await TopicService.UpdateMessageOnTopic(Broker.Id, topic, message);
+            await topicService.UpdateMessageOnTopic(Broker.Id, topic, message);
             _logger.LogInformation("Message received. {topic} {message}", topic, message);
             RerenderPage?.Invoke();
         };
 
-        MqttService.DisconnectedAsync += async (e) =>
+        MqttClient.DisconnectedAsync += async (e) =>
         {
             if (!IsConnected)
                 return;
 
             _logger.LogWarning("Client disconnected. Reconnecting...", Broker.Id);
             RerenderPage?.Invoke();
-            await MqttService.ReconnectAsync();
+            await MqttClient.ReconnectAsync();
             RerenderPage?.Invoke();
             _logger.LogWarning("Client reconnected.", Broker.Id);
         };

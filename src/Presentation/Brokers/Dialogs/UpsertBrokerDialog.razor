@@ -224,7 +224,7 @@
 
         IsLoading = true;
 
-        var result = Result<Client>.Fail();
+        var result = Result<IClient>.Fail();
 
         if (string.IsNullOrEmpty(Model.Id))
             result = await _clientService.CreateClient(Model, CredentialsModel);

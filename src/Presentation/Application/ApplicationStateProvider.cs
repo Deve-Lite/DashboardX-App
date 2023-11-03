@@ -112,10 +112,10 @@ public class ApplicationStateProvider : AuthenticationStateProvider
         catch (Exception ex)
         {
 #if DEBUG
-            _logger.LogError(ex, ex.Message);
+            _logger.LogError("Authentication error Message:", ex.Message);
 #endif
 
-            _logger.LogError("Couldn't authenticate user.");
+            _logger.LogError("Couldn't authenticate user.", nameof(ex));
             return new AuthenticationState(new ClaimsPrincipal());
         }
     }

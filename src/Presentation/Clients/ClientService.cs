@@ -1,28 +1,25 @@
 ﻿namespace Presentation.Clients;
 
+
+//TODO: Create Client Factory instead of injectinf factory and lcientLogger
 public class ClientService : IClientService
 {
     private readonly IBrokerService _brokerService;
-    private readonly ILocalStorageService _storageService;
     private readonly IDeviceService _deviceService;
+    private readonly IClientFactory _clientFactory;
     private readonly ILogger<ClientService> _logger;
-    private readonly ILogger<Client> _clientLogger;
-    private readonly MqttFactory _factory;
-    private readonly List<Client> _clients = new();
+    private readonly List<IClient> _clients;
 
     public ClientService(IBrokerService brokerService,
-        ILocalStorageService storageService,
-        IDeviceService deviceService,
-        ILogger<ClientService> logger,
-        ILogger<Client> clientLogger,
-        MqttFactory factory)
+                         IDeviceService deviceService,
+                         ILogger<ClientService> logger,
+                         IClientFactory clientFactory)
     {
         _brokerService = brokerService;
-        _storageService = storageService;
         _deviceService = deviceService;
-        _factory = factory;
+        _clientFactory = clientFactory;
         _logger = logger;
-        _clientLogger = clientLogger;
+        _clients = new List<IClient>();
     }
 
     public async Task Logout()
@@ -36,7 +33,7 @@ public class ClientService : IClientService
 
     #region Client
 
-    public async Task<Result<List<Client>>> GetClientsWithDevices()
+    public async Task<Result<List<IClient>>> GetClientsWithDevices()
     {
         var brokersTask = _brokerService.GetBrokers();
         var devicesTask = _deviceService.GetDevices();
@@ -47,10 +44,10 @@ public class ClientService : IClientService
         var devicesResult = devicesTask.Result;
 
         if (!brokersResult.Succeeded)
-            return Result<List<Client>>.Fail(brokersResult.Messages, brokersResult.StatusCode);
+            return Result<List<IClient>>.Fail(brokersResult.Messages, brokersResult.StatusCode);
 
         if (!devicesResult.Succeeded)
-            return Result<List<Client>>.Fail(devicesResult.Messages, devicesResult.StatusCode);
+            return Result<List<IClient>>.Fail(devicesResult.Messages, devicesResult.StatusCode);
 
         var usedClients = new HashSet<string>();
 
@@ -66,7 +63,7 @@ public class ClientService : IClientService
             var client = _clients.FirstOrDefault(x => x.Id == broker.Id);
             if (client is null)
             {
-                var newClient = new Client(_storageService, _clientLogger, _brokerService, _factory, broker);
+                var newClient = _clientFactory.GenerateClient(broker);
                 _clients.Add(newClient);
                 client = newClient;
             }
@@ -91,17 +88,17 @@ public class ClientService : IClientService
         }
 
         if (failedConnections == 0)
-            return Result<List<Client>>.Success(_clients, brokersResult.StatusCode);
+            return Result<List<IClient>>.Success(_clients, brokersResult.StatusCode);
 
-        return Result<List<Client>>.Warning(_clients, message: $"Failed to subscribe {failedConnections} topics.");
+        return Result<List<IClient>>.Warning(_clients, message: $"Failed to subscribe {failedConnections} topics.");
     }
 
-    public async Task<Result<List<Client>>> GetClients()
+    public async Task<Result<List<IClient>>> GetClients()
     {
         var result = await _brokerService.GetBrokers();
 
         if (!result.Succeeded)
-            return Result<List<Client>>.Fail(result.Messages, result.StatusCode);
+            return Result<List<IClient>>.Fail(result.Messages, result.StatusCode);
 
         var brokers = result.Data;
 
@@ -112,7 +109,7 @@ public class ClientService : IClientService
             var client = _clients.FirstOrDefault(x => x.Id == broker.Id);
             if (client is null)
             {
-                var newClient = new Client(_storageService, _clientLogger, _brokerService, _factory, broker);
+                var newClient = _clientFactory.GenerateClient(broker);
                 _clients.Add(newClient);
             }
             else if (client.Broker.EditedAt != broker.EditedAt)
@@ -132,10 +129,10 @@ public class ClientService : IClientService
             }
         }
 
-        return Result<List<Client>>.Success(_clients, result.StatusCode);
+        return Result<List<IClient>>.Success(_clients, result.StatusCode);
     }
 
-    public async Task<Result<Client>> GetClient(string brokerId)
+    public async Task<Result<IClient>> GetClient(string brokerId)
     {
         var brokerTask = _brokerService.GetBroker(brokerId);
         var deviceTask = _deviceService.GetDevices(brokerId);
@@ -146,25 +143,25 @@ public class ClientService : IClientService
         var deviceResult = deviceTask.Result;
 
         if (!brokerResult.Succeeded)
-            return Result<Client>.Fail(brokerResult.Messages, brokerResult.StatusCode);
+            return Result<IClient>.Fail(brokerResult.Messages, brokerResult.StatusCode);
 
         if (!deviceResult.Succeeded)
-            return Result<Client>.Fail(deviceResult.Messages, deviceResult.StatusCode);
+            return Result<IClient>.Fail(deviceResult.Messages, deviceResult.StatusCode);
 
         var client = _clients.FirstOrDefault(x => x.Id == brokerId);
 
         if (client is null)
         {
-            var newClient = new Client(_storageService, _clientLogger, _brokerService, _factory, brokerResult.Data);
+            var newClient = _clientFactory.GenerateClient(brokerResult.Data);
 
             var failedConnections = await UpdateClientDevices(newClient, deviceResult.Data);
 
             _clients.Add(newClient);
 
             if (failedConnections == 0)
-                return Result<Client>.Success(newClient);
+                return Result<IClient>.Success(newClient);
 
-            return Result<Client>.Warning(newClient, message: $"Failed to subsribe {failedConnections} topics.");
+            return Result<IClient>.Warning(newClient, message: $"Failed to subsribe {failedConnections} topics.");
         }
         else if (client.Broker.EditedAt != brokerResult.Data.EditedAt)
             await client.UpdateBroker(brokerResult.Data);
@@ -173,17 +170,17 @@ public class ClientService : IClientService
         var failConnections = await UpdateClientDevices(client, deviceResult.Data);
 
         if (failConnections == 0)
-            return Result<Client>.Success(client);
+            return Result<IClient>.Success(client);
 
-        return Result<Client>.Warning(client, message: $"Failed to subsribe {failConnections} topics.");
+        return Result<IClient>.Warning(client, message: $"Failed to subsribe {failConnections} topics.");
     }
 
-    public async Task<Result<Client>> UpdateClient(BrokerDTO broker, BrokerCredentialsDTO brokerCredentialsDTO)
+    public async Task<Result<IClient>> UpdateClient(BrokerDTO broker, BrokerCredentialsDTO brokerCredentialsDTO)
     {
         var result = await _brokerService.UpdateBroker(broker);
 
         if (!result.Succeeded)
-            return Result<Client>.Fail(result.Messages, result.StatusCode);
+            return Result<IClient>.Fail(result.Messages, result.StatusCode);
 
         var credResult = await _brokerService.UpdateBrokerCredentials(result.Data.Id, brokerCredentialsDTO);
 
@@ -193,27 +190,27 @@ public class ClientService : IClientService
         await client.UpdateBroker(result.Data);
 
         if (!credResult.Succeeded)
-            return Result<Client>.Warning(client, message: "Failed to update broker credentilas");
+            return Result<IClient>.Warning(client, message: "Failed to update broker credentilas");
 
-        return Result<Client>.Success(client, result.StatusCode);
+        return Result<IClient>.Success(client, result.StatusCode);
     }
 
-    public async Task<Result<Client>> CreateClient(BrokerDTO broker, BrokerCredentialsDTO brokerCredentialsDTO)
+    public async Task<Result<IClient>> CreateClient(BrokerDTO broker, BrokerCredentialsDTO brokerCredentialsDTO)
     {
         var result = await _brokerService.CreateBroker(broker);
 
         if (!result.Succeeded)
-            return Result<Client>.Fail(result.Messages, result.StatusCode);
+            return Result<IClient>.Fail(result.Messages, result.StatusCode);
 
         var credResult = await _brokerService.UpdateBrokerCredentials(result.Data.Id, brokerCredentialsDTO);
 
-        var client = new Client(_storageService, _clientLogger, _brokerService, _factory, result.Data);
+        var client = _clientFactory.GenerateClient(result.Data);
         _clients.Add(client);
 
         if (!credResult.Succeeded)
-            return Result<Client>.Warning(client, message: "Failed to create broker credentilas.");
+            return Result<IClient>.Warning(client, message: "Failed to create broker credentilas.");
 
-        return Result<Client>.Success(client, result.StatusCode);
+        return Result<IClient>.Success(client, result.StatusCode);
     }
 
     public async Task<Result> RemoveClient(string brokerId)
@@ -350,7 +347,7 @@ public class ClientService : IClientService
 
     #region Privates
 
-    private async Task<int> UpdateClientDevices(Client client, List<Device> devices)
+    private async Task<int> UpdateClientDevices(IClient client, List<Device> devices)
     {
         HashSet<string> usedDevices = new();
 
