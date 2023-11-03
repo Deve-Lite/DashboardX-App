@@ -1,7 +1,5 @@
 ﻿namespace Presentation.Clients;
 
-
-//TODO: Create Client Factory instead of injectinf factory and lcientLogger
 public class ClientService : IClientService
 {
     private readonly IBrokerService _brokerService;

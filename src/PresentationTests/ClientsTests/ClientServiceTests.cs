@@ -1,10 +1,20 @@
 namespace PresentationTests.ClientsTests;
 
-public class ClientServiceTests
+public class ClientServiceTests : IClassFixture<ClientServiceTextFixture>
 {
-    [Fact]
-    public void Test1()
+
+    private readonly ClientServiceTextFixture _fixture;
+
+    public ClientServiceTests(ClientServiceTextFixture fixture)
     {
+        _fixture = fixture;
+    }
+
+    [Fact]
+    public void GetClientsTest()
+    {
+        
+
 
     }
 }
