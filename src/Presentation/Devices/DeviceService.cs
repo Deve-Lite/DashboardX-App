@@ -140,7 +140,7 @@ public class DeviceService : AuthorizedService, IDeviceService
         return response;
     }
 
-    public async Task<IResult> RemoveDeviceControls(string deviceId, string controlId)
+    public async Task<IResult> RemoveDeviceControl(string deviceId, string controlId)
     {
         var request = new Request
         {

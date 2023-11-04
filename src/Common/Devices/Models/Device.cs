@@ -23,10 +23,7 @@ public class Device : BaseModel
     public DateTime EditedAt { get; set; }
 
     [JsonIgnore]
-    public List<Control> Controls { get; set; } = new();
-
-    [JsonIgnore]
-    public bool SuccessfullControlsFetch { get; set; } = true;
+    public bool SuccessfullControlsDownload { get; set; } = false;
 
     public DeviceDTO Dto() => new()
     {

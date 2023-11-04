@@ -129,6 +129,17 @@ public class Result<T> : Result, IResult<T>
         } 
     };
 
+    public static Result<T> Fail(T data, HttpStatusCode statusCode = HttpStatusCode.BadRequest, string message = "") => new()
+    {
+        OperationState = OperationState.Error,
+        StatusCode = statusCode,
+        Messages = new List<string>
+        {
+            message
+        },
+        Data = data
+    };
+
     public static new Result<T> Fail(List<string> messages, HttpStatusCode statusCode = HttpStatusCode.BadRequest) => new()
     {
         OperationState = OperationState.Error,

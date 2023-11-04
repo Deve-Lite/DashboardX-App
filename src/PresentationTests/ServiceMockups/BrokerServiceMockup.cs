@@ -15,7 +15,7 @@ public class BrokerServiceMockup : IBrokerService
         {
             Id = Guid.NewGuid().ToString(),
             Server = dto.Server,
-            IsSSL = dto.IsSSL,
+            SSL = dto.IsSSL,
             ClientId = dto.ClientId,
             Icon = dto.Icon.Copy(),
             KeepAlive = dto.KeepAlive,
@@ -64,7 +64,7 @@ public class BrokerServiceMockup : IBrokerService
             broker.KeepAlive = dto.KeepAlive;
             broker.ClientId = dto.ClientId;
             broker.Icon = dto.Icon;
-            broker.IsSSL = dto.IsSSL;
+            broker.SSL = dto.IsSSL;
             broker.Name = dto.Name;
 
             broker.EditedAt = DateTime.Now;

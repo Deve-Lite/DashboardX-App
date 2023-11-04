@@ -47,7 +47,7 @@
 
         IsLoading = true;
 
-        var result = await _clientService.RemoveDeviceFromClient(ClientId, Device);
+        var result = await _clientService.RemoveDevice(ClientId, Device.Id);
 
         var success = RequestHelpers.InvokeAfterRequest(_snackbar, result, _localizer["Successfully removed device."]);
 

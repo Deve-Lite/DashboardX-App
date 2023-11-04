@@ -14,12 +14,14 @@ public class ClientMockup : IClient
 
     public List<Device> Devices { get; private set; }
 
-    public Func<Task>? RerenderPage { get; set; }
+    public Func<Task> RerenderPage { get; set; } = default;
 
     public ITopicService TopicService => throw new NotImplementedException();
 
 
-    public List<string> CurrentSubscribtions { get; private set; }  
+    public List<string> CurrentSubscribtions { get; private set; }
+
+    public List<Control> Controls => throw new NotImplementedException();
 
     public ClientMockup(Broker broker)
     {
@@ -28,8 +30,67 @@ public class ClientMockup : IClient
         CurrentSubscribtions = new List<string>();
     }
 
+    public Task UpdateBroker(Broker broker)
+    {
+        throw new NotImplementedException();
+    }
 
-    public Task<Result> ConnectAsync()
+    public Task<IResult> AddControl(Control control)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IResult> RemoveControl(string controlId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IResult> UpdateControl(Control control)
+    {
+        throw new NotImplementedException();
+    }
+
+    public IResult AddDevice(Device device)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IResult> AddDevice(Device device, List<Control> controls)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IResult> RemoveDevice(string deviceId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IResult> UpdateDevice(Device device)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IResult> UpdateDevice(Device device, List<Control> controls)
+    {
+        throw new NotImplementedException();
+    }
+
+    public IList<Control> GetDeviceControls(string deviceId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool HasDevice(string deviceId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IResult> ConnectAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IResult> PublishAsync(string topic, string payload, MqttQualityOfServiceLevel quality)
     {
         throw new NotImplementedException();
     }
@@ -39,47 +100,7 @@ public class ClientMockup : IClient
         throw new NotImplementedException();
     }
 
-    public ValueTask DisposeAsync() 
-    {
-        return ValueTask.CompletedTask;
-    }
-
-    public Task<MqttClientPublishResult> PublishAsync(string topic, string payload, MqttQualityOfServiceLevel quality)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<bool> Resubscibe(Device device, Control newControl)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<int> SubscribeAsync(Device device, List<Control> data)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<bool> SubscribeAsync(Device device, Control control)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task UnsubscribeAsync(Device existingDevice)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task UnsubscribeAsync(string deviceId, string id)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task UpdateBroker(Broker broker)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<int> UpdateSubscribtionsAsync(string id, List<Control> data)
+    public ValueTask DisposeAsync()
     {
         throw new NotImplementedException();
     }

@@ -27,7 +27,7 @@ else
     {
         var result = await client.ConnectAsync();
 
-        if (!result && result.ShowToast)
+        if (result.Succeeded && result.ShowToast)
             _snackbar.Add(result.Messages.First(), Severity.Error);
     }
 }

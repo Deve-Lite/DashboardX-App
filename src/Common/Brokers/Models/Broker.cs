@@ -14,7 +14,7 @@ public class Broker : BaseModel
     public string Server { get; set; } = string.Empty;
 
     [JsonPropertyName("isSsl")]
-    public bool IsSSL { get; set; }
+    public bool SSL { get; set; }
 
     [JsonPropertyName("clientId")]
     public string ClientId { get; set; } = string.Empty;
@@ -30,7 +30,7 @@ public class Broker : BaseModel
         EditedAt = EditedAt,
         Icon = Icon.Copy(),
         Id = Id,
-        IsSSL = IsSSL,
+        IsSSL = SSL,
         KeepAlive = KeepAlive,
         Name = Name,
         Port = Port,
@@ -42,7 +42,7 @@ public class Broker : BaseModel
         ClientId = broker.ClientId;
         EditedAt = broker.EditedAt;
         Icon = broker.Icon;
-        IsSSL = broker.IsSSL;
+        SSL = broker.SSL;
         KeepAlive = broker.KeepAlive;
         Name = broker.Name;
         Port = broker.Port;

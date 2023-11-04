@@ -55,7 +55,7 @@ internal class DeviceServiceMockup : IDeviceService
         return Task.FromResult((IResult)Result.Success());
     }
 
-    public Task<IResult> RemoveDeviceControls(string deviceId, string controlId)
+    public Task<IResult> RemoveDeviceControl(string deviceId, string controlId)
     {
         Controls.RemoveAll(x => x.DeviceId == deviceId && x.Id == controlId);
         return Task.FromResult((IResult)Result.Success());

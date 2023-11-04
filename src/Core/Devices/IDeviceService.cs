@@ -10,7 +10,7 @@ public interface IDeviceService
     Task<IResult> RemoveDevice(string deviceId);
 
     Task<IResult<List<Control>>> GetDeviceControls(string deviceId);
-    Task<IResult> RemoveDeviceControls(string deviceId, string controlId);
+    Task<IResult> RemoveDeviceControl(string deviceId, string controlId);
     Task<IResult<Control>> CreateDeviceControl(Control control);
     Task<IResult<Control>> UpdateDeviceControl(Control control);
 }

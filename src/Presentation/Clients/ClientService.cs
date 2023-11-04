@@ -1,5 +1,9 @@
-﻿namespace Presentation.Clients;
+﻿using Common.Brokers.Models;
 
+namespace Presentation.Clients;
+
+//TODO: Thinkof extending class with localizer
+//TODO: Split service 3 into smaller ones
 public class ClientService : IClientService
 {
     private readonly IBrokerService _brokerService;
@@ -54,7 +58,7 @@ public class ClientService : IClientService
             .GroupBy(x => x.BrokerId)
             .ToDictionary(group => group.Key, group => group.ToList());
 
-        var failedConnections = 0;
+        IResult finalStatus = Result.Success();
 
         foreach (var broker in brokersResult.Data)
         {
@@ -71,7 +75,11 @@ public class ClientService : IClientService
             }
 
             if (devicesGroups.ContainsKey(broker.Id))
-                failedConnections += await UpdateClientDevices(client, devicesGroups[broker.Id]);
+            {
+                var tmpStatus = await UpdateAllControls(client, devicesGroups[broker.Id]);
+                if (tmpStatus.OperationState != OperationState.Success)
+                    finalStatus = tmpStatus;
+            }
 
             usedClients.Add(broker.Id);
         }
@@ -85,10 +93,10 @@ public class ClientService : IClientService
             }
         }
 
-        if (failedConnections == 0)
+        if(finalStatus.Succeeded)
             return Result<List<IClient>>.Success(_clients, brokersResult.StatusCode);
 
-        return Result<List<IClient>>.Warning(_clients, message: $"Failed to subscribe {failedConnections} topics.");
+        return Result<List<IClient>>.Fail(_clients, brokersResult.StatusCode);
     }
 
     public async Task<Result<List<IClient>>> GetClients()
@@ -106,14 +114,9 @@ public class ClientService : IClientService
         {
             var client = _clients.FirstOrDefault(x => x.Id == broker.Id);
             if (client is null)
-            {
-                var newClient = _clientFactory.GenerateClient(broker);
-                _clients.Add(newClient);
-            }
-            else if (client.Broker.EditedAt != broker.EditedAt)
-            {
+                _clients.Add(_clientFactory.GenerateClient(broker));
+            else
                 await client.UpdateBroker(broker);
-            }
 
             usedClients.Add(broker.Id);
         }
@@ -150,55 +153,46 @@ public class ClientService : IClientService
 
         if (client is null)
         {
-            var newClient = _clientFactory.GenerateClient(brokerResult.Data);
-
-            var failedConnections = await UpdateClientDevices(newClient, deviceResult.Data);
-
-            _clients.Add(newClient);
-
-            if (failedConnections == 0)
-                return Result<IClient>.Success(newClient);
-
-            return Result<IClient>.Warning(newClient, message: $"Failed to subsribe {failedConnections} topics.");
+            client = _clientFactory.GenerateClient(brokerResult.Data);
+            _clients.Add(client);
         }
-        else if (client.Broker.EditedAt != brokerResult.Data.EditedAt)
-            await client.UpdateBroker(brokerResult.Data);
+        
+        await client.UpdateBroker(brokerResult.Data);
 
+        var result = await UpdateAllControls(client, deviceResult.Data);
 
-        var failConnections = await UpdateClientDevices(client, deviceResult.Data);
-
-        if (failConnections == 0)
+        if (result.OperationState == OperationState.Success)
             return Result<IClient>.Success(client);
 
-        return Result<IClient>.Warning(client, message: $"Failed to subsribe {failConnections} topics.");
+        if (result.OperationState == OperationState.Warning)
+            return Result<IClient>.Warning(client);
+
+        return Result<IClient>.Fail(client);
     }
 
-    public async Task<Result<IClient>> UpdateClient(BrokerDTO broker, BrokerCredentialsDTO brokerCredentialsDTO)
+    public async Task<IResult> UpdateClient(BrokerDTO broker, BrokerCredentialsDTO brokerCredentialsDTO)
     {
         var result = await _brokerService.UpdateBroker(broker);
 
         if (!result.Succeeded)
-            return Result<IClient>.Fail(result.Messages, result.StatusCode);
+            return Result.Fail(result.Messages, result.StatusCode);
 
         var credResult = await _brokerService.UpdateBrokerCredentials(result.Data.Id, brokerCredentialsDTO);
 
-        var client = _clients.FirstOrDefault(x => x.Id == broker.Id)!;
-
-        //TODO: Involve reconnect
-        await client.UpdateBroker(result.Data);
+        await _clients.First(x => x.Id == broker.Id)!.UpdateBroker(result.Data);
 
         if (!credResult.Succeeded)
-            return Result<IClient>.Warning(client, message: "Failed to update broker credentilas");
+            return Result.Warning(message: "Failed to update broker credentilas");
 
-        return Result<IClient>.Success(client, result.StatusCode);
+        return Result.Success(result.StatusCode);
     }
 
-    public async Task<Result<IClient>> CreateClient(BrokerDTO broker, BrokerCredentialsDTO brokerCredentialsDTO)
+    public async Task<IResult> CreateClient(BrokerDTO broker, BrokerCredentialsDTO brokerCredentialsDTO)
     {
         var result = await _brokerService.CreateBroker(broker);
 
         if (!result.Succeeded)
-            return Result<IClient>.Fail(result.Messages, result.StatusCode);
+            return Result.Fail(result.Messages, result.StatusCode);
 
         var credResult = await _brokerService.UpdateBrokerCredentials(result.Data.Id, brokerCredentialsDTO);
 
@@ -206,213 +200,147 @@ public class ClientService : IClientService
         _clients.Add(client);
 
         if (!credResult.Succeeded)
-            return Result<IClient>.Warning(client, message: "Failed to create broker credentilas.");
+            return Result.Warning(message: "Failed to create broker credentilas but creaded broker.");
 
-        return Result<IClient>.Success(client, result.StatusCode);
+        return Result.Success();
     }
 
     public async Task<Result> RemoveClient(string brokerId)
     {
         var result = await _brokerService.RemoveBroker(brokerId);
 
-        if (result.Succeeded)
-        {
-            var client = _clients.First(x => x.Broker.Id == brokerId);
-            await client.DisposeAsync();
-            _clients.Remove(client);
+        if (!result.Succeeded)
+            return Result.Fail(result.Messages, result.StatusCode);
 
-            return Result.Success(result.StatusCode);
-        }
+        var client = _clients.First(x => x.Broker.Id == brokerId);
+        await client.DisposeAsync();
+        _clients.Remove(client);
 
-        return Result.Fail(result.Messages, result.StatusCode);
+        return Result.Success();
     }
 
     #endregion
 
     #region Device
 
-    public async Task<Result> RemoveDeviceFromClient(string clientId, Device device)
+    public async Task<IResult> RemoveDevice(string clientId, string deviceId)
     {
-        var result = await _deviceService.RemoveDevice(device.Id);
+        var result = await _deviceService.RemoveDevice(deviceId);
 
-        if (result.Succeeded)
-        {
-            var client = _clients.First(x => x.Id == clientId);
-            await client.UnsubscribeAsync(device);
-            client.Devices.RemoveAll(x => x.Id == device.Id);
+        if (!result.Succeeded)
+            return result;
 
-            return Result.Success(result.StatusCode);
-        }
+        var removeResult = await _clients.First(x => x.Id == clientId)
+            .RemoveDevice(deviceId);
 
-        return Result.Fail(result.Messages, result.StatusCode);
+        if (removeResult.OperationState != OperationState.Success)
+            return removeResult;
+
+        return Result.Success(result.StatusCode);
     }
 
-    public async Task<Result<Device>> CreateDeviceForClient(DeviceDTO device)
+    public async Task<IResult> CreateDevice(DeviceDTO device)
     {
         var result = await _deviceService.CreateDevice(device);
 
-        if (result.Succeeded)
-        {
-            var client = _clients.First(x => x.Id == device.BrokerId);
-            client.Devices.Add(result.Data);
+        if (!result.Succeeded)
+            Result<Device>.Fail(result.Messages, result.StatusCode);
 
-            return (Result<Device>)result;
-        }
+        var addResult = _clients.First(x => x.Id == device.BrokerId)
+            .AddDevice(result.Data);
 
-        return Result<Device>.Fail(result.Messages, result.StatusCode);
+        return addResult;
+
     }
 
-    public async Task<Result<Device>> UpdateDeviceForClient(DeviceDTO device)
+    public async Task<IResult> UpdateDevice(DeviceDTO device)
     {
         var result = await _deviceService.UpdateDevice(device);
 
-        if (result.Succeeded)
+        if (!result.Succeeded)
+            return Result.Fail(result.Messages, result.StatusCode);
+
+        var updateResult = await _clients.First(x => x.Id == device.BrokerId)
+            .UpdateDevice(result.Data);
+
+        if (updateResult.OperationState == OperationState.Warning)
         {
-            //TODO: Optimize edit
-            var client = _clients.First(x => x.Id == device.BrokerId);
-
-            var devicesResult = await _deviceService.GetDevices(device.BrokerId);
-
-            if (!devicesResult.Succeeded)
-                return Result<Device>.Fail();
-
-            var unsuccessfullConnections = await UpdateClientDevices(client, devicesResult.Data);
-
-            if (unsuccessfullConnections == 0)
-                return Result<Device>.Success(result.Data);
-
-            return Result<Device>.Warning(message: $"Failed to subsribe {unsuccessfullConnections} topics.");
+            //TODO: Localizer
+            Result<Device>.Warning(message: $"Failed to subsribe topics.");
         }
 
-        return Result<Device>.Fail(result.Messages, result.StatusCode);
+        return updateResult;
+
     }
 
     #endregion
 
     #region Control
 
-    public async Task<Result> RemoveControlFromDevice(string clientId, string deviceId, Control control)
+    public async Task<IResult> RemoveControl(string clientId, Control control)
     {
-        var result = await _deviceService.RemoveDeviceControls(deviceId, control.Id);
+        var result = await _deviceService.RemoveDeviceControl(control.DeviceId, control.Id);
 
-        if (result.Succeeded)
-        {
-            var client = _clients.First(x => x.Id == clientId);
-            await client.UnsubscribeAsync(deviceId, control.Id);
+        if (!result.Succeeded)
+            return Result.Fail(result.Messages, result.StatusCode);
 
-            return Result.Success(result.StatusCode);
-        }
-
-        return Result.Fail(result.Messages, result.StatusCode);
+        return await _clients.First(x => x.Id == clientId)
+            .RemoveControl(control.Id);
     }
 
-    public async Task<Result> CreateControlForDevice(string clientId, string deviceId, Control control)
+    public async Task<IResult> CreateControlForDevice(string clientId, Control control)
     {
         var result = await _deviceService.CreateDeviceControl(control);
 
-        if (result.Succeeded)
-        {
-            var client = _clients.First(x => x.Id == clientId);
-            var device = client.Devices.First(x => x.Id == deviceId);
+        if (!result.Succeeded)
+            return Result.Fail(result.Messages, result.StatusCode);
 
-            if (!await client.SubscribeAsync(device, control))
-                return Result.Fail(new List<string> { "Failed to subscribe message however, control was created." }, result.StatusCode);
-
-            return Result.Success(result.StatusCode);
-        }
-
-        return Result.Fail(result.Messages, result.StatusCode);
+        return await _clients.First(x => x.Id == clientId)
+            .AddControl(control);
     }
 
-    public async Task<Result> UpdateControlForDevice(string clientId, string deviceId, Control control)
+    public async Task<IResult> UpdateControlForDevice(string clientId, Control control)
     {
         var result = await _deviceService.UpdateDeviceControl(control);
 
         if (result.Succeeded)
-        {
-            var client = _clients.First(x => x.Id == clientId);
-            var device = client.Devices.First(x => x.Id == deviceId);
+            return Result.Fail(result.Messages, result.StatusCode);
 
-            await client.Resubscibe(device, control);
-
-            return Result.Success(result.StatusCode);
-        }
-
-        return Result.Fail(result.Messages, result.StatusCode);
+        return await _clients.First(x => x.Id == clientId)
+            .UpdateControl(control);
     }
 
     #endregion
 
     #region Privates
 
-    private async Task<int> UpdateClientDevices(IClient client, List<Device> devices)
+    private async Task<IResult> UpdateAllControls(IClient client, List<Device> devices)
     {
         HashSet<string> usedDevices = new();
 
-        int failedSubscribtions = 0;
+        var finalStatus = Result.Success();
 
         foreach (var device in devices)
         {
-            var existingDevice = client.Devices.FirstOrDefault(x => x.Id == device.Id);
+            var result = await _deviceService.GetDeviceControls(device.Id);
 
-            _logger.LogDebug($"Updating {device.Id} {device.Name}");
-
-            if (existingDevice is null)
+            if(!result.Succeeded)
             {
-                var result = await _deviceService.GetDeviceControls(device.Id);
+                //TODO: Handle result;
+                continue;
+            }    
 
-                if (result.Succeeded)
-                {
-                    failedSubscribtions += await client.SubscribeAsync(device, result.Data);
+            var hasDevice = client.HasDevice(device.Id);
 
-                    if (failedSubscribtions != 0)
-                        _logger.LogWarning($"Failed to subscribe {failedSubscribtions} topics. For {device.Id} {device.Name}.");
-
-                    device.SuccessfullControlsFetch = true;
-                }
-                else
-                {
-                    device.SuccessfullControlsFetch = false;
-                }
-
-            }
-            else if (device.EditedAt != existingDevice.EditedAt)
+            if (hasDevice)
             {
-                await client.UnsubscribeAsync(existingDevice);
-
-                var result = await _deviceService.GetDeviceControls(device.Id);
-
-                if (result.Succeeded)
-                {
-                    failedSubscribtions += await client.SubscribeAsync(device, result.Data);
-
-                    if (failedSubscribtions != 0)
-                        _logger.LogWarning($"Failed to subscribe {failedSubscribtions} topics. For {device.Id} {device.Name}.");
-
-                    device.SuccessfullControlsFetch = true;
-                }
-                else
-                {
-                    device.SuccessfullControlsFetch = false;
-                }
+                var updateResult = await client.UpdateDevice(device, result.Data);
+                //TODO: Handle updateResult
             }
             else
             {
-                var result = await _deviceService.GetDeviceControls(device.Id);
-
-                if (result.Succeeded)
-                {
-                    failedSubscribtions += await client.UpdateSubscribtionsAsync(device.Id, result.Data);
-
-                    if (failedSubscribtions != 0)
-                        _logger.LogWarning($"Failed to subscribe {failedSubscribtions} topics. For {device.Id} {device.Name}.");
-
-                    device.SuccessfullControlsFetch = true;
-                }
-                else
-                {
-                    device.SuccessfullControlsFetch = false;
-                }
+                var addResult = await client.AddDevice(device, result.Data);
+                //TODO: Handle addResult
             }
 
             usedDevices.Add(device.Id);
@@ -420,12 +348,10 @@ public class ClientService : IClientService
 
         foreach (var device in client.Devices.ToList())
             if (!usedDevices.Contains(device.Id))
-                client.Devices.Remove(device);
+                await client.RemoveDevice(device.Id);
 
-        return failedSubscribtions;
+        return finalStatus;
     }
-
-
 
     #endregion
 }
