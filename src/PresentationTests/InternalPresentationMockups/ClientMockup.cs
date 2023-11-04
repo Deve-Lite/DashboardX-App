@@ -39,9 +39,9 @@ public class ClientMockup : IClient
         throw new NotImplementedException();
     }
 
-    public ValueTask DisposeAsync()
+    public ValueTask DisposeAsync() 
     {
-        throw new NotImplementedException();
+        return ValueTask.CompletedTask;
     }
 
     public Task<MqttClientPublishResult> PublishAsync(string topic, string payload, MqttQualityOfServiceLevel quality)

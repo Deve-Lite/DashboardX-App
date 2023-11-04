@@ -1,4 +1,5 @@
-global using Xunit;
+global using NUnit;
+global using NUnit.Framework;
 global using Core.Brokers;
 
 
@@ -25,3 +26,8 @@ global using Core.Users;
 global using Presentation.Application;
 global using Presentation.Extensions;
 global using Presentation.Clients;
+
+
+global using PresentationTests.Generators;
+global using PresentationTests.InternalServiceMockups;
+global using PresentationTests.ServiceMockups;

@@ -90,5 +90,3 @@ internal class ControlGenerator
             .Generate();
     }
 }
-
-}

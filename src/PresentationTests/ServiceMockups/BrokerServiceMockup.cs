@@ -1,8 +1,4 @@
-﻿using Common;
-using Common.Brokers.Models;
-using Core;
-
-namespace PresentationTests.ServiceMockups;
+﻿namespace PresentationTests.ServiceMockups;
 
 public class BrokerServiceMockup : IBrokerService
 {

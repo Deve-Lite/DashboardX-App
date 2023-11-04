@@ -92,6 +92,16 @@ public class Control : BaseModel
 
     #region Methods
 
+    public bool ShouldBeSubscribed()
+    {
+        return Type == ControlType.Color  ||
+               Type == ControlType.Slider ||
+               Type == ControlType.State  ||
+               Type == ControlType.Switch ||
+               Type == ControlType.Radio  || 
+               Type == ControlType.Text;
+    }
+
     public bool IsTheSame(Control control)
     {
         return Id == control.Id &&

@@ -18,7 +18,6 @@ public class Client : IClient, IAsyncDisposable
     public Broker Broker { get; private set; } = new();
     public List<Device> Devices { get; private set; } = new();
     public List<Control> Controls { get; private set; } = new();
-
     public Func<Task> RerenderPage { get; set; }
 
     public Client(ITopicService topic,
