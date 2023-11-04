@@ -90,6 +90,9 @@ public class Control : BaseModel
     [JsonPropertyName("attributes")]
     public ControlAttributes Attributes { get; set; } = new();
 
+    [JsonIgnore]
+    public bool IsSubscribed { get; set; } = false;
+
     #region Methods
 
     public bool ShouldBeSubscribed()

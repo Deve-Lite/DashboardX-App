@@ -94,7 +94,6 @@ public class ClientServiceBrokerTests
             Assert.That(result.Data, Is.Not.Null);
             Assert.That(result.Data.Broker.Id, Is.EqualTo(broker.Id));
         }
-
     }
 
     [Test]

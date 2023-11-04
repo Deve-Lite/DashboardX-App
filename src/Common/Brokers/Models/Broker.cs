@@ -37,4 +37,15 @@ public class Broker : BaseModel
         Server = Server,
     };
 
+    public void Update(Broker broker)
+    {
+        ClientId = broker.ClientId;
+        EditedAt = broker.EditedAt;
+        Icon = broker.Icon;
+        IsSSL = broker.IsSSL;
+        KeepAlive = broker.KeepAlive;
+        Name = broker.Name;
+        Port = broker.Port;
+        Server = broker.Server;
+    }
 }

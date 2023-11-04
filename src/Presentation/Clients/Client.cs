@@ -1,12 +1,22 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Common.Controls.Models;
+using Common.Devices.Models;
+using Microsoft.IdentityModel.Tokens;
 using MQTTnet.Client;
 using MQTTnet.Protocol;
+using MQTTnet.Server;
 using System.Text;
 
 namespace Presentation.Clients;
 
 public class Client : IClient, IAsyncDisposable
 {
+    private static readonly MqttClientSubscribeResultCode[] ValidMqttResultCodes = new[]
+    {
+        MqttClientSubscribeResultCode.GrantedQoS0,
+        MqttClientSubscribeResultCode.GrantedQoS1,
+        MqttClientSubscribeResultCode.GrantedQoS2
+    };
+
     private readonly ILogger<Client> _logger;
     private readonly ITopicService topicService;
     public ITopicService TopicService => topicService;
@@ -52,6 +62,185 @@ public class Client : IClient, IAsyncDisposable
         if (connected)
             await ConnectAsync();
     }
+
+    public async Task<IResult> AddControl(Control control)
+    {
+        try
+        {
+            var device = Devices.First(x => x.Id == control.DeviceId);
+            Controls.Add(control);
+
+            if (control.ShouldBeSubscribed() && MqttClient.IsConnected)
+            {
+                var result = await MqttClient.SubscribeAsync(control.GetTopic(device), control.QualityOfService);
+
+                var status = result.Items.First().ResultCode;
+
+                if (!ValidMqttResultCodes.Any(x => x == status))
+                    return Result.Warning();
+
+                control.IsSubscribed = true;
+            }
+
+            return Result.Success();
+        }
+        catch (ArgumentNullException)
+        {
+            return Result.Fail();
+        }
+        catch
+        {
+            return Result.Fail();
+        }
+    }
+
+    public async Task<IResult> UpdateControl(Control control)
+    {
+        try
+        {
+            var device = Devices.First(x => x.Id == control.DeviceId);
+            var currentControl = Controls.First(x => x.Id == control.Id);
+
+            if (control.ShouldBeSubscribed() && MqttClient.IsConnected)
+                await MqttClient.UnsubscribeAsync(control.GetTopic(device));
+
+            currentControl.Update(control);
+
+            if (control.ShouldBeSubscribed() && MqttClient.IsConnected)
+            {
+                var result = await MqttClient.SubscribeAsync(control.GetTopic(device), control.QualityOfService);
+
+                var status = result.Items.First().ResultCode;
+
+                if (!ValidMqttResultCodes.Any(x => x == status))
+                    return Result.Warning();
+
+                control.IsSubscribed = true;
+            }
+
+            return Result.Success();
+        }
+        catch (ArgumentNullException)
+        {
+            return Result.Fail();
+        }
+        catch
+        {
+            return Result.Fail();
+        }
+    }
+
+    public async Task<IResult> RemoveControl(string controlId)
+    {
+        try
+        {
+            var control = Controls.First(x => x.Id == controlId);
+            var device = Devices.First(x => x.Id == control.DeviceId);
+
+            if (control.ShouldBeSubscribed() || MqttClient.IsConnected)
+                await MqttClient.UnsubscribeAsync(control.GetTopic(device));
+
+            return Result.Success();
+        }
+        catch (ArgumentNullException)
+        {
+            return Result.Warning();
+        }
+        catch
+        {
+            return Result.Fail();
+        }
+    }
+
+    public IResult AddDevice(Device device)
+    {
+        Devices.Add(device);
+
+        return Result.Success();
+    }
+
+    public async Task<IResult> AddDevice(Device device, List<Control> controls)
+    {
+        Devices.Add(device);
+
+        var status = Result.Success();
+
+        foreach (var control in controls)
+        {
+            var result = await AddControl(control);
+
+            if (status.OperationState ==  OperationState.Success && result.OperationState == OperationState.Warning)
+                status = Result.Warning();
+
+            if (result.OperationState == OperationState.Error)
+                status = Result.Fail();
+        }
+
+        return status;
+    }
+
+    public async Task<IResult> UpdateDevice(Device device)
+    {
+        try
+        {
+            var currentDevice = Devices.First(x => x.Id == device.Id);
+
+            if (currentDevice.EditedAt == device.EditedAt)
+                return Result.Success();
+
+            var controls = Controls.Where(x => x.DeviceId == device.Id)
+                .ToList();
+
+            if(currentDevice.BaseDevicePath != device.BaseDevicePath)
+            {
+                foreach (var control in controls)
+                    await RemoveControl(control.Id);
+                
+                Devices.Remove(currentDevice);
+
+                return await AddDevice(device, controls);
+            }
+
+            currentDevice.Update(device);
+
+            return Result.Success();
+        }
+        catch (ArgumentNullException)
+        {
+            return Result.Warning();
+        }
+        catch
+        {
+            return Result.Fail();
+        }
+    }
+
+    public async Task<IResult> RemoveDevice(string deviceId)
+    {
+        try
+        {
+            var device = Devices.First(x => x.Id == deviceId);
+            Devices.Remove(device);
+
+            var controls = Controls.Where(x => x.DeviceId == deviceId)
+                .ToList();
+
+            foreach (var control in controls)
+                await RemoveControl(control.Id);
+
+            return Result.Success();
+        }
+        catch (ArgumentNullException)
+        {
+            return Result.Warning();
+        }
+        catch
+        {
+            return Result.Fail();
+        }
+    }
+
+
 
     public async Task<MqttClientPublishResult> PublishAsync(string topic, string payload, MqttQualityOfServiceLevel quality)
     {

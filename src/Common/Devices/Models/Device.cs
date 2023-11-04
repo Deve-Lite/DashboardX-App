@@ -37,4 +37,14 @@ public class Device : BaseModel
         Id = Id,
         Placing = Placing
     };
+
+    public void Update(Device device)
+    {
+        this.Name = device.Name;
+        this.Placing = device.Placing;
+        this.Icon = device.Icon;
+        this.BrokerId = device.BrokerId;
+        this.BaseDevicePath = device.BaseDevicePath;
+        this.EditedAt = device.EditedAt;
+    }
 }
