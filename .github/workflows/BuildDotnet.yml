@@ -1,6 +1,9 @@
 name: Build Dotnet Solution
 
-on:
+on:  
+  pull_request:
+    branches:
+    - main
   push:
     branches:
       - main 
