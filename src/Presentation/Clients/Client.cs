@@ -12,12 +12,12 @@ public class Client : IClient, IAsyncDisposable
     public ITopicService TopicService => topicService;
     public readonly IMqttClient MqttClient;
     public readonly IBrokerService BrokerService;
-
     public string Id => Broker.Id;
     public bool IsConnected { get; set; }
 
     public Broker Broker { get; private set; } = new();
     public List<Device> Devices { get; private set; } = new();
+    public List<Control> Controls { get; private set; } = new();
 
     public Func<Task> RerenderPage { get; set; }
 

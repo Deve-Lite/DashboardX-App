@@ -1,11 +1,26 @@
 ﻿using Bogus;
-using Common;
-using Common.Brokers.Models;
 
 namespace PresentationTests.Generators;
 
-public class BrokerDtoGenerator
+internal class BrokerDtoGenerator
 {
+
+    private static BrokerDTO? firstBroker;
+    public static BrokerDTO FirstBroker()
+    {
+        if(firstBroker == null)
+            firstBroker = GenerateBrokerDto();
+        return firstBroker;
+    }
+
+    private static BrokerDTO? secondBroker;
+    public static BrokerDTO SecondBroker()
+    {
+        if(secondBroker == null)
+            secondBroker = GenerateBrokerDto();
+        return secondBroker;
+    }
+
     public static BrokerDTO GenerateBrokerDto()
     {
         var iconFaker = new Faker<Icon>()
