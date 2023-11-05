@@ -1,6 +1,4 @@
-﻿using Common.Brokers.Models;
-
-namespace Presentation.Clients;
+﻿namespace Presentation.Clients;
 
 //TODO: Thinkof extending class with localizer
 //TODO: Split service 3 into smaller ones
@@ -339,14 +337,14 @@ public class ClientService : IClientService
             }
             else
             {
-                var addResult = await client.AddDevice(device, result.Data);
+                var addResult = await client.AddDevices(device, result.Data);
                 //TODO: Handle addResult
             }
 
             usedDevices.Add(device.Id);
         }
 
-        foreach (var device in client.Devices.ToList())
+        foreach (var device in client.Devices)
             if (!usedDevices.Contains(device.Id))
                 await client.RemoveDevice(device.Id);
 

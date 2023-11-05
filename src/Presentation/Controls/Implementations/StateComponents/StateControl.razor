@@ -37,9 +37,8 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var control = Client!.Controls
-        .Where(x => x.Type == ControlType.State)
-        .FirstOrDefault(x => x.DeviceId == Device!.Id);
+        var control = Client!.GetControls(Device!.Id)
+            .FirstOrDefault(x => x.Type == ControlType.State);
 
         if (control is null)
             return;

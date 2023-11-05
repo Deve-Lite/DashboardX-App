@@ -81,7 +81,7 @@ public class ClientServiceBrokerTests
     {
         var clients = await ClientService.GetClients();
 
-        Assert.That(clients.Data.Count, Is.EqualTo(2));
+        Assert.That(clients.Data, Has.Count.EqualTo(2));
 
         var brokers = await BrokerService.GetBrokers();
 

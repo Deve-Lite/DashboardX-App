@@ -55,7 +55,7 @@ public class ClientMockup : IClient
         throw new NotImplementedException();
     }
 
-    public Task<IResult> AddDevice(Device device, List<Control> controls)
+    public Task<IResult> AddDevices(Device device, List<Control> controls)
     {
         throw new NotImplementedException();
     }
@@ -75,7 +75,7 @@ public class ClientMockup : IClient
         throw new NotImplementedException();
     }
 
-    public IList<Control> GetDeviceControls(string deviceId)
+    public IList<Control> GetControls(string deviceId)
     {
         throw new NotImplementedException();
     }

@@ -1,8 +1,6 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using MQTTnet.Client;
+﻿using MQTTnet.Client;
 using MQTTnet.Protocol;
 using MQTTnet.Server;
-using MudBlazor;
 using System.Text;
 
 namespace Presentation.Clients;
@@ -16,18 +14,17 @@ public class Client : IClient, IAsyncDisposable
         MqttClientSubscribeResultCode.GrantedQoS2
     };
 
+    private readonly IMqttClient MqttClient;
+    private readonly IBrokerService BrokerService;
     private readonly ILogger<Client> _logger;
-    private readonly ITopicService topicService;
-    public ITopicService TopicService => topicService;
-    public readonly IMqttClient MqttClient;
-    public readonly IBrokerService BrokerService;
 
     public string Id => Broker.Id;
     public bool IsConnected => MqttClient.IsConnected;
 
-    public Broker Broker { get; private set; } = new();
-    public List<Device> Devices { get; private set; } = new();
-    public List<Control> Controls { get; private set; } = new();
+    public Broker Broker { get; private set; }
+    public ITopicService TopicService { get; private set; }
+    public IList<Device> Devices { get; private set; }
+    public IList<Control> Controls { get; private set; }
     public Func<Task> RerenderPage { get; set; }
 
     public Client(ITopicService topic,
@@ -39,7 +36,7 @@ public class Client : IClient, IAsyncDisposable
         Broker = broker;
         MqttClient = mqttClient;
         BrokerService = brokerService;
-        topicService = topic;
+        TopicService = topic;
 
         _logger = clientLogger;
 
@@ -48,6 +45,9 @@ public class Client : IClient, IAsyncDisposable
         {
             return Task.CompletedTask;
         };
+
+        Controls = new List<Control>();
+        Devices = new List<Device>();
     }
 
     public async Task UpdateBroker(Broker broker)
@@ -96,7 +96,6 @@ public class Client : IClient, IAsyncDisposable
             return Result.Fail();
         }
     }
-
     public async Task<IResult> UpdateControl(Control control)
     {
         try
@@ -135,7 +134,6 @@ public class Client : IClient, IAsyncDisposable
             return Result.Fail();
         }
     }
-
     public async Task<IResult> RemoveControl(string controlId)
     {
         try
@@ -154,11 +152,12 @@ public class Client : IClient, IAsyncDisposable
         {
             return Result.Warning();
         }
-        catch (Exception e)
+        catch
         {
             return Result.Fail();
         }
     }
+    public IList<Control> GetControls(string deviceId) => Controls.Where(x => x.DeviceId == deviceId).ToList();
 
     public IResult AddDevice(Device device)
     {
@@ -168,7 +167,7 @@ public class Client : IClient, IAsyncDisposable
 
         return Result.Success();
     }
-    public async Task<IResult> AddDevice(Device device, List<Control> controls)
+    public async Task<IResult> AddDevices(Device device, List<Control> controls)
     {
         Devices.Add(device);
 
@@ -209,7 +208,7 @@ public class Client : IClient, IAsyncDisposable
                 
                 Devices.Remove(currentDevice);
 
-                return await AddDevice(device, controls);
+                return await AddDevices(device, controls);
             }
 
             currentDevice.Update(device);
@@ -284,15 +283,12 @@ public class Client : IClient, IAsyncDisposable
             return Result.Fail();
         }
     }
-    public IList<Control> GetDeviceControls(string deviceId) => Controls.Where(x => x.DeviceId == deviceId).ToList();
-
     public bool HasDevice(string deviceId) => Devices.Any(x => x.Id == deviceId);
    
     public async Task DisconnectAsync()
     {
         await MqttClient.DisconnectAsync();
     }
-
     public async Task<IResult> PublishAsync(string topic, string payload, MqttQualityOfServiceLevel quality)
     {
         try
@@ -320,7 +316,6 @@ public class Client : IClient, IAsyncDisposable
             return Result.Fail();
         }
     }
-
     public async Task<IResult> ConnectAsync()
     {
         //TODO: Refactor
@@ -372,7 +367,7 @@ public class Client : IClient, IAsyncDisposable
         foreach (var control in Controls)
         {
             var device = Devices.First(x => x.Id == control.DeviceId);
-            await topicService.RemoveTopic(Broker.Id, device, control);
+            await TopicService.RemoveTopic(Broker.Id, device, control);
         }
 
         await MqttClient.DisconnectAsync();
@@ -385,7 +380,7 @@ public class Client : IClient, IAsyncDisposable
         {
             var topic = e.ApplicationMessage.Topic;
             var message = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
-            await topicService.UpdateMessageOnTopic(Broker.Id, topic, message);
+            await TopicService.UpdateMessageOnTopic(Broker.Id, topic, message);
             _logger.LogInformation("Message received. {topic} {message}", topic, message);
             RerenderPage?.Invoke();
         };
