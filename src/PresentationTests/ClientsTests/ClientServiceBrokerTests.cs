@@ -6,18 +6,20 @@ public class ClientServiceBrokerTests
 {
     public IFetchBrokerService BrokerService { get; private set; }
     public IFetchDeviceService DeviceService { get; private set; }
+    public IFetchControlService ControlService { get; private set; }
     public IClientService ClientService { get; private set; }
-    public IClientManager ClientFactory { get; private set; }
+    public IClientManager ClientManager { get; private set; }
     public ILogger<ClientService> Logger { get; private set; }
 
     public ClientServiceBrokerTests()
     {
-        BrokerService = new BrokerServiceMockup();
-        DeviceService = new DeviceServiceMockup();
-        ClientFactory = new ClientFactoryMockup();
+        BrokerService = new FetchBrokerServiceMockup();
+        DeviceService = new FetchDeviceServiceMockup();
+        ControlService = new FetchControlServiceMockup();
+        ClientManager = new ClientManagerMockup();
         Logger = new Logger<ClientService>(new LoggerFactory());
 
-        ClientService = new ClientService(BrokerService, DeviceService, Logger, ClientFactory);
+        ClientService = new ClientService(BrokerService, DeviceService, ControlService, ClientManager, Logger);
     }
 
     [SetUp]
@@ -47,17 +49,18 @@ public class ClientServiceBrokerTests
 
         foreach (var sublist in listOfControls)
             foreach (var control in sublist)
-                await DeviceService.CreateDeviceControl(control);
+                await ControlService.CreateControl(control);
     }
 
     [TearDown]
     public void TearDownTest()
     {
-        BrokerService = new BrokerServiceMockup();
-        DeviceService = new DeviceServiceMockup();
-        ClientFactory = new ClientFactoryMockup();
+        BrokerService = new FetchBrokerServiceMockup();
+        DeviceService = new FetchDeviceServiceMockup();
+        ControlService = new FetchControlServiceMockup();
+        ClientManager = new ClientManagerMockup();
         Logger = new Logger<ClientService>(new LoggerFactory());
-        ClientService = new ClientService(BrokerService, DeviceService, Logger, ClientFactory);
+        ClientService = new ClientService(BrokerService, DeviceService, ControlService, ClientManager, Logger);
     }
 
     [Test]
@@ -69,7 +72,7 @@ public class ClientServiceBrokerTests
 
         var brokers = await BrokerService.GetBrokers();
         var brokersInClients = clients.Data
-                                     .Select(x => x.Broker)
+                                     .Select(x => x.GetBroker())
                                      .ToList();
 
         foreach (var broker in brokers.Data)
@@ -92,7 +95,7 @@ public class ClientServiceBrokerTests
             Assert.That(result, Is.Not.Null);
             Assert.That(result.Succeeded, Is.True);
             Assert.That(result.Data, Is.Not.Null);
-            Assert.That(result.Data.Broker.Id, Is.EqualTo(broker.Id));
+            Assert.That(result.Data.GetBroker().Id, Is.EqualTo(broker.Id));
         }
     }
 
@@ -114,7 +117,7 @@ public class ClientServiceBrokerTests
         Assert.That(resultClients.Data.Count, Is.EqualTo(3));
 
         var brokersInClients = clients.Data
-                             .Select(x => x.Broker)
+                             .Select(x => x.GetBroker())
                              .ToList();
 
         foreach (var broker in brokers.Data)
@@ -177,13 +180,13 @@ public class ClientServiceBrokerTests
         Assert.That(clients.Data.Count, Is.EqualTo(2));
 
         var updatedClient = clients.Data
-            .Where(x => x.Broker.Id == result.Data.Id)
+            .Where(x => x.GetBroker().Id == result.Data.Id)
             .FirstOrDefault();
 
         Assert.That(updatedClient, Is.Not.Null);
-        Assert.That(updatedClient.Broker.Id, Is.EqualTo(updateResult.Data.Id));
-        Assert.That(updatedClient.Broker.Port, Is.EqualTo(updateResult.Data.Port));
-        Assert.That(updatedClient.Broker.KeepAlive, Is.EqualTo(updateResult.Data.KeepAlive));
-        Assert.That(updatedClient.Broker.Server, Is.EqualTo(updateResult.Data.Server));
+        Assert.That(updatedClient.GetBroker().Id, Is.EqualTo(updateResult.Data.Id));
+        Assert.That(updatedClient.GetBroker().Port, Is.EqualTo(updateResult.Data.Port));
+        Assert.That(updatedClient.GetBroker().KeepAlive, Is.EqualTo(updateResult.Data.KeepAlive));
+        Assert.That(updatedClient.GetBroker().Server, Is.EqualTo(updateResult.Data.Server));
     }
 }

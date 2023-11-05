@@ -1,6 +1,7 @@
 using Presentation;
 using Presentation.Auth;
 using Presentation.Brokers;
+using Presentation.Brokers.Interfaces;
 using Presentation.Controls;
 using Presentation.Controls.Interfaces;
 using Presentation.Devices;
@@ -53,6 +54,7 @@ builder.Services.AddScoped<IFetchBrokerService, FetchBrokerService>();
 builder.Services.AddScoped<IFetchControlService, FetchControlService>();
 builder.Services.AddScoped<IControlService, ControlService>();
 builder.Services.AddScoped<IDeviceService, DeviceService>();
+builder.Services.AddScoped<IBrokerService, BrokerService>();
 builder.Services.AddScoped<AuthenticationStateProvider, ApplicationStateProvider>();
 
 builder.Services.AddBlazoredLocalStorageAsSingleton();

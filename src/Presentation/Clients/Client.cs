@@ -1,5 +1,4 @@
-﻿using Common.Devices.Models;
-using MQTTnet.Client;
+﻿using MQTTnet.Client;
 using MQTTnet.Exceptions;
 using MQTTnet.Protocol;
 using MQTTnet.Server;
@@ -20,13 +19,14 @@ public class Client : IClient, IAsyncDisposable
     private readonly IFetchBrokerService BrokerService;
     private readonly ILogger<Client> _logger;
 
-    public string Id => Broker.Id;
+    private readonly IList<Device> _devices;
+    private readonly IList<Control> _controls;
+    private readonly Broker _broker;
+
+    public string Id => _broker.Id;
     public bool IsConnected => MqttClient.IsConnected;
 
-    public Broker Broker { get; private set; }
     public ITopicService TopicService { get; private set; }
-    public IList<Device> Devices { get; private set; }
-    public IList<Control> Controls { get; private set; }
     public Func<Task> RerenderPage { get; set; }
 
     public Client(ITopicService topic,
@@ -35,7 +35,7 @@ public class Client : IClient, IAsyncDisposable
                   ILogger<Client> clientLogger,
                   Broker broker)
     {
-        Broker = broker;
+        _broker = broker;
         MqttClient = mqttClient;
         BrokerService = brokerService;
         TopicService = topic;
@@ -48,13 +48,14 @@ public class Client : IClient, IAsyncDisposable
             return Task.CompletedTask;
         };
 
-        Controls = new List<Control>();
-        Devices = new List<Device>();
+        _controls = new List<Control>();
+        _devices = new List<Device>();
     }
 
+    public Broker GetBroker() => _broker;
     public async Task UpdateBroker(Broker broker)
     {
-        if(broker.EditedAt == Broker.EditedAt)
+        if(broker.EditedAt == _broker.EditedAt)
             return;
 
         var connected = MqttClient.IsConnected;
@@ -62,7 +63,7 @@ public class Client : IClient, IAsyncDisposable
         if (connected)
             await DisconnectAsync();
 
-        Broker.Update(broker);
+        _broker.Update(broker);
 
         if (connected)
             await ConnectAsync();
@@ -72,8 +73,8 @@ public class Client : IClient, IAsyncDisposable
     {
         try
         {
-            var device = Devices.First(x => x.Id == control.DeviceId);
-            Controls.Add(control);
+            var device = _devices.First(x => x.Id == control.DeviceId);
+            _controls.Add(control);
 
             if (control.ShouldBeSubscribed() && MqttClient.IsConnected)
             {
@@ -102,8 +103,8 @@ public class Client : IClient, IAsyncDisposable
     {
         try
         {
-            var device = Devices.First(x => x.Id == control.DeviceId);
-            var currentControl = Controls.FirstOrDefault(x => x.Id == control.Id);
+            var device = _devices.First(x => x.Id == control.DeviceId);
+            var currentControl = _controls.FirstOrDefault(x => x.Id == control.Id);
 
             if (currentControl is null)
                 return await AddControl(control);
@@ -140,12 +141,12 @@ public class Client : IClient, IAsyncDisposable
     {
         try
         {
-            var control = Controls.First(x => x.Id == controlId);
-            Controls.Remove(control);
+            var control = _controls.First(x => x.Id == controlId);
+            _controls.Remove(control);
 
             if (control.ShouldBeSubscribed() && MqttClient.IsConnected)
             {
-                var device = Devices.First(x => x.Id == control.DeviceId);
+                var device = _devices.First(x => x.Id == control.DeviceId);
                 await MqttClient.UnsubscribeAsync(control.GetTopic(device));
             }
 
@@ -165,11 +166,12 @@ public class Client : IClient, IAsyncDisposable
             return Result.Fail();
         }
     }
-    public IList<Control> GetControls(string deviceId) => Controls.Where(x => x.DeviceId == deviceId).ToList();
+    public IList<Control> GetControls(string deviceId) => _controls.Where(x => x.DeviceId == deviceId).ToList();
 
+    public IList<Device> GetDevices() => _devices;
     public IResult AddDevice(Device device)
     {
-        Devices.Add(device);
+        _devices.Add(device);
 
         device.SuccessfullControlsDownload = true;
 
@@ -177,7 +179,7 @@ public class Client : IClient, IAsyncDisposable
     }
     public async Task<IResult> AddDevices(Device device, List<Control> controls)
     {
-        Devices.Add(device);
+        _devices.Add(device);
 
         var status = Result.Success();
 
@@ -201,12 +203,12 @@ public class Client : IClient, IAsyncDisposable
     {
         try
         {
-            var currentDevice = Devices.First(x => x.Id == device.Id);
+            var currentDevice = _devices.First(x => x.Id == device.Id);
 
             if (currentDevice.EditedAt == device.EditedAt)
                 return Result.Success();
 
-            var controls = Controls.Where(x => x.DeviceId == device.Id)
+            var controls = _controls.Where(x => x.DeviceId == device.Id)
                 .ToList();
 
             if(currentDevice.BaseDevicePath != device.BaseDevicePath)
@@ -214,7 +216,7 @@ public class Client : IClient, IAsyncDisposable
                 foreach (var control in controls)
                     await RemoveControl(control.Id);
                 
-                Devices.Remove(currentDevice);
+                _devices.Remove(currentDevice);
 
                 return await AddDevices(device, controls);
             }
@@ -236,9 +238,9 @@ public class Client : IClient, IAsyncDisposable
     {
         try
         {
-            var currentDevice = Devices.First(x => x.Id == device.Id);
+            var currentDevice = _devices.First(x => x.Id == device.Id);
 
-            var oldControls = Controls.Where(x => x.DeviceId == device.Id)
+            var oldControls = _controls.Where(x => x.DeviceId == device.Id)
                 .ToList();
 
             foreach (var control in oldControls)
@@ -271,10 +273,10 @@ public class Client : IClient, IAsyncDisposable
     {
         try
         {
-            var device = Devices.First(x => x.Id == deviceId);
-            Devices.Remove(device);
+            var device = _devices.First(x => x.Id == deviceId);
+            _devices.Remove(device);
 
-            var controls = Controls.Where(x => x.DeviceId == deviceId)
+            var controls = _controls.Where(x => x.DeviceId == deviceId)
                 .ToList();
 
             foreach (var control in controls)
@@ -291,7 +293,7 @@ public class Client : IClient, IAsyncDisposable
             return Result.Fail();
         }
     }
-    public bool HasDevice(string deviceId) => Devices.Any(x => x.Id == deviceId);
+    public bool HasDevice(string deviceId) => _devices.Any(x => x.Id == deviceId);
    
     public async Task DisconnectAsync()
     {
@@ -329,15 +331,15 @@ public class Client : IClient, IAsyncDisposable
         //TODO: Refactor
         try
         {
-            if (!Broker.SSL)
+            if (!_broker.SSL)
                 return Result.Fail();
 
             var optionsBuilder = new MqttClientOptionsBuilder()
-                .WithClientId(Broker.ClientId)
-                .WithWebSocketServer($"wss://{Broker.Server}:{Broker.Port}/mqtt")
+                .WithClientId(_broker.ClientId)
+                .WithWebSocketServer($"wss://{_broker.Server}:{_broker.Port}/mqtt")
                 .WithCleanSession(true);
 
-            var result = await BrokerService.GetBrokerCredentials(Broker.Id);
+            var result = await BrokerService.GetBrokerCredentials(_broker.Id);
 
             if (result.Succeeded && !string.IsNullOrEmpty(result.Data.Username) && !string.IsNullOrEmpty(result.Data.Password))
                 optionsBuilder = optionsBuilder.WithCredentials(result.Data.Username, result.Data.Password);
@@ -348,12 +350,12 @@ public class Client : IClient, IAsyncDisposable
 
             //Think what happens on += InitializeCallbacks();
 
-            foreach (var control in Controls)
+            foreach (var control in _controls)
             {
                 if (!control.ShouldBeSubscribed())
                     continue;
 
-                var device = Devices.First(x => x.Id == control.DeviceId);
+                var device = _devices.First(x => x.Id == control.DeviceId);
                 var subResult = await MqttClient.SubscribeAsync(control.GetTopic(device), control.QualityOfService);
 
                 if(!ValidMqttResultCodes.Any(x => x == subResult.Items.First().ResultCode))
@@ -372,10 +374,10 @@ public class Client : IClient, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        foreach (var control in Controls)
+        foreach (var control in _controls)
         {
-            var device = Devices.First(x => x.Id == control.DeviceId);
-            await TopicService.RemoveTopic(Broker.Id, device, control);
+            var device = _devices.First(x => x.Id == control.DeviceId);
+            await TopicService.RemoveTopic(_broker.Id, device, control);
         }
 
         await MqttClient.DisconnectAsync();
@@ -388,7 +390,7 @@ public class Client : IClient, IAsyncDisposable
         {
             var topic = e.ApplicationMessage.Topic;
             var message = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
-            await TopicService.UpdateMessageOnTopic(Broker.Id, topic, message);
+            await TopicService.UpdateMessageOnTopic(_broker.Id, topic, message);
             _logger.LogInformation("Message received. {topic} {message}", topic, message);
             RerenderPage?.Invoke();
         };
@@ -398,11 +400,11 @@ public class Client : IClient, IAsyncDisposable
             if (!IsConnected)
                 return;
 
-            _logger.LogWarning("Client disconnected. Reconnecting...", Broker.Id);
+            _logger.LogWarning("Client disconnected. Reconnecting...", _broker.Id);
             RerenderPage?.Invoke();
             await MqttClient.ReconnectAsync();
             RerenderPage?.Invoke();
-            _logger.LogWarning("Client reconnected.", Broker.Id);
+            _logger.LogWarning("Client reconnected.", _broker.Id);
         };
     }
 }

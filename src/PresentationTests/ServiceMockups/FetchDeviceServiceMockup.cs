@@ -1,9 +1,8 @@
 ﻿namespace PresentationTests.ServiceMockups;
 
-internal class DeviceServiceMockup : IFetchDeviceService
+internal class FetchDeviceServiceMockup : IFetchDeviceService
 {
     private List<Device> Devices { get; set; } = new();
-    private List<Control> Controls { get; set; } = new();
 
     public Task<IResult<Device>> CreateDevice(DeviceDTO dto)
     {
@@ -23,20 +22,9 @@ internal class DeviceServiceMockup : IFetchDeviceService
         return Task.FromResult((IResult<Device>)Result<Device>.Success(device));
     }
 
-    public Task<IResult<Control>> CreateDeviceControl(Control control)
-    {
-        Controls.Add(control);
-        return Task.FromResult((IResult<Control>)Result<Control>.Success(control));
-    }
-
     public Task<IResult<Device>> GetDevice(string id)
     {
         return Task.FromResult((IResult<Device>)Result<Device>.Success(Devices.First(x => x.Id == id)));
-    }
-
-    public Task<IResult<List<Control>>> GetDeviceControls(string deviceId)
-    {
-        return Task.FromResult((IResult<List<Control>>)Result<List<Control>>.Success(Controls.Where(x => x.DeviceId == deviceId).ToList()));
     }
 
     public Task<IResult<List<Device>>> GetDevices()
@@ -55,12 +43,6 @@ internal class DeviceServiceMockup : IFetchDeviceService
         return Task.FromResult((IResult)Result.Success());
     }
 
-    public Task<IResult> RemoveDeviceControl(string deviceId, string controlId)
-    {
-        Controls.RemoveAll(x => x.DeviceId == deviceId && x.Id == controlId);
-        return Task.FromResult((IResult)Result.Success());
-    }
-
     public Task<IResult<Device>> UpdateDevice(DeviceDTO dto)
     {
         var device = Devices.First(x => x.Id == dto.Id);
@@ -73,24 +55,5 @@ internal class DeviceServiceMockup : IFetchDeviceService
         device.BrokerId = dto.BrokerId;
 
         return Task.FromResult((IResult<Device>)Result<Device>.Success(device));
-    }
-
-    public Task<IResult<Control>> UpdateDeviceControl(Control control)
-    {
-        var oldControl = Controls.First(x => x.Id == control.Id);
-
-        oldControl.Name = control.Name;
-        oldControl.Icon = control.Icon; 
-        oldControl.DeviceId = control.DeviceId;
-        oldControl.Type = control.Type;
-        oldControl.Attributes = control.Attributes;
-        oldControl.NotifyOnPublish = control.NotifyOnPublish;
-        oldControl.DisplayName = control.DisplayName;
-        oldControl.Topic = control.Topic;
-        oldControl.QualityOfService = control.QualityOfService;
-        oldControl.IsConfiramtionRequired = control.IsConfiramtionRequired;
-        oldControl.IsAvailable = control.IsAvailable;
-
-        return Task.FromResult((IResult<Control>)Result<Control>.Success(oldControl));
     }
 }

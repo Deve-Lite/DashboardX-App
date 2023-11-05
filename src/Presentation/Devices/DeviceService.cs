@@ -1,6 +1,4 @@
-﻿using Presentation.Devices.Interfaces;
-
-namespace Presentation.Devices;
+﻿namespace Presentation.Devices;
 
 public class DeviceService : IDeviceService
 {

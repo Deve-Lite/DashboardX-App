@@ -6,18 +6,19 @@ public interface IClient
 {
     string Id { get; }
     bool IsConnected { get; }
-
-    Broker Broker { get; }
-    IList<Device> Devices { get; }
-    Func<Task> RerenderPage { get; set; }
     ITopicService TopicService { get; }
 
+    Func<Task> RerenderPage { get; set; }
+
+    Broker GetBroker();
     Task UpdateBroker(Broker broker);
+
     Task<IResult> AddControl(Control control);
     Task<IResult> RemoveControl(string controlId);
     Task<IResult> UpdateControl(Control control);
     IList<Control> GetControls(string deviceId);
 
+    IList<Device> GetDevices();
     IResult AddDevice(Device device);
     Task<IResult> AddDevices(Device device, List<Control> controls);
     Task<IResult> RemoveDevice(string deviceId);

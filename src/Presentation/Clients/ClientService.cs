@@ -1,4 +1,5 @@
 ﻿using Common.Brokers.Models;
+using MQTTnet.Internal;
 
 namespace Presentation.Clients;
 
@@ -85,20 +86,15 @@ public class ClientService : IClientService
             usedClients.Add(broker.Id);
         }
 
+        await RemoveUnusedClients(usedClients);
+
         var clientsResult = _clientManager.GetClients();
 
-        foreach (var client in clientsResult.Data)
-        {
-            if (!usedClients.Contains(client.Id))
-                await _clientManager.RemoveClient(client.Id);
-        }
-
-        if(finalStatus.Succeeded)
+        if (finalStatus.Succeeded)
             return Result<IList<IClient>>.Success(clientsResult.Data, brokersResult.StatusCode);
 
         return Result<IList<IClient>>.Fail(clientsResult.Data, brokersResult.StatusCode);
     }
-
     public async Task<IResult<IList<IClient>>> GetClients()
     {
         var result = await _brokerService.GetBrokers();
@@ -122,13 +118,9 @@ public class ClientService : IClientService
             usedClients.Add(broker.Id);
         }
 
-        var clientsResult = _clientManager.GetClients();
+        await RemoveUnusedClients(usedClients);
 
-        foreach (var client in clientsResult.Data)
-        {
-            if (!usedClients.Contains(client.Id))
-                await _clientManager.RemoveClient(client.Id);
-        }
+        var clientsResult = _clientManager.GetClients();
 
         return Result<IList<IClient>>.Success(clientsResult.Data, result.StatusCode);
     }
@@ -178,51 +170,19 @@ public class ClientService : IClientService
             return Result<IClient>.Success(client);
         }
     }
-    public async Task<IResult> UpdateClient(BrokerDTO broker, BrokerCredentialsDTO brokerCredentialsDTO)
+
+    private async Task RemoveUnusedClients(HashSet<string> usedClients)
     {
-        var result = await _brokerService.UpdateBroker(broker);
+        var clientsResult = _clientManager.GetClients();
 
-        if (!result.Succeeded)
-            return Result.Fail(result.Messages, result.StatusCode);
+        var ids = clientsResult.Data.Select(x => x.Id).ToList();
 
-        var credResult = await _brokerService.UpdateBrokerCredentials(result.Data.Id, brokerCredentialsDTO);
-
-        var updateResult = await _clientManager.UpdateClient(result.Data);
-
-        if (!credResult.Succeeded && updateResult.Succeeded)
-            return Result.Warning(message: "Failed to update broker credentilas");
-
-        return updateResult;
+        foreach (var clientId in ids)
+        {
+            if (!usedClients.Contains(clientId))
+                await _clientManager.RemoveClient(clientId);
+        }
     }
-    public async Task<IResult> CreateClient(BrokerDTO broker, BrokerCredentialsDTO brokerCredentialsDTO)
-    {
-        var result = await _brokerService.CreateBroker(broker);
-
-        if (!result.Succeeded)
-            return Result.Fail(result.Messages, result.StatusCode);
-
-        var credResult = await _brokerService.UpdateBrokerCredentials(result.Data.Id, brokerCredentialsDTO);
-
-        var creartedBroker = result.Data;
-        var addResult = _clientManager.AddClient(creartedBroker);
-
-        if (!credResult.Succeeded && addResult.Succeeded)
-            return Result.Warning(message: "Failed to create broker credentilas but creaded broker.");
-
-        return addResult;
-    }
-    public async Task<IResult> RemoveClient(string brokerId)
-    {
-        var result = await _brokerService.RemoveBroker(brokerId);
-
-        if (!result.Succeeded)
-            return Result.Fail(result.Messages, result.StatusCode);
-
-        var deleteResult = await _clientManager.RemoveClient(brokerId);
-
-        return deleteResult;
-    }
-
     private async Task<IResult> UpdateAllControls(IClient client, List<Device> devices)
     {
         HashSet<string> usedDevices = new();
@@ -255,7 +215,7 @@ public class ClientService : IClientService
             usedDevices.Add(device.Id);
         }
 
-        foreach (var device in client.Devices)
+        foreach (var device in client.GetDevices())
             if (!usedDevices.Contains(device.Id))
                 await client.RemoveDevice(device.Id);
 

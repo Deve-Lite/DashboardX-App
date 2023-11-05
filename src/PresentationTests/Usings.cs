@@ -19,6 +19,7 @@ global using Core;
 global using Core.App;
 global using Core.Auth;
 global using Core.Brokers;
+global using Core.Controls;
 global using Core.Devices;
 global using Core.Users;
 

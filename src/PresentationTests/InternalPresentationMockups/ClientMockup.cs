@@ -1,99 +1,135 @@
-﻿
-using MQTTnet.Client;
-using MQTTnet.Protocol;
+﻿using MQTTnet.Protocol;
 
 namespace PresentationTests.InternalPresentationMockups;
 
 public class ClientMockup : IClient
 {
-    public string Id => Broker.Id;
-
-    public bool IsConnected => true;
-
-    public Broker Broker { get; private set; }
-    public Func<Task> RerenderPage { get; set; } = default;
-    public ITopicService TopicService { get; private set; }
-    public List<Control> Controls { get; private set; }
-    public IList<Device> Devices { get; private set; }
+    private Broker Broker;
+    private List<Device> Devices;
+    private List<Control> Controls;
+    private bool _isConnected;
 
     public ClientMockup(Broker broker)
     {
         Broker = broker;
         Devices = new List<Device>();
+        Controls = new List<Control>();
+        _isConnected = false;
+
+        //TODO: Mockup
+        TopicService = new TopicService(null);
     }
 
-    public Task UpdateBroker(Broker broker)
-    {
-        throw new NotImplementedException();
-    }
+    public string Id => Broker.Id;
+    public bool IsConnected => _isConnected;
+
+    public ITopicService TopicService { get; set; }
+    public Func<Task> RerenderPage { get; set; }
 
     public Task<IResult> AddControl(Control control)
     {
-        throw new NotImplementedException();
-    }
-
-    public Task<IResult> RemoveControl(string controlId)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<IResult> UpdateControl(Control control)
-    {
-        throw new NotImplementedException();
+        Controls.Add(control);
+        return Task.FromResult((IResult) Result.Success());
     }
 
     public IResult AddDevice(Device device)
     {
-        throw new NotImplementedException();
+        Devices.Add(device);
+        return Result.Success();
     }
 
     public Task<IResult> AddDevices(Device device, List<Control> controls)
     {
-        throw new NotImplementedException();
-    }
-
-    public Task<IResult> RemoveDevice(string deviceId)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<IResult> UpdateDevice(Device device)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<IResult> UpdateDevice(Device device, List<Control> controls)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IList<Control> GetControls(string deviceId)
-    {
-        throw new NotImplementedException();
-    }
-
-    public bool HasDevice(string deviceId)
-    {
-        throw new NotImplementedException();
+        Devices.Add(device);
+        Controls.AddRange(controls);
+        return Task.FromResult((IResult) Result.Success());
     }
 
     public Task<IResult> ConnectAsync()
     {
-        throw new NotImplementedException();
-    }
-
-    public Task<IResult> PublishAsync(string topic, string payload, MqttQualityOfServiceLevel quality)
-    {
-        throw new NotImplementedException();
+        _isConnected = true;
+        return Task.FromResult((IResult) Result.Success());
     }
 
     public Task DisconnectAsync()
     {
-        throw new NotImplementedException();
+        _isConnected = false;
+        return Task.FromResult((IResult) Result.Success());
     }
 
     public ValueTask DisposeAsync()
     {
-        throw new NotImplementedException();
+        _isConnected = false;
+        return new ValueTask();
+    }
+
+    public Broker GetBroker() => Broker;
+
+    public IList<Control> GetControls(string deviceId)
+    {
+        return Controls.Where(x => x.DeviceId == deviceId).ToList();
+    }
+
+    public IList<Device> GetDevices()
+    {
+        return Devices;
+    }
+
+    public bool HasDevice(string deviceId)
+    {
+        return Devices.Any(x => x.Id == deviceId);
+    }
+
+    public Task<IResult> PublishAsync(string topic, string payload, MqttQualityOfServiceLevel quality)
+    {
+        return Task.FromResult((IResult) Result.Success());
+    }
+
+    public Task<IResult> RemoveControl(string controlId)
+    {
+        Controls.RemoveAll(x => x.Id == controlId);
+        return Task.FromResult((IResult) Result.Success());
+    }
+
+    public Task<IResult> RemoveDevice(string deviceId)
+    {
+        Devices.RemoveAll(x => x.Id == deviceId);
+        return Task.FromResult((IResult) Result.Success());
+    }
+
+    public Task UpdateBroker(Broker broker)
+    {
+        Broker = broker;
+        return Task.CompletedTask;
+    }
+
+    public Task<IResult> UpdateControl(Control control)
+    {
+        if(Controls.Any(x => x.Id == control.Id))
+            Controls.FirstOrDefault(x => x.Id == control.Id)?.Update(control);
+        else
+            Controls.Add(control);
+
+        return Task.FromResult((IResult) Result.Success());
+    }
+
+    public Task<IResult> UpdateDevice(Device device)
+    {
+        if(Devices.Any(x => x.Id == device.Id))
+            Devices.FirstOrDefault(x => x.Id == device.Id)?.Update(device);
+        else
+            Devices.Add(device);
+
+        return Task.FromResult((IResult) Result.Success());
+    }
+
+    public Task<IResult> UpdateDevice(Device device, List<Control> controls)
+    {
+        UpdateDevice(device);
+
+        foreach(var control in controls)
+            UpdateControl(control);
+
+        return Task.FromResult((IResult) Result.Success());
     }
 }
