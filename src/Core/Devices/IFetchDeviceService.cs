@@ -1,6 +1,6 @@
 ﻿namespace Core.Devices;
 
-public interface IDeviceService
+public interface IFetchDeviceService
 {
     Task<IResult<List<Device>>> GetDevices();
     Task<IResult<List<Device>>> GetDevices(string brokerId);
@@ -8,9 +8,4 @@ public interface IDeviceService
     Task<IResult<Device>> CreateDevice(DeviceDTO broker);
     Task<IResult<Device>> UpdateDevice(DeviceDTO broker);
     Task<IResult> RemoveDevice(string deviceId);
-
-    Task<IResult<List<Control>>> GetDeviceControls(string deviceId);
-    Task<IResult> RemoveDeviceControl(string deviceId, string controlId);
-    Task<IResult<Control>> CreateDeviceControl(Control control);
-    Task<IResult<Control>> UpdateDeviceControl(Control control);
 }

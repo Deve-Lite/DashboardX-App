@@ -11,23 +11,15 @@ public class ClientMockup : IClient
     public bool IsConnected => true;
 
     public Broker Broker { get; private set; }
-
-    public List<Device> Devices { get; private set; }
-
     public Func<Task> RerenderPage { get; set; } = default;
-
-    public ITopicService TopicService => throw new NotImplementedException();
-
-
-    public List<string> CurrentSubscribtions { get; private set; }
-
-    public List<Control> Controls => throw new NotImplementedException();
+    public ITopicService TopicService { get; private set; }
+    public List<Control> Controls { get; private set; }
+    public IList<Device> Devices { get; private set; }
 
     public ClientMockup(Broker broker)
     {
         Broker = broker;
         Devices = new List<Device>();
-        CurrentSubscribtions = new List<string>();
     }
 
     public Task UpdateBroker(Broker broker)

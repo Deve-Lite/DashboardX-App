@@ -5,10 +5,10 @@ using System.Text.Json;
 
 namespace Presentation.Brokers;
 
-public class BrokerService : AuthorizedService, IBrokerService
+public class FetchBrokerService : AuthorizedService, IFetchBrokerService
 {
-    public BrokerService(HttpClient httpClient,
-                         ILogger<BrokerService> logger,
+    public FetchBrokerService(HttpClient httpClient,
+                         ILogger<FetchBrokerService> logger,
                          ILoadingService loadingService,    
                          NavigationManager navigationManager,
                          AuthenticationStateProvider authenticationState)

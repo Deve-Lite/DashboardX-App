@@ -1,4 +1,6 @@
-﻿using MQTTnet.Client;
+﻿using Common.Devices.Models;
+using MQTTnet.Client;
+using MQTTnet.Exceptions;
 using MQTTnet.Protocol;
 using MQTTnet.Server;
 using System.Text;
@@ -15,7 +17,7 @@ public class Client : IClient, IAsyncDisposable
     };
 
     private readonly IMqttClient MqttClient;
-    private readonly IBrokerService BrokerService;
+    private readonly IFetchBrokerService BrokerService;
     private readonly ILogger<Client> _logger;
 
     public string Id => Broker.Id;
@@ -29,7 +31,7 @@ public class Client : IClient, IAsyncDisposable
 
     public Client(ITopicService topic,
                   IMqttClient mqttClient,
-                  IBrokerService brokerService,
+                  IFetchBrokerService brokerService,
                   ILogger<Client> clientLogger,
                   Broker broker)
     {
@@ -139,17 +141,23 @@ public class Client : IClient, IAsyncDisposable
         try
         {
             var control = Controls.First(x => x.Id == controlId);
-            var device = Devices.First(x => x.Id == control.DeviceId);
-
             Controls.Remove(control);
 
-            if (control.ShouldBeSubscribed() || MqttClient.IsConnected)
+            if (control.ShouldBeSubscribed() && MqttClient.IsConnected)
+            {
+                var device = Devices.First(x => x.Id == control.DeviceId);
                 await MqttClient.UnsubscribeAsync(control.GetTopic(device));
+            }
 
             return Result.Success();
         }
         catch (ArgumentNullException)
         {
+            return Result.Warning();
+        }
+        catch (MqttCommunicationException)
+        {
+            //Failed to unsubscribe
             return Result.Warning();
         }
         catch

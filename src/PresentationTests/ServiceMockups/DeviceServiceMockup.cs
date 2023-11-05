@@ -1,6 +1,6 @@
 ﻿namespace PresentationTests.ServiceMockups;
 
-internal class DeviceServiceMockup : IDeviceService
+internal class DeviceServiceMockup : IFetchDeviceService
 {
     private List<Device> Devices { get; set; } = new();
     private List<Control> Controls { get; set; } = new();

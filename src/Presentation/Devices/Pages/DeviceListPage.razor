@@ -124,7 +124,7 @@
 
 @code
 {
-    private List<IClient> Clients { get; set; } = new();
+    private IList<IClient> Clients { get; set; } = new List<IClient>();
 
     protected override async Task OnInitializedAsync()
     {

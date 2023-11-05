@@ -1,6 +1,6 @@
 ﻿namespace PresentationTests.ServiceMockups;
 
-public class BrokerServiceMockup : IBrokerService
+public class BrokerServiceMockup : IFetchBrokerService
 {
     private List<Broker> Brokers { get; set; } = new();
     private BrokerCredentialsDTO BrokerCredentials = new BrokerCredentialsDTO

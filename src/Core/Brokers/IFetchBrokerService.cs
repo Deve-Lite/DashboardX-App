@@ -1,6 +1,6 @@
 ﻿namespace Core.Brokers;
 
-public interface IBrokerService
+public interface IFetchBrokerService
 {
     Task<IResult<Broker>> GetBroker(string id);
     Task<IResult<List<Broker>>> GetBrokers();

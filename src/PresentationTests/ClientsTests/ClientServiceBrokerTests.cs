@@ -4,10 +4,10 @@ namespace PresentationTests.ClientsTests;
 
 public class ClientServiceBrokerTests
 {
-    public IBrokerService BrokerService { get; private set; }
-    public IDeviceService DeviceService { get; private set; }
+    public IFetchBrokerService BrokerService { get; private set; }
+    public IFetchDeviceService DeviceService { get; private set; }
     public IClientService ClientService { get; private set; }
-    public IClientFactory ClientFactory { get; private set; }
+    public IClientManager ClientFactory { get; private set; }
     public ILogger<ClientService> Logger { get; private set; }
 
     public ClientServiceBrokerTests()

@@ -91,6 +91,12 @@ public class Result<T> : Result, IResult<T>
         Data = default!;
     }
 
+    public static new Result<T> Success(HttpStatusCode statusCode = HttpStatusCode.OK) => new()
+    {
+        OperationState = OperationState.Success,
+        StatusCode = statusCode
+    };
+
     public static Result<T> Success(T data, HttpStatusCode statusCode = HttpStatusCode.OK) => new()
     {
         Data = data, 

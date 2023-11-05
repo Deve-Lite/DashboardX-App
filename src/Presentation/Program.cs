@@ -1,7 +1,10 @@
 using Presentation;
 using Presentation.Auth;
 using Presentation.Brokers;
+using Presentation.Controls;
+using Presentation.Controls.Interfaces;
 using Presentation.Devices;
+using Presentation.Devices.Interfaces;
 using Presentation.Users;
 using System.Net;
 
@@ -42,9 +45,13 @@ builder.Services.AddAuthorizationCore();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-builder.Services.AddScoped<IBrokerService, BrokerService>();
+builder.Services.AddScoped<IFetchBrokerService, FetchBrokerService>();
 builder.Services.AddScoped<IClientService, ClientService>();
-builder.Services.AddScoped<IClientFactory, ClientFactory>();
+builder.Services.AddScoped<IClientManager, ClientManager>();
+builder.Services.AddScoped<IFetchDeviceService, FetchDeviceService>();
+builder.Services.AddScoped<IFetchBrokerService, FetchBrokerService>();
+builder.Services.AddScoped<IFetchControlService, FetchControlService>();
+builder.Services.AddScoped<IControlService, ControlService>();
 builder.Services.AddScoped<IDeviceService, DeviceService>();
 builder.Services.AddScoped<AuthenticationStateProvider, ApplicationStateProvider>();
 

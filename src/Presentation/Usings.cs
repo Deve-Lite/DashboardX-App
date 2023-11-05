@@ -31,8 +31,12 @@ global using Core.App;
 global using Core.Auth;
 global using Core.Brokers;
 global using Core.Devices;
+global using Core.Controls;
 global using Core.Users;
 
 global using Presentation.Application;
 global using Presentation.Extensions;
 global using Presentation.Clients;
+global using Presentation.Controls.Interfaces;
+global using Presentation.Devices.Interfaces;
+//global using Presentation.Brokers.Interfaces;

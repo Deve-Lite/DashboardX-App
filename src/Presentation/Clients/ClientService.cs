@@ -1,39 +1,43 @@
-﻿namespace Presentation.Clients;
+﻿using Common.Brokers.Models;
+
+namespace Presentation.Clients;
 
 //TODO: Thinkof extending class with localizer
-//TODO: Split service 3 into smaller ones
 public class ClientService : IClientService
 {
-    private readonly IBrokerService _brokerService;
-    private readonly IDeviceService _deviceService;
-    private readonly IClientFactory _clientFactory;
+    private readonly IFetchBrokerService _brokerService;
+    private readonly IFetchDeviceService _deviceService;
+    private readonly IFetchControlService _controlService;
+    private readonly IClientManager _clientManager;
     private readonly ILogger<ClientService> _logger;
-    private readonly List<IClient> _clients;
 
-    public ClientService(IBrokerService brokerService,
-                         IDeviceService deviceService,
-                         ILogger<ClientService> logger,
-                         IClientFactory clientFactory)
+    public ClientService(IFetchBrokerService brokerService,
+                         IFetchDeviceService deviceService,
+                         IFetchControlService controlService,
+                         IClientManager clientManager,
+                         ILogger<ClientService> logger)
     {
         _brokerService = brokerService;
         _deviceService = deviceService;
-        _clientFactory = clientFactory;
+        _clientManager = clientManager;
+        _controlService = controlService;
         _logger = logger;
-        _clients = new List<IClient>();
     }
 
     public async Task Logout()
     {
-        foreach (var client in _clients)
+        var clientsResult = _clientManager.GetClients();
+
+        if(!clientsResult.Succeeded)
+            return;
+
+        foreach (var client in clientsResult.Data)
             await client.DisconnectAsync();
 
-        _clients.Clear();
+        clientsResult.Data.Clear();
     }
 
-
-    #region Client
-
-    public async Task<Result<List<IClient>>> GetClientsWithDevices()
+    public async Task<IResult<IList<IClient>>> GetClientsWithDevices()
     {
         var brokersTask = _brokerService.GetBrokers();
         var devicesTask = _deviceService.GetDevices();
@@ -44,10 +48,10 @@ public class ClientService : IClientService
         var devicesResult = devicesTask.Result;
 
         if (!brokersResult.Succeeded)
-            return Result<List<IClient>>.Fail(brokersResult.Messages, brokersResult.StatusCode);
+            return Result<IList<IClient>>.Fail(brokersResult.Messages, brokersResult.StatusCode);
 
         if (!devicesResult.Succeeded)
-            return Result<List<IClient>>.Fail(devicesResult.Messages, devicesResult.StatusCode);
+            return Result<IList<IClient>>.Fail(devicesResult.Messages, devicesResult.StatusCode);
 
         var usedClients = new HashSet<string>();
 
@@ -60,21 +64,20 @@ public class ClientService : IClientService
 
         foreach (var broker in brokersResult.Data)
         {
-            var client = _clients.FirstOrDefault(x => x.Id == broker.Id);
-            if (client is null)
-            {
-                var newClient = _clientFactory.GenerateClient(broker);
-                _clients.Add(newClient);
-                client = newClient;
-            }
-            else if (client.Broker.EditedAt != broker.EditedAt)
-            {
-                await client.UpdateBroker(broker);
-            }
+            var clientResult = _clientManager.GetClient(broker.Id);
+
+            IResult<IClient> resultClient = Result<IClient>.Success();
+
+            if (!clientResult.Succeeded)
+                resultClient = _clientManager.AddClient(broker);
+            else
+                resultClient = await _clientManager.UpdateClient(broker);
+
+            usedClients.Add(broker.Id);
 
             if (devicesGroups.ContainsKey(broker.Id))
             {
-                var tmpStatus = await UpdateAllControls(client, devicesGroups[broker.Id]);
+                var tmpStatus = await UpdateAllControls(resultClient.Data, devicesGroups[broker.Id]);
                 if (tmpStatus.OperationState != OperationState.Success)
                     finalStatus = tmpStatus;
             }
@@ -82,27 +85,26 @@ public class ClientService : IClientService
             usedClients.Add(broker.Id);
         }
 
-        foreach (var client in _clients)
+        var clientsResult = _clientManager.GetClients();
+
+        foreach (var client in clientsResult.Data)
         {
             if (!usedClients.Contains(client.Id))
-            {
-                await client.DisposeAsync();
-                _clients.Remove(client);
-            }
+                await _clientManager.RemoveClient(client.Id);
         }
 
         if(finalStatus.Succeeded)
-            return Result<List<IClient>>.Success(_clients, brokersResult.StatusCode);
+            return Result<IList<IClient>>.Success(clientsResult.Data, brokersResult.StatusCode);
 
-        return Result<List<IClient>>.Fail(_clients, brokersResult.StatusCode);
+        return Result<IList<IClient>>.Fail(clientsResult.Data, brokersResult.StatusCode);
     }
 
-    public async Task<Result<List<IClient>>> GetClients()
+    public async Task<IResult<IList<IClient>>> GetClients()
     {
         var result = await _brokerService.GetBrokers();
 
         if (!result.Succeeded)
-            return Result<List<IClient>>.Fail(result.Messages, result.StatusCode);
+            return Result<IList<IClient>>.Fail(result.Messages, result.StatusCode);
 
         var brokers = result.Data;
 
@@ -110,28 +112,27 @@ public class ClientService : IClientService
 
         foreach (var broker in brokers)
         {
-            var client = _clients.FirstOrDefault(x => x.Id == broker.Id);
-            if (client is null)
-                _clients.Add(_clientFactory.GenerateClient(broker));
-            else
-                await client.UpdateBroker(broker);
+            var clientResult = _clientManager.GetClient(broker.Id);
 
+            if (!clientResult.Succeeded)
+                _clientManager.AddClient(broker);
+            else
+              await _clientManager.UpdateClient(broker);
+            
             usedClients.Add(broker.Id);
         }
 
-        foreach (var client in _clients.ToList())
+        var clientsResult = _clientManager.GetClients();
+
+        foreach (var client in clientsResult.Data)
         {
             if (!usedClients.Contains(client.Id))
-            {
-                await client.DisposeAsync();
-                _clients.Remove(client);
-            }
+                await _clientManager.RemoveClient(client.Id);
         }
 
-        return Result<List<IClient>>.Success(_clients, result.StatusCode);
+        return Result<IList<IClient>>.Success(clientsResult.Data, result.StatusCode);
     }
-
-    public async Task<Result<IClient>> GetClient(string brokerId)
+    public async Task<IResult<IClient>> GetClient(string brokerId)
     {
         var brokerTask = _brokerService.GetBroker(brokerId);
         var deviceTask = _deviceService.GetDevices(brokerId);
@@ -147,27 +148,36 @@ public class ClientService : IClientService
         if (!deviceResult.Succeeded)
             return Result<IClient>.Fail(deviceResult.Messages, deviceResult.StatusCode);
 
-        var client = _clients.FirstOrDefault(x => x.Id == brokerId);
+        var clientResult = _clientManager.GetClient(brokerId);
 
-        if (client is null)
+        if (!clientResult.Succeeded)
         {
-            client = _clientFactory.GenerateClient(brokerResult.Data);
-            _clients.Add(client);
-        }
-        
-        await client.UpdateBroker(brokerResult.Data);
+            var addResult = _clientManager.AddClient(brokerResult.Data);
 
-        var result = await UpdateAllControls(client, deviceResult.Data);
+            if(!addResult.Succeeded)
+                return Result<IClient>.Fail(addResult.Messages, addResult.StatusCode);
 
-        if (result.OperationState == OperationState.Success)
+            var client = addResult.Data;
+
+            var result = await UpdateAllControls(client, deviceResult.Data);
+
+            if (!result.Succeeded)
+                Result<IClient>.Fail(client);
+            
             return Result<IClient>.Success(client);
+        }
+        else
+        {
+            var client = clientResult.Data;
+            await client.UpdateBroker(brokerResult.Data);
+            var result = await UpdateAllControls(client, deviceResult.Data);
 
-        if (result.OperationState == OperationState.Warning)
-            return Result<IClient>.Warning(client);
+            if (!result.Succeeded)
+                Result<IClient>.Fail(client);
 
-        return Result<IClient>.Fail(client);
+            return Result<IClient>.Success(client);
+        }
     }
-
     public async Task<IResult> UpdateClient(BrokerDTO broker, BrokerCredentialsDTO brokerCredentialsDTO)
     {
         var result = await _brokerService.UpdateBroker(broker);
@@ -177,14 +187,13 @@ public class ClientService : IClientService
 
         var credResult = await _brokerService.UpdateBrokerCredentials(result.Data.Id, brokerCredentialsDTO);
 
-        await _clients.First(x => x.Id == broker.Id)!.UpdateBroker(result.Data);
+        var updateResult = await _clientManager.UpdateClient(result.Data);
 
-        if (!credResult.Succeeded)
+        if (!credResult.Succeeded && updateResult.Succeeded)
             return Result.Warning(message: "Failed to update broker credentilas");
 
-        return Result.Success(result.StatusCode);
+        return updateResult;
     }
-
     public async Task<IResult> CreateClient(BrokerDTO broker, BrokerCredentialsDTO brokerCredentialsDTO)
     {
         var result = await _brokerService.CreateBroker(broker);
@@ -194,123 +203,25 @@ public class ClientService : IClientService
 
         var credResult = await _brokerService.UpdateBrokerCredentials(result.Data.Id, brokerCredentialsDTO);
 
-        var client = _clientFactory.GenerateClient(result.Data);
-        _clients.Add(client);
+        var creartedBroker = result.Data;
+        var addResult = _clientManager.AddClient(creartedBroker);
 
-        if (!credResult.Succeeded)
+        if (!credResult.Succeeded && addResult.Succeeded)
             return Result.Warning(message: "Failed to create broker credentilas but creaded broker.");
 
-        return Result.Success();
+        return addResult;
     }
-
-    public async Task<Result> RemoveClient(string brokerId)
+    public async Task<IResult> RemoveClient(string brokerId)
     {
         var result = await _brokerService.RemoveBroker(brokerId);
 
         if (!result.Succeeded)
             return Result.Fail(result.Messages, result.StatusCode);
 
-        var client = _clients.First(x => x.Broker.Id == brokerId);
-        await client.DisposeAsync();
-        _clients.Remove(client);
+        var deleteResult = await _clientManager.RemoveClient(brokerId);
 
-        return Result.Success();
+        return deleteResult;
     }
-
-    #endregion
-
-    #region Device
-
-    public async Task<IResult> RemoveDevice(string clientId, string deviceId)
-    {
-        var result = await _deviceService.RemoveDevice(deviceId);
-
-        if (!result.Succeeded)
-            return result;
-
-        var removeResult = await _clients.First(x => x.Id == clientId)
-            .RemoveDevice(deviceId);
-
-        if (removeResult.OperationState != OperationState.Success)
-            return removeResult;
-
-        return Result.Success(result.StatusCode);
-    }
-
-    public async Task<IResult> CreateDevice(DeviceDTO device)
-    {
-        var result = await _deviceService.CreateDevice(device);
-
-        if (!result.Succeeded)
-            Result<Device>.Fail(result.Messages, result.StatusCode);
-
-        var addResult = _clients.First(x => x.Id == device.BrokerId)
-            .AddDevice(result.Data);
-
-        return addResult;
-
-    }
-
-    public async Task<IResult> UpdateDevice(DeviceDTO device)
-    {
-        var result = await _deviceService.UpdateDevice(device);
-
-        if (!result.Succeeded)
-            return Result.Fail(result.Messages, result.StatusCode);
-
-        var updateResult = await _clients.First(x => x.Id == device.BrokerId)
-            .UpdateDevice(result.Data);
-
-        if (updateResult.OperationState == OperationState.Warning)
-        {
-            //TODO: Localizer
-            Result<Device>.Warning(message: $"Failed to subsribe topics.");
-        }
-
-        return updateResult;
-
-    }
-
-    #endregion
-
-    #region Control
-
-    public async Task<IResult> RemoveControl(string clientId, Control control)
-    {
-        var result = await _deviceService.RemoveDeviceControl(control.DeviceId, control.Id);
-
-        if (!result.Succeeded)
-            return Result.Fail(result.Messages, result.StatusCode);
-
-        return await _clients.First(x => x.Id == clientId)
-            .RemoveControl(control.Id);
-    }
-
-    public async Task<IResult> CreateControlForDevice(string clientId, Control control)
-    {
-        var result = await _deviceService.CreateDeviceControl(control);
-
-        if (!result.Succeeded)
-            return Result.Fail(result.Messages, result.StatusCode);
-
-        return await _clients.First(x => x.Id == clientId)
-            .AddControl(control);
-    }
-
-    public async Task<IResult> UpdateControlForDevice(string clientId, Control control)
-    {
-        var result = await _deviceService.UpdateDeviceControl(control);
-
-        if (result.Succeeded)
-            return Result.Fail(result.Messages, result.StatusCode);
-
-        return await _clients.First(x => x.Id == clientId)
-            .UpdateControl(control);
-    }
-
-    #endregion
-
-    #region Privates
 
     private async Task<IResult> UpdateAllControls(IClient client, List<Device> devices)
     {
@@ -320,7 +231,7 @@ public class ClientService : IClientService
 
         foreach (var device in devices)
         {
-            var result = await _deviceService.GetDeviceControls(device.Id);
+            var result = await _controlService.GetControls(device.Id);
 
             if(!result.Succeeded)
             {
@@ -350,6 +261,4 @@ public class ClientService : IClientService
 
         return finalStatus;
     }
-
-    #endregion
 }
