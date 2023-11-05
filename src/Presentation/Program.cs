@@ -1,13 +1,10 @@
 using Presentation;
+using Presentation.Application.Interfaces;
 using Presentation.Auth;
 using Presentation.Brokers;
-using Presentation.Brokers.Interfaces;
 using Presentation.Controls;
-using Presentation.Controls.Interfaces;
 using Presentation.Devices;
-using Presentation.Devices.Interfaces;
 using Presentation.Users;
-using System.Net;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -42,29 +39,19 @@ builder.Services.AddMudServices(config =>
 
 builder.Services.AddAuthorizationCore();
 
-// move it to feature services configuration ??
-
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-builder.Services.AddScoped<IFetchBrokerService, FetchBrokerService>();
-builder.Services.AddScoped<IClientService, ClientService>();
-builder.Services.AddScoped<IClientManager, ClientManager>();
-builder.Services.AddScoped<IFetchDeviceService, FetchDeviceService>();
-builder.Services.AddScoped<IFetchBrokerService, FetchBrokerService>();
-builder.Services.AddScoped<IFetchControlService, FetchControlService>();
-builder.Services.AddScoped<IControlService, ControlService>();
-builder.Services.AddScoped<IDeviceService, DeviceService>();
-builder.Services.AddScoped<IBrokerService, BrokerService>();
-builder.Services.AddScoped<AuthenticationStateProvider, ApplicationStateProvider>();
+builder.AddBrokerServices();
+builder.AddDeviceServices();
+builder.AddControlServices();
+builder.AddAuthServices();
+builder.AddClientServices();
+builder.AddUserServices();
+builder.AddApplicationServices();
 
 builder.Services.AddBlazoredLocalStorageAsSingleton();
 builder.Services.AddBlazoredSessionStorageAsSingleton();
-builder.Services.AddSingleton<ILoadingService, LoadingService>();
-builder.Services.AddSingleton<IPrefrenceService, PreferenceService>();
 builder.Services.AddSingleton<MqttFactory>();
 
 builder.Services.AddLogging();
-
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
 await builder.Build().RunAsync();

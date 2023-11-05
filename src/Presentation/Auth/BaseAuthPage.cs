@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Components;
+using Presentation.Application.Interfaces;
 using Presentation.Utils;
 
 namespace Presentation.Auth;
