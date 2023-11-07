@@ -63,4 +63,12 @@ public class ClientManager : IClientManager
 
         return Result.Success();
     }
+
+    public async IResult<IList<IClient>> RemoveClients()
+    {
+        var clients = _clients.ToList();
+        _clients.Clear();
+
+        return Result<IList<IClient>>.Success(clients);
+    }
 }

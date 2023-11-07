@@ -27,8 +27,9 @@ internal class FetchControlServiceMockup : IFetchControlService
 
     public Task<IResult<Control>> CreateControl(Control control)
     {
-        Controls.Add(control);
-        return Task.FromResult((IResult<Control>)Result<Control>.Success(control));
+        var copy = control.Copy();
+        Controls.Add(copy);
+        return Task.FromResult((IResult<Control>)Result<Control>.Success(copy));
     }
 
     public Task<IResult<List<Control>>> GetControls(string deviceId)

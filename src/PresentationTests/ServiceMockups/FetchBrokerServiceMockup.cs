@@ -13,7 +13,7 @@ public class FetchBrokerServiceMockup : IFetchBrokerService
     {
         var broker = new Broker
         {
-            Id = Guid.NewGuid().ToString(),
+            Id = dto.Id,
             Server = dto.Server,
             SSL = dto.IsSSL,
             ClientId = dto.ClientId,

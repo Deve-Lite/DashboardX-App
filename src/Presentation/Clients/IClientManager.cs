@@ -7,4 +7,5 @@ public interface IClientManager
     IResult<IClient> AddClient(Broker broker);
     Task<IResult<IClient>> UpdateClient(Broker broker);
     Task<IResult> RemoveClient(string clientId);
+    IResult<IList<IClient>> RemoveClients();
 }

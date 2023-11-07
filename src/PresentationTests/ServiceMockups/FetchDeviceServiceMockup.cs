@@ -8,7 +8,7 @@ internal class FetchDeviceServiceMockup : IFetchDeviceService
     {
         var device = new Device
         {
-            Id = Guid.NewGuid().ToString(),
+            Id = dto.Id,
             BrokerId = dto.BrokerId,
             Name = dto.Name,
             BaseDevicePath = dto.BaseDevicePath,

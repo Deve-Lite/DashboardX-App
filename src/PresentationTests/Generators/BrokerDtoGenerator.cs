@@ -35,6 +35,7 @@ internal class BrokerDtoGenerator
             .RuleFor(b => b.Server, f => f.Internet.Url())
             .RuleFor(b => b.IsSSL, true)
             .RuleFor(b => b.Icon, iconFaker.Generate())
+            .RuleFor(b => b.Icon, iconFaker.Generate()).RuleFor(b => b.Id, Guid.NewGuid().ToString())
             .Generate();
     }
 

@@ -87,6 +87,7 @@ internal class ControlGenerator
             .RuleFor(b => b.Name, f => f.Company.CompanyName())
             .RuleFor(b => b.Topic, f => $"/{f.Random.String(0, 10)}")
             .RuleFor(b => b.Icon, iconFaker.Generate())
+            .RuleFor(b => b.Icon, iconFaker.Generate()).RuleFor(b => b.Id, Guid.NewGuid().ToString())
             .Generate();
     }
 }

@@ -1,3 +1,4 @@
+using Common.Brokers.Models;
 using Microsoft.Extensions.Logging;
 
 namespace PresentationTests.ClientsTests;
@@ -100,7 +101,32 @@ public class ClientServiceBrokerTests
     }
 
     [Test]
-    public async Task AddNewClientTest()
+    public async Task GetFullClientsTest()
+    {
+        var clients = await ClientService.GetClientsWithDevices();
+
+        Assert.That(clients!.Data, Has.Count.EqualTo(2));
+
+        var brokers = await BrokerService.GetBrokers();
+        var brokersInClients = clients.Data
+                                      .Select(x => x.GetBroker())
+                                      .ToList();
+
+        Assert.That(brokersInClients, Does.Contain(brokers.Data[0]));
+        Assert.That(brokersInClients, Does.Contain(brokers.Data[1]));
+
+        var devices = await DeviceService.GetDevices();
+        var devicesInClients = clients.Data
+                                      .SelectMany(x => x.GetDevices())
+                                      .ToList();
+
+        Assert.That(devicesInClients, Has.Count.EqualTo(2));
+        Assert.That(devicesInClients, Does.Contain(devices.Data[0]));
+        Assert.That(devicesInClients, Does.Contain(devices.Data[1]));
+    }
+
+    [Test]
+    public async Task NewClientAddedInBackgroundTest()
     {
         var clients = await ClientService.GetClients();
 
@@ -125,7 +151,7 @@ public class ClientServiceBrokerTests
     }
 
     [Test]
-    public async Task RemoveClientsTest()
+    public async Task RemovedClientInBackgroundTest()
     {
         var brokers = await BrokerService.GetBrokers();
 
@@ -155,7 +181,7 @@ public class ClientServiceBrokerTests
     }
 
     [Test]
-    public async Task UpdateClientTest()
+    public async Task UpdatedClientInBackgroundTest()
     {
         var clients = await ClientService.GetClients();
 
@@ -171,7 +197,7 @@ public class ClientServiceBrokerTests
         updatedDto.Port = result.Data.Port;
         updatedDto.KeepAlive = result.Data.KeepAlive;
 
-        var updateResult = await BrokerService.UpdateBroker(updatedDto);   
+        var updateResult = await BrokerService.UpdateBroker(updatedDto);
 
         Assert.That(updateResult.Succeeded, Is.True);
 
@@ -188,5 +214,19 @@ public class ClientServiceBrokerTests
         Assert.That(updatedClient.GetBroker().Port, Is.EqualTo(updateResult.Data.Port));
         Assert.That(updatedClient.GetBroker().KeepAlive, Is.EqualTo(updateResult.Data.KeepAlive));
         Assert.That(updatedClient.GetBroker().Server, Is.EqualTo(updateResult.Data.Server));
+    }
+
+    [Test]
+    public async Task LogoutTest()
+    {
+        var clients = await ClientService.GetClients();
+
+        Assert.That(clients!.Data, Has.Count.EqualTo(2));
+
+        await ClientService.Logout();
+
+        clients = await ClientService.GetClients();
+
+        Assert.That(clients!.Data, Is.Empty);
     }
 }

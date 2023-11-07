@@ -1,7 +1,4 @@
-﻿using Common.Brokers.Models;
-using MQTTnet.Internal;
-
-namespace Presentation.Clients;
+﻿namespace Presentation.Clients;
 
 //TODO: Thinkof extending class with localizer
 public class ClientService : IClientService
@@ -37,7 +34,6 @@ public class ClientService : IClientService
 
         clientsResult.Data.Clear();
     }
-
     public async Task<IResult<IList<IClient>>> GetClientsWithDevices()
     {
         var brokersTask = _brokerService.GetBrokers();
