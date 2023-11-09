@@ -54,6 +54,28 @@ else
             Condition = StateControlCondition.Unknown;
     }
 
+    public void Update()
+    {
+
+        var control = Client!.GetControls(Device!.Id)
+            .FirstOrDefault(x => x.Type == ControlType.State);
+
+        if (control is null)
+        {
+            Condition = StateControlCondition.None;
+            return;
+        }
+
+        Control = control;
+
+        if (Control!.Attributes!.OffPayload == Value)
+            Condition = StateControlCondition.Off;
+        else if (Control!.Attributes!.OnPayload == Value)
+            Condition = StateControlCondition.On;
+        else
+            Condition = StateControlCondition.Unknown;
+    }
+
     public override string GetName()
     {
         Value = Client!.TopicService.LastMessageOnTopic(Client!.Id, Device!, Control!);
@@ -131,7 +153,7 @@ else
             _snackbar.Add(_localizer["Hey, this control is currently off!"]);
             return;
         }
-        
+
         var parameters = new DialogParameters<StateControlDialog>
         {
             { x => x.Control, Control },
@@ -143,7 +165,10 @@ else
         var result = await dialog.Result;
 
         if (result.Canceled)
+        {
+            Update();
             return;
+        }
 
         var onPayload = Convert.ToBoolean(result.Data);
 

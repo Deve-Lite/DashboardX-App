@@ -1,67 +1,18 @@
-using Common.Brokers.Models;
-using Microsoft.Extensions.Logging;
+namespace PresentationTests.ServicesTests;
 
-namespace PresentationTests.ClientsTests;
-
-public class ClientServiceBrokerTests
+public class ClientServiceTests : BaseServiceTest
 {
-    public IFetchBrokerService BrokerService { get; private set; }
-    public IFetchDeviceService DeviceService { get; private set; }
-    public IFetchControlService ControlService { get; private set; }
-    public IClientService ClientService { get; private set; }
-    public IClientManager ClientManager { get; private set; }
-    public ILogger<ClientService> Logger { get; private set; }
-
-    public ClientServiceBrokerTests()
-    {
-        BrokerService = new FetchBrokerServiceMockup();
-        DeviceService = new FetchDeviceServiceMockup();
-        ControlService = new FetchControlServiceMockup();
-        ClientManager = new ClientManagerMockup();
-        Logger = new Logger<ClientService>(new LoggerFactory());
-
-        ClientService = new ClientService(BrokerService, DeviceService, ControlService, ClientManager, Logger);
-    }
 
     [SetUp]
-    public async Task SetUpTest()
+    public override async Task SetUpTest()
     {
-        await BrokerService.CreateBroker(BrokerDtoGenerator.FirstBroker());
-        await BrokerService.CreateBroker(BrokerDtoGenerator.SecondBroker());
-
-        await DeviceService.CreateDevice(DeviceDtoGenerator.FirstDevice());
-        await DeviceService.CreateDevice(DeviceDtoGenerator.SecondDevice());
-
-        var listOfControls = new List<List<Control>>()
-        {
-            new List<Control>()
-            {
-                ControlGenerator.FirstDeviceControl1(),
-                ControlGenerator.FirstDeviceControl2(),
-                ControlGenerator.FirstDeviceControl3(),
-            },
-            new List<Control>()
-            {
-                ControlGenerator.SecondDeviceControl1(),
-                ControlGenerator.SecondDeviceControl2(),
-                ControlGenerator.SecondDeviceControl3(),
-            }
-        };
-
-        foreach (var sublist in listOfControls)
-            foreach (var control in sublist)
-                await ControlService.CreateControl(control);
+       await base.SetUpTest();
     }
 
     [TearDown]
-    public void TearDownTest()
+    public override void TearDownTest()
     {
-        BrokerService = new FetchBrokerServiceMockup();
-        DeviceService = new FetchDeviceServiceMockup();
-        ControlService = new FetchControlServiceMockup();
-        ClientManager = new ClientManagerMockup();
-        Logger = new Logger<ClientService>(new LoggerFactory());
-        ClientService = new ClientService(BrokerService, DeviceService, ControlService, ClientManager, Logger);
+       base.TearDownTest();
     }
 
     [Test]
@@ -71,7 +22,7 @@ public class ClientServiceBrokerTests
 
         Assert.That(clients!.Data, Has.Count.EqualTo(2));
 
-        var brokers = await BrokerService.GetBrokers();
+        var brokers = await FetchBrokerService.GetBrokers();
         var brokersInClients = clients.Data
                                      .Select(x => x.GetBroker())
                                      .ToList();
@@ -87,7 +38,7 @@ public class ClientServiceBrokerTests
 
         Assert.That(clients.Data, Has.Count.EqualTo(2));
 
-        var brokers = await BrokerService.GetBrokers();
+        var brokers = await FetchBrokerService.GetBrokers();
 
         foreach (var broker in brokers.Data)
         {
@@ -107,7 +58,7 @@ public class ClientServiceBrokerTests
 
         Assert.That(clients!.Data, Has.Count.EqualTo(2));
 
-        var brokers = await BrokerService.GetBrokers();
+        var brokers = await FetchBrokerService.GetBrokers();
         var brokersInClients = clients.Data
                                       .Select(x => x.GetBroker())
                                       .ToList();
@@ -115,7 +66,7 @@ public class ClientServiceBrokerTests
         Assert.That(brokersInClients, Does.Contain(brokers.Data[0]));
         Assert.That(brokersInClients, Does.Contain(brokers.Data[1]));
 
-        var devices = await DeviceService.GetDevices();
+        var devices = await FetchDeviceService.GetDevices();
         var devicesInClients = clients.Data
                                       .SelectMany(x => x.GetDevices())
                                       .ToList();
@@ -132,13 +83,13 @@ public class ClientServiceBrokerTests
 
         Assert.That(clients.Data.Count, Is.EqualTo(2));
 
-        var result = await BrokerService.CreateBroker(BrokerDtoGenerator.GenerateBrokerDto());
+        var result = await FetchBrokerService.CreateBroker(BrokerDtoGenerator.GenerateBrokerDto());
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Succeeded, Is.True);
 
         var resultClients = await ClientService.GetClients();
-        var brokers = await BrokerService.GetBrokers();
+        var brokers = await FetchBrokerService.GetBrokers();
 
         Assert.That(resultClients.Data.Count, Is.EqualTo(3));
 
@@ -153,7 +104,7 @@ public class ClientServiceBrokerTests
     [Test]
     public async Task RemovedClientInBackgroundTest()
     {
-        var brokers = await BrokerService.GetBrokers();
+        var brokers = await FetchBrokerService.GetBrokers();
 
         var firstToRemove = brokers.Data[0];
         var secondToRemove = brokers.Data[1];
@@ -161,7 +112,7 @@ public class ClientServiceBrokerTests
         var clients = await ClientService.GetClients();
         Assert.That(clients.Data, Has.Count.EqualTo(2));
 
-        var result = await BrokerService.RemoveBroker(firstToRemove.Id);
+        var result = await FetchBrokerService.RemoveBroker(firstToRemove.Id);
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Succeeded, Is.True);
@@ -170,7 +121,7 @@ public class ClientServiceBrokerTests
 
         Assert.That(resultClients.Data, Has.Count.EqualTo(1));
 
-        result = await BrokerService.RemoveBroker(secondToRemove.Id);
+        result = await FetchBrokerService.RemoveBroker(secondToRemove.Id);
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Succeeded, Is.True);
@@ -187,7 +138,7 @@ public class ClientServiceBrokerTests
 
         Assert.That(clients.Data.Count, Is.EqualTo(2));
 
-        var result = await BrokerService.GetBroker(clients.Data[0].Id);
+        var result = await FetchBrokerService.GetBroker(clients.Data[0].Id);
 
         Assert.That(result.Succeeded, Is.True);
 
@@ -197,7 +148,7 @@ public class ClientServiceBrokerTests
         updatedDto.Port = result.Data.Port;
         updatedDto.KeepAlive = result.Data.KeepAlive;
 
-        var updateResult = await BrokerService.UpdateBroker(updatedDto);
+        var updateResult = await FetchBrokerService.UpdateBroker(updatedDto);
 
         Assert.That(updateResult.Succeeded, Is.True);
 

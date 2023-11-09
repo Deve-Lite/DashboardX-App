@@ -1,6 +1,4 @@
-﻿using Presentation.Brokers.Interfaces;
-
-namespace Presentation.Brokers;
+﻿namespace Presentation.Brokers;
 
 public class BrokerService : IBrokerService
 {

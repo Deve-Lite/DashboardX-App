@@ -4,6 +4,11 @@ namespace PresentationTests.Generators;
 
 internal class BrokerDtoGenerator
 {
+    public static BrokerCredentialsDTO GenerateBrokerCredentialsDto()
+    {
+        return new BrokerCredentialsDTO { Password = "password", Username="username" };
+    }
+
 
     private static BrokerDTO? firstBroker;
     public static BrokerDTO FirstBroker()

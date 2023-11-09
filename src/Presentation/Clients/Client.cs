@@ -1,4 +1,5 @@
-﻿using MQTTnet.Client;
+﻿using MQTTnet.Adapter;
+using MQTTnet.Client;
 using MQTTnet.Exceptions;
 using MQTTnet.Protocol;
 using MQTTnet.Server;
@@ -15,16 +16,16 @@ public class Client : IClient, IAsyncDisposable
         MqttClientSubscribeResultCode.GrantedQoS2
     };
 
-    private readonly IMqttClient MqttClient;
-    private readonly IFetchBrokerService BrokerService;
+    private readonly IMqttClient _mqttClient;
+    private readonly IFetchBrokerService _brokerService;
     private readonly ILogger<Client> _logger;
-
+    private readonly ISnackbar _snackbar;
     private readonly IList<Device> _devices;
     private readonly IList<Control> _controls;
     private readonly Broker _broker;
 
+    public bool IsConnected { get; private set; }
     public string Id => _broker.Id;
-    public bool IsConnected => MqttClient.IsConnected;
 
     public ITopicService TopicService { get; private set; }
     public Func<Task> RerenderPage { get; set; }
@@ -33,13 +34,14 @@ public class Client : IClient, IAsyncDisposable
                   IMqttClient mqttClient,
                   IFetchBrokerService brokerService,
                   ILogger<Client> clientLogger,
+                  ISnackbar snackbar,
                   Broker broker)
     {
         _broker = broker;
-        MqttClient = mqttClient;
-        BrokerService = brokerService;
+        _mqttClient = mqttClient;
+        _brokerService = brokerService;
         TopicService = topic;
-
+        _snackbar = snackbar;
         _logger = clientLogger;
 
         InitializeCallbacks();
@@ -58,7 +60,7 @@ public class Client : IClient, IAsyncDisposable
         if(broker.EditedAt == _broker.EditedAt)
             return;
 
-        var connected = MqttClient.IsConnected;
+        var connected = _mqttClient.IsConnected;
 
         if (connected)
             await DisconnectAsync();
@@ -76,9 +78,9 @@ public class Client : IClient, IAsyncDisposable
             var device = _devices.First(x => x.Id == control.DeviceId);
             _controls.Add(control);
 
-            if (control.ShouldBeSubscribed() && MqttClient.IsConnected)
+            if (control.ShouldBeSubscribed() && _mqttClient.IsConnected)
             {
-                var result = await MqttClient.SubscribeAsync(control.GetTopic(device), control.QualityOfService);
+                var result = await _mqttClient.SubscribeAsync(control.GetTopic(device), control.QualityOfService);
 
                 var status = result.Items.First().ResultCode;
 
@@ -109,14 +111,14 @@ public class Client : IClient, IAsyncDisposable
             if (currentControl is null)
                 return await AddControl(control);
 
-            if (control.ShouldBeSubscribed() && MqttClient.IsConnected)
-                await MqttClient.UnsubscribeAsync(control.GetTopic(device));
+            if (control.ShouldBeSubscribed() && _mqttClient.IsConnected)
+                await _mqttClient.UnsubscribeAsync(control.GetTopic(device));
 
             currentControl.Update(control);
 
-            if (control.ShouldBeSubscribed() && MqttClient.IsConnected)
+            if (control.ShouldBeSubscribed() && _mqttClient.IsConnected)
             {
-                var result = await MqttClient.SubscribeAsync(control.GetTopic(device), control.QualityOfService);
+                var result = await _mqttClient.SubscribeAsync(control.GetTopic(device), control.QualityOfService);
 
                 var status = result.Items.First().ResultCode;
 
@@ -144,10 +146,10 @@ public class Client : IClient, IAsyncDisposable
             var control = _controls.First(x => x.Id == controlId);
             _controls.Remove(control);
 
-            if (control.ShouldBeSubscribed() && MqttClient.IsConnected)
+            if (control.ShouldBeSubscribed() && _mqttClient.IsConnected)
             {
                 var device = _devices.First(x => x.Id == control.DeviceId);
-                await MqttClient.UnsubscribeAsync(control.GetTopic(device));
+                await _mqttClient.UnsubscribeAsync(control.GetTopic(device));
             }
 
             return Result.Success();
@@ -215,10 +217,26 @@ public class Client : IClient, IAsyncDisposable
             {
                 foreach (var control in controls)
                     await RemoveControl(control.Id);
-                
-                _devices.Remove(currentDevice);
 
-                return await AddDevices(device, controls);
+                currentDevice.Update(device);
+
+                var status = Result.Success();
+
+                foreach (var control in controls)
+                {
+                    var result = await AddControl(control);
+
+                    if (status.OperationState ==  OperationState.Success && result.OperationState == OperationState.Warning)
+                        status = Result.Warning();
+
+                    if (result.OperationState == OperationState.Error)
+                        status = Result.Fail();
+                }
+
+                if (status.OperationState == OperationState.Success)
+                    device.SuccessfullControlsDownload = true;
+
+                return status;
             }
 
             currentDevice.Update(device);
@@ -229,7 +247,7 @@ public class Client : IClient, IAsyncDisposable
         {
             return AddDevice(device);
         }
-        catch
+        catch (Exception ex)
         {
             return Result.Fail();
         }
@@ -297,13 +315,15 @@ public class Client : IClient, IAsyncDisposable
    
     public async Task DisconnectAsync()
     {
-        await MqttClient.DisconnectAsync();
+        IsConnected = false;
+        RerenderPage?.Invoke();
+        await _mqttClient.DisconnectAsync();
     }
     public async Task<IResult> PublishAsync(string topic, string payload, MqttQualityOfServiceLevel quality)
     {
         try
         {
-            if (!MqttClient.IsConnected)
+            if (!_mqttClient.IsConnected)
                 await ConnectAsync();
 
             var mqttMessage = new MqttApplicationMessageBuilder()
@@ -312,7 +332,7 @@ public class Client : IClient, IAsyncDisposable
                    .WithQualityOfServiceLevel(quality)
                    .Build();
 
-            var mqttResult = await MqttClient.PublishAsync(mqttMessage);
+            var mqttResult = await _mqttClient.PublishAsync(mqttMessage);
 
             if (mqttResult.ReasonCode != MqttClientPublishReasonCode.Success)
                 return Result.Fail();
@@ -339,12 +359,12 @@ public class Client : IClient, IAsyncDisposable
                 .WithWebSocketServer($"wss://{_broker.Server}:{_broker.Port}/mqtt")
                 .WithCleanSession(true);
 
-            var result = await BrokerService.GetBrokerCredentials(_broker.Id);
+            var result = await _brokerService.GetBrokerCredentials(_broker.Id);
 
             if (result.Succeeded && !string.IsNullOrEmpty(result.Data.Username) && !string.IsNullOrEmpty(result.Data.Password))
                 optionsBuilder = optionsBuilder.WithCredentials(result.Data.Username, result.Data.Password);
 
-            var response = await MqttClient.ConnectAsync(optionsBuilder.Build());
+            var response = await _mqttClient.ConnectAsync(optionsBuilder.Build());
 
             var status = Result.Success();
 
@@ -356,18 +376,29 @@ public class Client : IClient, IAsyncDisposable
                     continue;
 
                 var device = _devices.First(x => x.Id == control.DeviceId);
-                var subResult = await MqttClient.SubscribeAsync(control.GetTopic(device), control.QualityOfService);
+                var subResult = await _mqttClient.SubscribeAsync(control.GetTopic(device), control.QualityOfService);
 
                 if(!ValidMqttResultCodes.Any(x => x == subResult.Items.First().ResultCode))
                     status = Result.Warning();
             }
 
+            IsConnected = true;
+            RerenderPage?.Invoke();
+
             return status;
+        }
+        catch (MqttConnectingFailedException cex)
+        {
+            _snackbar.Add("Failed when authenticating to broker.", Severity.Error);
+            _logger.LogError("Failed to authenticate to broker.", cex.Message);
+            IsConnected = false;
+            return Result.Fail(message: "Failed to authenticate to broker.");
         }
         catch (Exception e)
         {
+            _snackbar.Add("Failed when connecting to broker.", Severity.Error);
             _logger.LogError("Failed to connect to broker.", e.Message);
-
+            IsConnected = false;
             return Result.Fail(message: "Failed to connect to broker.");
         }
     }
@@ -380,13 +411,13 @@ public class Client : IClient, IAsyncDisposable
             await TopicService.RemoveTopic(_broker.Id, device, control);
         }
 
-        await MqttClient.DisconnectAsync();
-        MqttClient.Dispose();
+        await _mqttClient.DisconnectAsync();
+        _mqttClient.Dispose();
     }
 
     private void InitializeCallbacks()
     {
-        MqttClient.ApplicationMessageReceivedAsync += async (e) =>
+        _mqttClient.ApplicationMessageReceivedAsync += async (e) =>
         {
             var topic = e.ApplicationMessage.Topic;
             var message = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
@@ -395,14 +426,14 @@ public class Client : IClient, IAsyncDisposable
             RerenderPage?.Invoke();
         };
 
-        MqttClient.DisconnectedAsync += async (e) =>
+        _mqttClient.DisconnectedAsync += async (e) =>
         {
             if (!IsConnected)
                 return;
 
             _logger.LogWarning("Client disconnected. Reconnecting...", _broker.Id);
             RerenderPage?.Invoke();
-            await MqttClient.ReconnectAsync();
+            await _mqttClient.ReconnectAsync();
             RerenderPage?.Invoke();
             _logger.LogWarning("Client reconnected.", _broker.Id);
         };
