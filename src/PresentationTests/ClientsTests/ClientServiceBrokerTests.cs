@@ -225,8 +225,12 @@ public class ClientServiceBrokerTests
 
         await ClientService.Logout();
 
+        var emptyClients = ClientManager.GetClients();
+
+        Assert.That(emptyClients!.Data, Is.Empty);
+
         clients = await ClientService.GetClients();
 
-        Assert.That(clients!.Data, Is.Empty);
+        Assert.That(clients!.Data, Has.Count.EqualTo(2));
     }
 }

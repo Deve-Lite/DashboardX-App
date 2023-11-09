@@ -24,7 +24,7 @@ public class ClientService : IClientService
 
     public async Task Logout()
     {
-        var clientsResult = _clientManager.GetClients();
+        var clientsResult = _clientManager.RemoveClients();
 
         if(!clientsResult.Succeeded)
             return;

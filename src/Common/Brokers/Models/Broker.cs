@@ -1,7 +1,6 @@
 ﻿namespace Common.Brokers.Models;
 
 //TODO: Create DTO for broker
-
 public class Broker : BaseModel
 {
     [JsonPropertyName("icon")]

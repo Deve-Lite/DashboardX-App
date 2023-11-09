@@ -33,6 +33,13 @@ internal class ClientManagerMockup : IClientManager
         return Task.FromResult(sucess);
     }
 
+    public IResult<IList<IClient>> RemoveClients()
+    {
+        var current = _clients.ToList();
+        _clients.Clear();
+        return Result<IList<IClient>>.Success(current);
+    }
+
     public Task<IResult<IClient>> UpdateClient(Broker broker)
     {
         var client = _clients.First(c => c.Id == broker.Id);
