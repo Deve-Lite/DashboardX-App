@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.WebAssembly.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace Presentation.Auth;
 
@@ -97,7 +98,7 @@ public class AuthenticationService : BaseService, IAuthenticationService
             Data = resetPassword
         };
 
-        var response = await SendAsync(request);
+        var response = await SendWithCookiesAsync(request);
 
         return response;
     }
@@ -145,5 +146,12 @@ public class AuthenticationService : BaseService, IAuthenticationService
         var response = await SendAsync(request);
 
         return response;
+    }
+
+    private async Task<Result> SendWithCookiesAsync<T>(Request<T> request) where T : class, new()
+    {
+        var message = CreateMessage(request);
+        message.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+        return await Run(message);
     }
 }

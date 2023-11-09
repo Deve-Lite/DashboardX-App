@@ -15,11 +15,10 @@ public static class ApplicationServicesExtensions
 
         var requestTime = builder.Configuration.GetValue<string>("Api:MaxRequestTimeSeconds")!;
 
-#if RELEASE
         var baseAdress = builder.Configuration.GetValue<string>("Api:Production:Url")!;
-#else
-        var baseAdress = builder.Configuration.GetValue<string>("Api:Development:Url")!;
-#endif
+
+        if(builder.HostEnvironment.IsDevelopment())
+            baseAdress = builder.Configuration.GetValue<string>("Api:Development:Url")!;
 
         builder.Services.AddSingleton(sp => new HttpClient()
         {

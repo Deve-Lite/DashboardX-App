@@ -10,14 +10,14 @@ RUN dotnet restore Core.csproj
 RUN dotnet restore Presentation.csproj
 
 COPY . .
-RUN dotnet build Common/Common.csproj -c Release -o /app/build
-RUN dotnet build Core/Core.csproj -c Release -o /app/build
-RUN dotnet build Presentation/Presentation.csproj -c Release -o /app/build
+RUN dotnet build Common/Common.csproj -o /app/build
+RUN dotnet build Core/Core.csproj -o /app/build
+RUN dotnet build Presentation/Presentation.csproj -o /app/build
 
 FROM build AS publish
-RUN dotnet publish Common/Common.csproj -c Release -o /app/publish
-RUN dotnet publish Core/Core.csproj -c Release -o /app/publish
-RUN dotnet publish Presentation/Presentation.csproj -c Release -o /app/publish
+RUN dotnet publish Common/Common.csproj -o /app/publish
+RUN dotnet publish Core/Core.csproj -o /app/publish
+RUN dotnet publish Presentation/Presentation.csproj -o /app/publish /p:EnvironmentName=Development
 
 FROM nginx:alpine AS final
 WORKDIR /usr/share/nginx/html
