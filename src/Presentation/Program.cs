@@ -9,11 +9,6 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-if (builder.Configuration.GetValue<string>("Environment") == "Development")
-    builder.Configuration.AddJsonFile("appsettings.development.json");
-else
-    builder.Configuration.AddJsonFile("appsettings.production.json");
-
 builder.AddBrokerServices();
 builder.AddDeviceServices();
 builder.AddControlServices();

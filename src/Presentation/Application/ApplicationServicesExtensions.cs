@@ -14,7 +14,12 @@ public static class ApplicationServicesExtensions
         builder.Services.AddSingleton<ILoadingService, LoadingService>();
 
         var requestTime = builder.Configuration.GetValue<string>("Api:MaxRequestTimeSeconds")!;
-        var baseAdress = builder.Configuration.GetValue<string>("Api:Url")!;
+
+#if RELEASE
+        var baseAdress = builder.Configuration.GetValue<string>("Api:Production:Url")!;
+#else
+        var baseAdress = builder.Configuration.GetValue<string>("Api:Development:Url")!;
+#endif
 
         builder.Services.AddSingleton(sp => new HttpClient()
         {
