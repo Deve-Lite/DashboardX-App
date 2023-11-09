@@ -400,3 +400,5 @@ DashboardX/Presentation/wwwroot/image/
 *.key
 *.csr
 *.crt
+
+global.json
