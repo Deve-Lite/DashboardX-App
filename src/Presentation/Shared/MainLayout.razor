@@ -18,10 +18,14 @@
             <AuthorizeView Roles="@($"{RolesConstraints.User}, {RolesConstraints.Admin}")">
                 <Authorized>
                     <MudAppBar Elevation="1" Dense="@true" Color="Color.Primary">
-                        <MudIconButton Icon="@Icons.Material.Filled.Menu"
-                                       Color="Color.Secondary"
-                                       Edge="Edge.Start"
-                                       OnClick="@ToggleDrawer" />
+                        
+                        
+                            <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                                           Color="Color.Secondary"
+                                           Edge="Edge.Start"
+                                           OnClick="@ToggleDrawer" />
+                      
+
                         <MudText Color="Color.Secondary" Typo="Typo.h6">
                             @_localizer["DashboardX"]
                         </MudText>
@@ -100,6 +104,7 @@
 
 @code {
     private bool Open { get; set; } = false;
+    private bool IsDesktop { get; set; } = false;
     private bool IsLoading { get; set; } = false;
     private bool IsDarkMode { get; set; } = false;
 
@@ -146,9 +151,21 @@
         return Task.CompletedTask;
     }
 
-    private void ToggleDrawer()
+    private async Task ToggleDrawer()
     {
-        Open = !Open;
+
+        if (await _runtime.IsDesktop())
+        {
+
+            Open = true;
+            IsDesktop = true;
+        }
+        else
+        {
+
+            Open = !Open;
+            IsDesktop = false;
+        }
     }
 
     #region Navigations
@@ -174,7 +191,7 @@
     public void NavigateToProfile()
     {
         Open = false;
-        _navigationManager.NavigateTo("/user/settings");
+        _navigationManager.NavigateTo("/user");
     }
 
     private async Task Logout()

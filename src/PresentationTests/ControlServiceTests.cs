@@ -1,9 +1,7 @@
-﻿using Presentation.Brokers;
-using Presentation.Devices;
-using Presentation.Controls.Interfaces;
+﻿using Presentation.Controls.Interfaces;
 using Presentation.Controls;
 
-namespace PresentationTests.ServicesTests;
+namespace PresentationTests;
 
 internal class ControlServiceTests : BaseServiceTest
 {
@@ -76,7 +74,7 @@ internal class ControlServiceTests : BaseServiceTest
             .ToList();
 
         Assert.That(totalDevices, Has.Count.EqualTo(6));
-        Assert.That(totalDevices.Any(x => x.Name==newDisplayName), Is.True);
+        Assert.That(totalDevices.Any(x => x.Name == newDisplayName), Is.True);
     }
 
     [Test]

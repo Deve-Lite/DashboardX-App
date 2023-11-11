@@ -1,7 +1,7 @@
 ﻿using Presentation.Devices;
 using Presentation.Devices.Interfaces;
 
-namespace PresentationTests.ServicesTests;
+namespace PresentationTests;
 
 internal class DeviceServiceTests : BaseServiceTest
 {
@@ -83,7 +83,7 @@ internal class DeviceServiceTests : BaseServiceTest
             .ToList();
 
         Assert.That(clients.Data, Has.Count.EqualTo(2));
-        Assert.That(totalDevices.Any(x => x.Name==newNickname && x.Placing == newPlacing), Is.True);
+        Assert.That(totalDevices.Any(x => x.Name == newNickname && x.Placing == newPlacing), Is.True);
     }
 
     [Test]

@@ -1,4 +1,3 @@
-﻿window.isMobile = (maxMobileSize) => {
-    var value = Number(maxMobileSize);
-    return window.innerWidth <= value;
+﻿window.getScreenWidth = () => {
+    return window.innerWidth;
 };

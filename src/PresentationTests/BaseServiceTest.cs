@@ -1,4 +1,4 @@
-﻿namespace PresentationTests.ServicesTests;
+﻿namespace PresentationTests;
 
 using Microsoft.Extensions.Logging;
 
