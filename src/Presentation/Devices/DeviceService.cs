@@ -5,7 +5,7 @@ public class DeviceService : IDeviceService
     private readonly IFetchDeviceService _deviceService;
     private readonly IClientManager _clientManager;
 
-    public DeviceService(IClientManager clientManager, IFetchDeviceService deviceService)
+    public DeviceService(IFetchDeviceService deviceService, IClientManager clientManager)
     {
         _clientManager = clientManager;
         _deviceService = deviceService;

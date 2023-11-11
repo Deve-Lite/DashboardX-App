@@ -17,6 +17,7 @@ public interface IClient
     Task<IResult> RemoveControl(string controlId);
     Task<IResult> UpdateControl(Control control);
     IList<Control> GetControls(string deviceId);
+    IList<Control> GetControls();
 
     IList<Device> GetDevices();
     IResult AddDevice(Device device);

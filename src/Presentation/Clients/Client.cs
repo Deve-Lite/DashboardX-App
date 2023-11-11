@@ -169,7 +169,7 @@ public class Client : IClient, IAsyncDisposable
         }
     }
     public IList<Control> GetControls(string deviceId) => _controls.Where(x => x.DeviceId == deviceId).ToList();
-
+    public IList<Control> GetControls() => _controls;
     public IList<Device> GetDevices() => _devices;
     public IResult AddDevice(Device device)
     {

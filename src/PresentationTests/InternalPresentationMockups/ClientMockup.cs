@@ -1,4 +1,5 @@
-﻿using MQTTnet.Protocol;
+﻿using Common.Controls.Models;
+using MQTTnet.Protocol;
 
 namespace PresentationTests.InternalPresentationMockups;
 
@@ -69,6 +70,8 @@ public class ClientMockup : IClient
     {
         return Controls.Where(x => x.DeviceId == deviceId).ToList();
     }
+
+    public IList<Control> GetControls() => Controls;
 
     public IList<Device> GetDevices()
     {
