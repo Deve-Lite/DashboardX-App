@@ -1,6 +1,6 @@
 ﻿@using Presentation.Utils;
 @inject IStringLocalizer<RemoveDeviceDialog> _localizer;
-@inject IClientService _clientService;
+@inject IDeviceService _deviceService;
 
 @inherits BaseDialog
 
@@ -47,7 +47,7 @@
 
         IsLoading = true;
 
-        var result = await _clientService.RemoveDeviceFromClient(ClientId, Device);
+        var result = await _deviceService.RemoveDevice(ClientId, Device.Id);
 
         var success = RequestHelpers.InvokeAfterRequest(_snackbar, result, _localizer["Successfully removed device."]);
 

@@ -29,7 +29,7 @@
 
             <MudItem xs="6" Class="d-flex p-0 pt-3 pb-3 m-0 justify-content-end">
 
-                <MudButton OnClick="async() => await ControlPagesUtils.AddControl(_dialogService, DeviceId, StateHasChanged, _localizer, ClientId)"
+                <MudButton OnClick="AddControl"
                            Color="Color.Primary"
                            Variant="Variant.Filled"
                            StartIcon="@Icons.Material.Filled.AddToQueue">
@@ -72,7 +72,7 @@
                                     @_localizer["Broker"]
                                 </MudText>
                                 <MudText Class="hide-overlapping-text">
-                                    @Client!.Broker.Name
+                                    @Client!.GetBroker().Name
                                 </MudText>
                             </MudItem>
 
@@ -82,7 +82,7 @@
                                 </MudText>
 
                                 <MudText Class="hide-overlapping-text">
-                                    @Client!.Broker.KeepAlive
+                                    @Client!.GetBroker().KeepAlive
                                 </MudText>
                             </MudItem>
                         </MudGrid>
@@ -116,9 +116,10 @@
 
                         <BrokerConnectionSwitch Client="Client" />
 
-                        <StateControl Class="z-10 m-0 ml-2"
+                        <StateControl @ref="StateControl" Class="z-10 m-0 ml-2"
                                       Client="@Client"
-                                      Device="@Device" />
+                                      Device="@Device" 
+                                      RerenderPage="StateHasChanged" />
 
                     </MudCardActions>
 
@@ -132,7 +133,7 @@
             <MudItem xs="12" Class="p-0 pt-4 pb-4 m-0 d-flex">
 
                 <MudElement Class="p-1 m-0 d-flex w-100 flex-animate flex-list-justify">
-                    @foreach (var control in Device.Controls)
+                    @foreach (var control in Client!.GetControls(DeviceId))
                     {
                         <MudItem Class="p-1 m-0">
                             <ControlFactory Client="@Client"
@@ -154,8 +155,10 @@
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
 
-    public Client? Client { get; set; }
+    public IClient? Client { get; set; }
     public Device Device { get; set; } = new();
+
+    private StateControl? StateControl;
 
     protected override async Task OnInitializedAsync()
     {
@@ -177,7 +180,7 @@
             Client = result.Data;
             Client.RerenderPage += Rerender;
             LoadedSuccessfully = true;
-            Device = Client.Devices.FirstOrDefault(x => x.Id == DeviceId)!;
+            Device = Client.GetDevices().FirstOrDefault(x => x.Id == DeviceId)!;
         }
         else
         {
@@ -191,6 +194,13 @@
         _loadingService.HideLoading();
 
         StateHasChanged();
+    }
+
+    public async Task AddControl()
+    {
+        await ControlPagesUtils.AddControl(_dialogService, DeviceId, StateHasChanged, _localizer, ClientId);
+
+        StateControl!.Update();
     }
 
     public void Dispose()

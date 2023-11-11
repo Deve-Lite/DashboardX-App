@@ -49,7 +49,7 @@
 
                             <MudItem xs="12">
                                 <MudText Typo="Typo.h6" Class="hide-overlapping-text">
-                                    @Client!.Broker.Name
+                                    @Client!.GetBroker().Name
                                 </MudText>
                             </MudItem>
 
@@ -58,7 +58,7 @@
                                     @_localizer["Server"]
                                 </MudText>
                                 <MudText Class="hide-overlapping-text">
-                                    @Client!.Broker.Server
+                                    @Client!.GetBroker().Server
                                 </MudText>
                             </MudItem>
 
@@ -68,7 +68,7 @@
                                 </MudText>
 
                                 <MudText Class="hide-overlapping-text">
-                                    @Client!.Broker.Port
+                                    @Client!.GetBroker().Port
                                 </MudText>
                             </MudItem>
 
@@ -77,7 +77,7 @@
                                     @_localizer["Keep Alive"]
                                 </MudText>
                                 <MudText Class="hide-overlapping-text">
-                                    @Client!.Broker.KeepAlive
+                                    @Client!.GetBroker().KeepAlive
                                 </MudText>
                             </MudItem>
 
@@ -88,7 +88,7 @@
                                 </MudText>
 
                                 <MudText Class="hide-overlapping-text">
-                                    @Client!.Broker.ClientId
+                                    @Client!.GetBroker().ClientId
                                 </MudText>
                             </MudItem>
 
@@ -155,7 +155,7 @@
 
                     <MudProgressLinear Size="Size.Small" Color="Color.Primary" Rounded="true" Value="100" />
 
-                    @foreach (var device in Client!.Devices)
+                    @foreach (var device in Client!.GetDevices())
                     {
                         <MudListItem Class="d-flex m-0 p-0 pt-1 pb-1 align-items-center justify-content-center"
                                      Href="@($"/devices/{device.Id}/{BrokerId}")">
@@ -183,7 +183,7 @@
                                 </MudItem>
                                 <MudItem xs="3" Class="d-flex m-0 p-0 align-items-center justify-content-center">
 
-                                    <StateControl Client="Client" Device="device" />
+                                    <StateControl Client="@((Client)Client)" Device="device" RerenderPage="StateHasChanged" />
 
                                 </MudItem>
                                 <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-evenly">
@@ -215,7 +215,7 @@
     [Parameter]
     public string BrokerId { get; set; } = string.Empty;
 
-    private Client? Client { get; set; }
+    private IClient? Client { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

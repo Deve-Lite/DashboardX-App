@@ -91,6 +91,12 @@ public class Result<T> : Result, IResult<T>
         Data = default!;
     }
 
+    public static new Result<T> Success(HttpStatusCode statusCode = HttpStatusCode.OK) => new()
+    {
+        OperationState = OperationState.Success,
+        StatusCode = statusCode
+    };
+
     public static Result<T> Success(T data, HttpStatusCode statusCode = HttpStatusCode.OK) => new()
     {
         Data = data, 
@@ -127,6 +133,17 @@ public class Result<T> : Result, IResult<T>
         {
             message 
         } 
+    };
+
+    public static Result<T> Fail(T data, HttpStatusCode statusCode = HttpStatusCode.BadRequest, string message = "") => new()
+    {
+        OperationState = OperationState.Error,
+        StatusCode = statusCode,
+        Messages = new List<string>
+        {
+            message
+        },
+        Data = data
     };
 
     public static new Result<T> Fail(List<string> messages, HttpStatusCode statusCode = HttpStatusCode.BadRequest) => new()

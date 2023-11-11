@@ -1,7 +1,6 @@
 ﻿namespace Common.Brokers.Models;
 
 //TODO: Create DTO for broker
-
 public class Broker : BaseModel
 {
     [JsonPropertyName("icon")]
@@ -14,7 +13,7 @@ public class Broker : BaseModel
     public string Server { get; set; } = string.Empty;
 
     [JsonPropertyName("isSsl")]
-    public bool IsSSL { get; set; }
+    public bool SSL { get; set; }
 
     [JsonPropertyName("clientId")]
     public string ClientId { get; set; } = string.Empty;
@@ -30,11 +29,22 @@ public class Broker : BaseModel
         EditedAt = EditedAt,
         Icon = Icon.Copy(),
         Id = Id,
-        IsSSL = IsSSL,
+        IsSSL = SSL,
         KeepAlive = KeepAlive,
         Name = Name,
         Port = Port,
         Server = Server,
     };
 
+    public void Update(Broker broker)
+    {
+        ClientId = broker.ClientId;
+        EditedAt = broker.EditedAt;
+        Icon = broker.Icon;
+        SSL = broker.SSL;
+        KeepAlive = broker.KeepAlive;
+        Name = broker.Name;
+        Port = broker.Port;
+        Server = broker.Server;
+    }
 }

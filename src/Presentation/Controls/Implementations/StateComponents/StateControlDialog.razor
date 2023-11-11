@@ -28,14 +28,13 @@
         </MudGrid>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel"
+        <MudButton OnClick="RemoveStateControl"
                    Variant="Variant.Filled"
-                   Color="Color.Error">@_localizer["Cancel"]</MudButton>
+                   Color="Color.Error">@_localizer["Remove"]</MudButton>
 
         <MudButton OnClick="async() => await ControlPagesUtils.UpdateControl(_dialogService, Control!, Client!.Id, StateHasChanged, _localizer)"
-                   ButtonType="ButtonType.Submit"
                    Variant="Variant.Filled"
-                   Color="Color.Warning">@_localizer["Edit"] </MudButton>
+                   Color="Color.Primary">@_localizer["Edit"] </MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -47,5 +46,19 @@
     [Parameter]
     public Client? Client { get; set; }
 
+    [Parameter]
+    public Action? RerenderPage { get; set; }
+
     private void SubmitState(bool onPayload) => Dialog!.Close(DialogResult.Ok(onPayload));
+
+    public async Task RemoveStateControl()
+    {
+        var removed = await ControlPagesUtils.RemoveControl(_dialogService, Control!, Client!.Id, _localizer);
+
+        if (removed)
+        {
+            Cancel();
+            RerenderPage?.Invoke();
+        }
+    }
 }

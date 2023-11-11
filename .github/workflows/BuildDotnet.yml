@@ -1,6 +1,9 @@
 name: Build Dotnet Solution
 
-on:
+on:  
+  pull_request:
+    branches:
+    - main
   push:
     branches:
       - main 
@@ -35,4 +38,10 @@ jobs:
 
       - name: Build Presentation
         run: dotnet build src/Presentation/Presentation.csproj 
+
+      - name: Build Presentation Tests
+        run: dotnet build src/PresentationTests/PresentationTests.csproj 
+
+      - name: Run Presentation Tests
+        run: dotnet test src/PresentationTests/PresentationTests.csproj 
 

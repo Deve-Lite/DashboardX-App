@@ -68,24 +68,24 @@
                                      Href="@($"/brokers/{client.Id}")">
                             <MudGrid Class="w-100 p-0 m-0">
                                 <MudItem xs="1" Class="d-flex m-0 p-0 align-items-center justify-content-center">
-                                    <IconForList Icon="@client!.Broker.Icon"
+                                    <IconForList Icon="@client!.GetBroker().Icon"
                                                  IconSize="Size.Medium" />
                                 </MudItem>
                                 <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-start">
                                     <MudText>
-                                        @client.Broker.Name
+                                        @client.GetBroker().Name
                                     </MudText>
                                 </MudItem>
 
                                 <MudItem xs="4" Class="d-flex m-0 p-0 align-items-center justify-content-start">
                                     <MudText Class="hide-overlapping-text">
-                                        @client.Broker.Server
+                                        @client.GetBroker().Server
                                     </MudText>
                                 </MudItem>
 
                                 <MudItem xs="1" Class="d-flex m-0 p-0 align-items-center justify-content-start">
                                     <MudText>
-                                        @client.Broker.Port
+                                        @client.GetBroker().Port
                                     </MudText>
                                 </MudItem>
 
@@ -119,7 +119,7 @@
 
 @code 
 {
-    private List<Client> Clients { get; set; } = new();
+    private IList<IClient> Clients { get; set; } = new List<IClient>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -158,7 +158,7 @@
     {
         var result = await client.ConnectAsync();
 
-        if (!result && result.ShowToast)
+        if (result.Succeeded && result.ShowToast)
             _snackbar.Add(result.Messages.First(), Severity.Error);
     }
 

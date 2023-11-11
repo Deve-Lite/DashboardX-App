@@ -1,7 +1,7 @@
 ﻿@using Presentation.Utils;
 @inject IStringLocalizer<UpsertDeviceDialog> _localizer;
-@inject IClientService _clientService
-@inject IBrokerService _brokerService
+@inject IDeviceService _deviceService
+@inject IFetchBrokerService _brokerService
 
 @inherits BaseFormDialog
 
@@ -150,14 +150,12 @@
 
         IsLoading = true;
 
-        var result = Result<Device>.Fail();
+        IResult result = Result.Fail();
 
         if (string.IsNullOrEmpty(Model.Id))
-            result = await _clientService.CreateDeviceForClient(Model);
+            result = await _deviceService.CreateDevice(Model);
         else
-        {
-            result = await _clientService.UpdateDeviceForClient(Model);
-        }
+            result = await _deviceService.UpdateDevice(Model);
 
         var success = RequestHelpers.InvokeAfterRequest(_snackbar, result, OnAdded);
 

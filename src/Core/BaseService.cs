@@ -18,6 +18,13 @@ public abstract class BaseService
         _logger = logger;
     }
 
+    protected virtual async Task<Result> SendAsync(Request request, JsonSerializerOptions? options = null)
+    {
+        var message = CreateMessage(request);
+        var results = await Run(message);
+        return results;
+    }
+
     protected virtual async Task<Result<T>> SendAsync<T>(Request request, JsonSerializerOptions? options = null) where T : class, new()
     {
         var message = CreateMessage(request);
@@ -28,6 +35,7 @@ public abstract class BaseService
     protected virtual async Task<Result> SendAsync<T>(Request<T> request, JsonSerializerOptions? options = null) where T : class, new()
     {
         var message = CreateMessage(request);
+
         var results = await Run(message);
         return results;
     }
@@ -46,6 +54,8 @@ public abstract class BaseService
 #if DEBUG
             await Task.Delay(RequestDebugDelay);
             _logger.LogInformation("Sending request to: {uri} wih {method}, {version}", message.RequestUri, message.Method, message.Version);
+
+            _logger.LogDebug($"Token: {_client.DefaultRequestHeaders.Authorization}");
 #endif
 
             var response = await _client.SendAsync(message);
@@ -101,6 +111,9 @@ public abstract class BaseService
 #if DEBUG
             await Task.Delay(RequestDebugDelay);
             _logger.LogInformation($"Sending request to: {message.RequestUri} with {message.Method}, {message.Version}");
+
+            _logger.LogDebug($"Token: {_client.DefaultRequestHeaders.Authorization}");
+
 #endif
 
             var response = await _client.SendAsync(message);
@@ -135,7 +148,6 @@ public abstract class BaseService
         options ??= new();
 
         HttpRequestMessage message = new(request.Method, request.Route);
-
         var data = JsonSerializer.Serialize(request.Data, options);
         var content = new StringContent(data, Encoding.UTF8, "application/json");
         message.Content = content;

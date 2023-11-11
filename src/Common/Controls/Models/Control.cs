@@ -90,7 +90,20 @@ public class Control : BaseModel
     [JsonPropertyName("attributes")]
     public ControlAttributes Attributes { get; set; } = new();
 
+    [JsonIgnore]
+    public bool IsSubscribed { get; set; } = false;
+
     #region Methods
+
+    public bool ShouldBeSubscribed()
+    {
+        return Type == ControlType.Color  ||
+               Type == ControlType.Slider ||
+               Type == ControlType.State  ||
+               Type == ControlType.Switch ||
+               Type == ControlType.Radio  || 
+               Type == ControlType.Text;
+    }
 
     public bool IsTheSame(Control control)
     {

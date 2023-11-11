@@ -4,9 +4,9 @@ namespace Presentation.Brokers;
 
 public class BrokerPagesUtils
 {
-    public static async Task UpdateBroker(Client client, IDialogService dialogService, Action refreshUI, IStringLocalizer<object> localizer)
+    public static async Task UpdateBroker(IClient client, IDialogService dialogService, Action refreshUI, IStringLocalizer<object> localizer)
     {
-        var parameters = new DialogParameters<UpsertBrokerDialog> { { x => x.Model, client.Broker.Dto() } };
+        var parameters = new DialogParameters<UpsertBrokerDialog> { { x => x.Model, client.GetBroker().Dto() } };
 
         var dialog = await dialogService.ShowAsync<UpsertBrokerDialog>(localizer["Edit Broker"], parameters);
         var result = await dialog.Result;
@@ -20,9 +20,9 @@ public class BrokerPagesUtils
             refreshUI.Invoke();
     }
 
-    public static async Task RemoveBroker(Client client, IDialogService dialogService, Action refreshUI, IStringLocalizer<object> localizer)
+    public static async Task RemoveBroker(IClient client, IDialogService dialogService, Action refreshUI, IStringLocalizer<object> localizer)
     {
-        var parameters = new DialogParameters<RemoveBrokerDialog> { { x => x.Broker, client.Broker } };
+        var parameters = new DialogParameters<RemoveBrokerDialog> { { x => x.Broker, client.GetBroker() } };
 
         var dialog = await dialogService.ShowAsync<RemoveBrokerDialog>(localizer["Remove Broker"], parameters);
         var result = await dialog.Result;
@@ -44,7 +44,7 @@ public class BrokerPagesUtils
         if (result.Canceled)
             return;
 
-        var x = result.Data as Result<Client> ?? Result<Client>.Fail(message: localizer["Couldn't parse response."]);
+        var x = result.Data as Result<IClient> ?? Result<IClient>.Fail(message: localizer["Couldn't parse response."]);
 
         if (x.Succeeded)
             refreshUI.Invoke();

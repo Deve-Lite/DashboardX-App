@@ -1,4 +1,6 @@
-﻿namespace Presentation.Application;
+﻿using Presentation.Application.Interfaces;
+
+namespace Presentation.Application;
 
 public class LoadingService : ILoadingService
 {

@@ -1,4 +1,6 @@
-﻿using System.Net.Http.Headers;
+﻿using Microsoft.AspNetCore.Components.WebAssembly.Http;
+using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace Presentation.Auth;
 
@@ -52,7 +54,7 @@ public class AuthenticationService : BaseService, IAuthenticationService
         var request = new Request
         {
             Method = HttpMethod.Post,
-            Route = "api/v1/users/refresh"
+            Route = "api/v1/users/me/tokens"
         };
 
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", currentRefreshToken);
@@ -78,33 +80,43 @@ public class AuthenticationService : BaseService, IAuthenticationService
         var request = new Request<ForgetPasswordModel>
         {
             Method = HttpMethod.Post,
-            Route = "api/v1/users/confirm",
+            Route = "api/v1/users/reset-password",
             Data = forgotPassword
         };
 
         var response = await SendAsync(request);
 
-        if (response.Succeeded)
-            return Result.Success(response.StatusCode);
-
-        return Result.Fail(response.StatusCode);
+        return response;
     }
-
+    
     public async Task<IResult> ResetPassword(ResetPasswordModel resetPassword)
     {
         var request = new Request<ResetPasswordModel>
         {
-            Method = HttpMethod.Post,
-            Route = "api/v1/users/confirm",
+            Method = HttpMethod.Patch,
+            Route = "api/v1/users/reset-password",
             Data = resetPassword
         };
 
         var response = await SendAsync(request);
 
-        if (response.Succeeded)
-            return Result.Success(response.StatusCode);
-        
-        return Result.Fail(response.StatusCode);
+        return response;
+    }
+
+    public async Task<IResult> SetNewPassword(ResetPasswordModel resetPassword, string token)
+    {
+        var request = new Request<ResetPasswordModel>
+        {
+            Method = HttpMethod.Patch,
+            Route = "api/v1/users/reset-password",
+            Data = resetPassword
+        };
+
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await SendAsync(request);
+
+        return response;
     }
 
     public async Task<IResult> ConfirmEmail(string token)
@@ -112,16 +124,27 @@ public class AuthenticationService : BaseService, IAuthenticationService
         var request = new Request
         {
             Method = HttpMethod.Post,
-            Route = "api/v1/users/confirm"
+            Route = "api/v1/users/confirm-account"
         };
 
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", token);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        var response = await SendAsync<Tokens>(request);
+        var response = await SendAsync(request);
 
-        if (response.Succeeded)
-            return Result.Success(response.StatusCode);
+        return response;
+    }
 
-        return Result.Fail(response.StatusCode);
+    public async Task<IResult> ResendConfirmEmail(ResendConfirmEmailModel model)
+    {
+        var request = new Request<ResendConfirmEmailModel>
+        {
+            Method = HttpMethod.Post,
+            Route = "api/v1/users/confirm-account/resend",
+            Data = model
+        };
+
+        var response = await SendAsync(request);
+
+        return response;
     }
 }

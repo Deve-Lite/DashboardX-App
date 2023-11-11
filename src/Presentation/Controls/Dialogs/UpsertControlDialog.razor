@@ -2,8 +2,8 @@
 @using Presentation.Utils;
 @using Presentation.Controls.Implementations.RadioComponents;
 @inject IStringLocalizer<UpsertControlDialog> _localizer;
-@inject IClientService _clientService
-@inject IBrokerService _brokerService
+@inject IControlService _controlService
+@inject IFetchBrokerService _brokerService
 
 @inherits BaseFormDialog
 
@@ -504,12 +504,12 @@
 
         IsLoading = true;
 
-        var result = Result.Fail();
+        IResult result = Result.Fail();
 
         if (string.IsNullOrEmpty(Control.Id))
-            result = await _clientService.CreateControlForDevice(ClientId, DeviceId, Control);
+            result = await _controlService.CreateControl(ClientId, Control);
         else
-            result = await _clientService.UpdateControlForDevice(ClientId, DeviceId, Control);
+            result = await _controlService.UpdateControl(ClientId, Control);
 
         var success = RequestHelpers.InvokeAfterRequest(_snackbar, result, _localizer["Successfully updated control."]);
 

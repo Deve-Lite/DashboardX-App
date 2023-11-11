@@ -29,18 +29,44 @@ else
     [Parameter]
     public string Class { get; set; } = string.Empty;
 
+    [Parameter]
+    public Action? RerenderPage { get; set; }
+
     private StateControlCondition Condition = StateControlCondition.None;
     private string Value { get; set; } = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        var control = Device!.Controls.FirstOrDefault(x => x.Type == ControlType.State);
+        var control = Client!.GetControls(Device!.Id)
+            .FirstOrDefault(x => x.Type == ControlType.State);
 
         if (control is null)
             return;
 
         Control = control;
         Value = await Client!.TopicService.LastMessageOnTopicAsync(Client!.Id, Device!, Control!);
+
+        if (Control!.Attributes!.OffPayload == Value)
+            Condition = StateControlCondition.Off;
+        else if (Control!.Attributes!.OnPayload == Value)
+            Condition = StateControlCondition.On;
+        else
+            Condition = StateControlCondition.Unknown;
+    }
+
+    public void Update()
+    {
+
+        var control = Client!.GetControls(Device!.Id)
+            .FirstOrDefault(x => x.Type == ControlType.State);
+
+        if (control is null)
+        {
+            Condition = StateControlCondition.None;
+            return;
+        }
+
+        Control = control;
 
         if (Control!.Attributes!.OffPayload == Value)
             Condition = StateControlCondition.Off;
@@ -127,18 +153,22 @@ else
             _snackbar.Add(_localizer["Hey, this control is currently off!"]);
             return;
         }
-        
+
         var parameters = new DialogParameters<StateControlDialog>
         {
             { x => x.Control, Control },
-            { x => x.Client, Client }
+            { x => x.Client, Client },
+            { x => x.RerenderPage, RerenderPage}
         };
 
         var dialog = await DialogService!.ShowAsync<StateControlDialog>(_localizer["Device state"], parameters);
         var result = await dialog.Result;
 
         if (result.Canceled)
+        {
+            Update();
             return;
+        }
 
         var onPayload = Convert.ToBoolean(result.Data);
 

@@ -1,132 +1,58 @@
-﻿using Microsoft.AspNetCore.Components;
-using System.Net;
-using System.Text.Json.Serialization;
-using System.Text.Json;
+﻿namespace Presentation.Brokers;
 
-namespace Presentation.Brokers;
-
-public class BrokerService : AuthorizedService, IBrokerService
+public class BrokerService : IBrokerService
 {
-    public BrokerService(HttpClient httpClient,
-                         ILogger<BrokerService> logger,
-                         NavigationManager navigationManager,
-                         AuthenticationStateProvider authenticationState)
-        : base(httpClient, logger, navigationManager, authenticationState)
+    private readonly IFetchBrokerService _brokerService;
+    private readonly IClientManager _clientManager;
+
+    public BrokerService(IFetchBrokerService brokerService, IClientManager clientManager)
     {
+        _brokerService = brokerService;
+        _clientManager = clientManager;
     }
 
-    public async Task<IResult<List<Broker>>> GetBrokers()
+    public async Task<IResult> UpdateBroker(BrokerDTO broker, BrokerCredentialsDTO brokerCredentialsDTO)
     {
-        var request = new Request
-        {
-            Method = HttpMethod.Get,
-            Route = "api/v1/brokers"
-        };
+        var result = await _brokerService.UpdateBroker(broker);
 
-        var response = await SendAsync<List<Broker>>(request);
+        if (!result.Succeeded)
+            return Result.Fail(result.Messages, result.StatusCode);
 
-        return response;
+        var credResult = await _brokerService.UpdateBrokerCredentials(result.Data.Id, brokerCredentialsDTO);
+
+        var updateResult = await _clientManager.UpdateClient(result.Data);
+
+        if (!credResult.Succeeded && updateResult.Succeeded)
+            return Result.Warning(message: "Failed to update broker credentilas");
+
+        return updateResult;
     }
-
-    public async Task<IResult<Broker>> GetBroker(string id)
+    public async Task<IResult> CreateBroker(BrokerDTO broker, BrokerCredentialsDTO brokerCredentialsDTO)
     {
-        var request = new Request
-        {
-            Method = HttpMethod.Get,
-            Route = $"api/v1/brokers/{id}"
-        };
+        var result = await _brokerService.CreateBroker(broker);
 
-        var response = await SendAsync<Broker>(request);
+        if (!result.Succeeded)
+            return Result.Fail(result.Messages, result.StatusCode);
 
-        return response;
+        var credResult = await _brokerService.UpdateBrokerCredentials(result.Data.Id, brokerCredentialsDTO);
+
+        var creartedBroker = result.Data;
+        var addResult = _clientManager.AddClient(creartedBroker);
+
+        if (!credResult.Succeeded && addResult.Succeeded)
+            return Result.Warning(message: "Failed to create broker credentilas but creaded broker.");
+
+        return addResult;
     }
-
-    public async Task<IResult<Broker>> CreateBroker(BrokerDTO dto)
+    public async Task<IResult> RemoveBroker(string brokerId)
     {
-        var request = new Request<BrokerDTO>
-        {
-            Method = HttpMethod.Post,
-            Route = "api/v1/brokers",
-            Data = dto
-        };
+        var result = await _brokerService.RemoveBroker(brokerId);
 
-        var response = await SendAsync<BaseModel, BrokerDTO>(request);
+        if (!result.Succeeded)
+            return Result.Fail(result.Messages, result.StatusCode);
 
-        if (!response.Succeeded)
-            return Result<Broker>.Fail(response.Messages, response.StatusCode);
+        var deleteResult = await _clientManager.RemoveClient(brokerId);
 
-        var itemResponse = await GetBroker(response.Data.Id);
-
-        if (!itemResponse.Succeeded)
-            return Result<Broker>.Fail(itemResponse.StatusCode, itemResponse.Messages + " Pleace refresh page.");
-
-        var broker = itemResponse.Data;
-
-        return Result<Broker>.Success(broker, response.StatusCode);
-    }
-
-    public async Task<IResult<Broker>> UpdateBroker(BrokerDTO dto)
-    {
-        var request = new Request<BrokerDTO>
-        {
-            Method = HttpMethod.Patch,
-            Route = $"api/v1/brokers/{dto.Id}",
-            Data = dto
-        };
-
-        var options = new JsonSerializerOptions
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
-
-        var response = await SendAsync<Broker,BrokerDTO>(request, options);
-
-        if (!response.Succeeded)
-            return Result<Broker>.Fail(response.Messages, response.StatusCode);
-
-        var itemResponse = await GetBroker(dto.Id);
-
-        if (!itemResponse.Succeeded)
-            return Result<Broker>.Fail(itemResponse.Messages, itemResponse.StatusCode);
-
-        var broker = itemResponse.Data;
-
-        return Result<Broker>.Success(broker, response.StatusCode);
-    }
-
-    public async Task<IResult> RemoveBroker(string id)
-    {
-        var request = new Request
-        {
-            Method = HttpMethod.Delete,
-            Route = $"api/v1/brokers/{id}"
-        };
-
-        var response = await SendAsync(request);
-
-        return response;
-    }
-
-    public async Task<IResult> UpdateBrokerCredentials(string brokerId, BrokerCredentialsDTO dto)
-    {
-        var request = new Request<BrokerCredentialsDTO>
-        {
-            Method = HttpMethod.Put,
-            Route = $"api/v1/brokers/{brokerId}/credentials",
-            Data = dto
-        };
-
-        return await SendAsync<BrokerCredentialsDTO>(request);
-    }
-
-    public async Task<IResult<BrokerCredentialsDTO>> GetBrokerCredentials(string id)
-    {
-        var request = new Request
-        {
-            Method = HttpMethod.Get,
-            Route = $"api/v1/brokers/{id}/credentials"
-        };
-
-        return await SendAsync<BrokerCredentialsDTO>(request);
+        return deleteResult;
     }
 }

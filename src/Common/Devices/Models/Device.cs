@@ -23,10 +23,7 @@ public class Device : BaseModel
     public DateTime EditedAt { get; set; }
 
     [JsonIgnore]
-    public List<Control> Controls { get; set; } = new();
-
-    [JsonIgnore]
-    public bool SuccessfullControlsFetch { get; set; } = true;
+    public bool SuccessfullControlsDownload { get; set; } = false;
 
     public DeviceDTO Dto() => new()
     {
@@ -37,4 +34,14 @@ public class Device : BaseModel
         Id = Id,
         Placing = Placing
     };
+
+    public void Update(Device device)
+    {
+        this.Name = device.Name;
+        this.Placing = device.Placing;
+        this.Icon = device.Icon;
+        this.BrokerId = device.BrokerId;
+        this.BaseDevicePath = device.BaseDevicePath;
+        this.EditedAt = device.EditedAt;
+    }
 }

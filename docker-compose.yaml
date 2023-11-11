@@ -6,7 +6,6 @@ services:
       context: ./src
       dockerfile: dockerfile
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - API_URL=http://localhost:3000
+      - ASPNETCORE_ENVIRONMENT=Development
     ports:
-      - "8080:80"
+      - "443:443"

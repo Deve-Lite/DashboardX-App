@@ -1,37 +1,47 @@
-﻿using Common.Controls.Models;
-using Microsoft.IdentityModel.Tokens;
+﻿using MQTTnet.Adapter;
 using MQTTnet.Client;
+using MQTTnet.Exceptions;
 using MQTTnet.Protocol;
-using Presentation.Brokers;
+using MQTTnet.Server;
 using System.Text;
 
 namespace Presentation.Clients;
 
-public class Client : IAsyncDisposable
+public class Client : IClient, IAsyncDisposable
 {
+    private static readonly MqttClientSubscribeResultCode[] ValidMqttResultCodes = new[]
+    {
+        MqttClientSubscribeResultCode.GrantedQoS0,
+        MqttClientSubscribeResultCode.GrantedQoS1,
+        MqttClientSubscribeResultCode.GrantedQoS2
+    };
+
+    private readonly IMqttClient _mqttClient;
+    private readonly IFetchBrokerService _brokerService;
     private readonly ILogger<Client> _logger;
-    private readonly MqttFactory _factory;
-    public readonly ITopicService TopicService;
-    public readonly IMqttClient MqttService;
-    public readonly IBrokerService BrokerService;
+    private readonly ISnackbar _snackbar;
+    private readonly IList<Device> _devices;
+    private readonly IList<Control> _controls;
+    private readonly Broker _broker;
 
-    public string Id => Broker.Id;
-    public bool IsConnected { get; set; }
+    public bool IsConnected { get; private set; }
+    public string Id => _broker.Id;
 
-    public Broker Broker { get; private set; } = new();
-    public List<Device> Devices { get; private set; } = new();
-
+    public ITopicService TopicService { get; private set; }
     public Func<Task> RerenderPage { get; set; }
 
-    public Client(ILocalStorageService storage, ILogger<Client> clientLogger, IBrokerService brokerService,  MqttFactory factory, Broker broker)
+    public Client(ITopicService topic,
+                  IMqttClient mqttClient,
+                  IFetchBrokerService brokerService,
+                  ILogger<Client> clientLogger,
+                  ISnackbar snackbar,
+                  Broker broker)
     {
-        Broker = broker;
-        MqttService = factory.CreateMqttClient();
-        BrokerService = brokerService;
-
-        TopicService = new TopicService(storage);
-
-        _factory = factory;
+        _broker = broker;
+        _mqttClient = mqttClient;
+        _brokerService = brokerService;
+        TopicService = topic;
+        _snackbar = snackbar;
         _logger = clientLogger;
 
         InitializeCallbacks();
@@ -39,28 +49,281 @@ public class Client : IAsyncDisposable
         {
             return Task.CompletedTask;
         };
+
+        _controls = new List<Control>();
+        _devices = new List<Device>();
     }
 
+    public Broker GetBroker() => _broker;
     public async Task UpdateBroker(Broker broker)
     {
-        var connected = MqttService.IsConnected;
+        if(broker.EditedAt == _broker.EditedAt)
+            return;
+
+        var connected = _mqttClient.IsConnected;
 
         if (connected)
             await DisconnectAsync();
 
-        Broker = broker;
+        _broker.Update(broker);
 
         if (connected)
             await ConnectAsync();
     }
 
-    public async Task<MqttClientPublishResult> PublishAsync(string topic, string payload, MqttQualityOfServiceLevel quality)
+    public async Task<IResult> AddControl(Control control)
     {
-        //TODO Change to Result
-
         try
         {
-            if (!MqttService.IsConnected)
+            var device = _devices.First(x => x.Id == control.DeviceId);
+            _controls.Add(control);
+
+            if (control.ShouldBeSubscribed() && _mqttClient.IsConnected)
+            {
+                var result = await _mqttClient.SubscribeAsync(control.GetTopic(device), control.QualityOfService);
+
+                var status = result.Items.First().ResultCode;
+
+                if (!ValidMqttResultCodes.Any(x => x == status))
+                    return Result.Warning();
+
+                control.IsSubscribed = true;
+            }
+
+            return Result.Success();
+        }
+        catch (ArgumentNullException)
+        {
+            return Result.Fail();
+        }
+        catch
+        {
+            return Result.Fail();
+        }
+    }
+    public async Task<IResult> UpdateControl(Control control)
+    {
+        try
+        {
+            var device = _devices.First(x => x.Id == control.DeviceId);
+            var currentControl = _controls.FirstOrDefault(x => x.Id == control.Id);
+
+            if (currentControl is null)
+                return await AddControl(control);
+
+            if (control.ShouldBeSubscribed() && _mqttClient.IsConnected)
+                await _mqttClient.UnsubscribeAsync(control.GetTopic(device));
+
+            currentControl.Update(control);
+
+            if (control.ShouldBeSubscribed() && _mqttClient.IsConnected)
+            {
+                var result = await _mqttClient.SubscribeAsync(control.GetTopic(device), control.QualityOfService);
+
+                var status = result.Items.First().ResultCode;
+
+                if (!ValidMqttResultCodes.Any(x => x == status))
+                    return Result.Warning();
+
+                control.IsSubscribed = true;
+            }
+
+            return Result.Success();
+        }
+        catch (ArgumentNullException)
+        {
+            return Result.Fail();
+        }
+        catch
+        {
+            return Result.Fail();
+        }
+    }
+    public async Task<IResult> RemoveControl(string controlId)
+    {
+        try
+        {
+            var control = _controls.First(x => x.Id == controlId);
+            _controls.Remove(control);
+
+            if (control.ShouldBeSubscribed() && _mqttClient.IsConnected)
+            {
+                var device = _devices.First(x => x.Id == control.DeviceId);
+                await _mqttClient.UnsubscribeAsync(control.GetTopic(device));
+            }
+
+            return Result.Success();
+        }
+        catch (ArgumentNullException)
+        {
+            return Result.Warning();
+        }
+        catch (MqttCommunicationException)
+        {
+            //Failed to unsubscribe
+            return Result.Warning();
+        }
+        catch
+        {
+            return Result.Fail();
+        }
+    }
+    public IList<Control> GetControls(string deviceId) => _controls.Where(x => x.DeviceId == deviceId).ToList();
+
+    public IList<Device> GetDevices() => _devices;
+    public IResult AddDevice(Device device)
+    {
+        _devices.Add(device);
+
+        device.SuccessfullControlsDownload = true;
+
+        return Result.Success();
+    }
+    public async Task<IResult> AddDevices(Device device, List<Control> controls)
+    {
+        _devices.Add(device);
+
+        var status = Result.Success();
+
+        foreach (var control in controls)
+        {
+            var result = await AddControl(control);
+
+            if (status.OperationState ==  OperationState.Success && result.OperationState == OperationState.Warning)
+                status = Result.Warning();
+
+            if (result.OperationState == OperationState.Error)
+                status = Result.Fail();
+        }
+
+        if(status.OperationState == OperationState.Success)
+            device.SuccessfullControlsDownload = true;
+
+        return status;
+    }
+    public async Task<IResult> UpdateDevice(Device device)
+    {
+        try
+        {
+            var currentDevice = _devices.First(x => x.Id == device.Id);
+
+            if (currentDevice.EditedAt == device.EditedAt)
+                return Result.Success();
+
+            var controls = _controls.Where(x => x.DeviceId == device.Id)
+                .ToList();
+
+            if(currentDevice.BaseDevicePath != device.BaseDevicePath)
+            {
+                foreach (var control in controls)
+                    await RemoveControl(control.Id);
+
+                currentDevice.Update(device);
+
+                var status = Result.Success();
+
+                foreach (var control in controls)
+                {
+                    var result = await AddControl(control);
+
+                    if (status.OperationState ==  OperationState.Success && result.OperationState == OperationState.Warning)
+                        status = Result.Warning();
+
+                    if (result.OperationState == OperationState.Error)
+                        status = Result.Fail();
+                }
+
+                if (status.OperationState == OperationState.Success)
+                    device.SuccessfullControlsDownload = true;
+
+                return status;
+            }
+
+            currentDevice.Update(device);
+
+            return Result.Success();
+        }
+        catch (ArgumentNullException)
+        {
+            return AddDevice(device);
+        }
+        catch (Exception ex)
+        {
+            return Result.Fail();
+        }
+    }
+    public async Task<IResult> UpdateDevice(Device device, List<Control> controls)
+    {
+        try
+        {
+            var currentDevice = _devices.First(x => x.Id == device.Id);
+
+            var oldControls = _controls.Where(x => x.DeviceId == device.Id)
+                .ToList();
+
+            foreach (var control in oldControls)
+                await RemoveControl(control.Id);
+
+            currentDevice.Update(device);
+
+            var status = Result.Success();
+
+            foreach (var control in controls)
+            {
+                var result = await AddControl(control);
+
+                if (result.OperationState == OperationState.Error || result.OperationState == OperationState.Warning)
+                    return Result.Warning();
+            }
+
+            return status;
+        }
+        catch (ArgumentNullException)
+        {
+            return AddDevice(device);
+        }
+        catch
+        {
+            return Result.Fail();
+        }
+    }
+    public async Task<IResult> RemoveDevice(string deviceId)
+    {
+        try
+        {
+            var device = _devices.First(x => x.Id == deviceId);
+            _devices.Remove(device);
+
+            var controls = _controls.Where(x => x.DeviceId == deviceId)
+                .ToList();
+
+            foreach (var control in controls)
+                await RemoveControl(control.Id);
+
+            return Result.Success();
+        }
+        catch (ArgumentNullException)
+        {
+            return Result.Warning();
+        }
+        catch
+        {
+            return Result.Fail();
+        }
+    }
+    public bool HasDevice(string deviceId) => _devices.Any(x => x.Id == deviceId);
+   
+    public async Task DisconnectAsync()
+    {
+        IsConnected = false;
+        RerenderPage?.Invoke();
+        await _mqttClient.DisconnectAsync();
+    }
+    public async Task<IResult> PublishAsync(string topic, string payload, MqttQualityOfServiceLevel quality)
+    {
+        try
+        {
+            if (!_mqttClient.IsConnected)
                 await ConnectAsync();
 
             var mqttMessage = new MqttApplicationMessageBuilder()
@@ -69,274 +332,110 @@ public class Client : IAsyncDisposable
                    .WithQualityOfServiceLevel(quality)
                    .Build();
 
-            return await MqttService.PublishAsync(mqttMessage);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError("Failed to send request", e.Message);
+            var mqttResult = await _mqttClient.PublishAsync(mqttMessage);
 
-            return new MqttClientPublishResult();
-        }
-    }
-
-    public async Task<Result> ConnectAsync()
-    {
-        try
-        {
-            var options = await Options();
-            var response = await MqttService.ConnectAsync(options);
-            IsConnected = true;
+            if (mqttResult.ReasonCode != MqttClientPublishReasonCode.Success)
+                return Result.Fail();
 
             return Result.Success();
         }
         catch (Exception e)
         {
-            IsConnected = false;
-            _logger.LogError("Failed to connect to broker.", e.Message);
+            _logger.LogError("Failed to send request", e.Message);
 
+            return Result.Fail();
+        }
+    }
+    public async Task<IResult> ConnectAsync()
+    {
+        //TODO: Refactor
+        try
+        {
+            if (!_broker.SSL)
+                return Result.Fail();
+
+            var optionsBuilder = new MqttClientOptionsBuilder()
+                .WithClientId(_broker.ClientId)
+                .WithWebSocketServer($"wss://{_broker.Server}:{_broker.Port}/mqtt")
+                .WithCleanSession(true);
+
+            var result = await _brokerService.GetBrokerCredentials(_broker.Id);
+
+            if (result.Succeeded && !string.IsNullOrEmpty(result.Data.Username) && !string.IsNullOrEmpty(result.Data.Password))
+                optionsBuilder = optionsBuilder.WithCredentials(result.Data.Username, result.Data.Password);
+
+            var response = await _mqttClient.ConnectAsync(optionsBuilder.Build());
+
+            var status = Result.Success();
+
+            //Think what happens on += InitializeCallbacks();
+
+            foreach (var control in _controls)
+            {
+                if (!control.ShouldBeSubscribed())
+                    continue;
+
+                var device = _devices.First(x => x.Id == control.DeviceId);
+                var subResult = await _mqttClient.SubscribeAsync(control.GetTopic(device), control.QualityOfService);
+
+                if(!ValidMqttResultCodes.Any(x => x == subResult.Items.First().ResultCode))
+                    status = Result.Warning();
+            }
+
+            IsConnected = true;
+            RerenderPage?.Invoke();
+
+            return status;
+        }
+        catch (MqttConnectingFailedException cex)
+        {
+            _snackbar.Add("Failed when authenticating to broker.", Severity.Error);
+            _logger.LogError("Failed to authenticate to broker.", cex.Message);
+            IsConnected = false;
+            return Result.Fail(message: "Failed to authenticate to broker.");
+        }
+        catch (Exception e)
+        {
+            _snackbar.Add("Failed when connecting to broker.", Severity.Error);
+            _logger.LogError("Failed to connect to broker.", e.Message);
+            IsConnected = false;
             return Result.Fail(message: "Failed to connect to broker.");
         }
     }
 
-    public async Task DisconnectAsync()
-    {
-        IsConnected = false;
-        await MqttService.DisconnectAsync();
-    }
-
-    /// <summary>
-    /// Unsubscribes from all topics for device and removed device from device collection.
-    /// </summary>
-    /// <param name="device"></param>
-    /// <returns></returns>
-    public async Task UnsubscribeAsync(Device device)
-    {
-        foreach (var control in device.Controls)
-        {
-            var topic = await TopicService.RemoveTopic(Broker.Id, device, control);
-            await MqttService.UnsubscribeAsync(topic);
-        }
-
-        Devices.Remove(device);
-    }
-
-    /// <summary>
-    /// Unsubscribes from control topic and removes it from device controls collection.
-    /// </summary>
-    /// <param name="deviceId"></param>
-    /// <param name="control"></param>
-    /// <returns></returns>
-    public async Task UnsubscribeAsync(string deviceId, string controlId)
-    {
-        var device = Devices.First(x => x.Id == deviceId);
-        var control = device.Controls.First(x => x.Id == controlId);
-        var topic = await TopicService.RemoveTopic(Broker.Id, device, control);
-        
-        if(IsConnected)
-        {
-            try 
-            { 
-                await MqttService.UnsubscribeAsync(topic); 
-            }
-            catch (Exception e)
-            {
-                _logger.LogError("Failed to unsubscribe to topic.", e.Message);
-            }
-        }
-
-        device.Controls.Remove(control);
-    }
-
-    public async Task<bool> Resubscibe(Device device, Control newControl)
-    {
-        try
-        {
-            var control = device.Controls.First(x => x.Id == newControl.Id);
-
-            var newTopic = newControl.GetTopic(device);
-            var oldTopic = control.GetTopic(device);
-
-            if(newTopic != oldTopic)
-            {
-                var value = await TopicService.LastMessageOnTopicAsync(device.BrokerId, device, control);
-
-                if (!value.IsNullOrEmpty())
-                {
-                    await TopicService.UpdateMessageOnTopic(device.BrokerId, device, newControl, value);
-                    await TopicService.RemoveTopic(Broker.Id, device, control);
-                }
-
-            }
-
-            control.Update(newControl);
-
-
-            if (!IsConnected)
-                await ConnectAsync();
-
-            await MqttService.UnsubscribeAsync(oldTopic);
-            await MqttService.SubscribeAsync(newTopic, control.QualityOfService);
-            
-            return true;
-        }
-        catch (Exception e)
-        {
-            _logger.LogError("Failed to resubscribe to topic.", e.Message);
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// 
-    /// Subscibes each control topic and adds it to device controls collection.
-    /// </summary>
-    /// <returns></returns>
-    public async Task<int> SubscribeAsync(Device device, List<Control> controls)
-    {
-        Devices.Add(device);
-        int failedSubscribtions = 0;
-
-        foreach (var control in controls)
-            if (!await SubscribeAsync(device, control))
-                ++failedSubscribtions;
-
-        return failedSubscribtions;
-    }
-    /// <summary>
-    /// Subscibes to control topic and adds it to device controls collection.
-    /// </summary>
-    /// <returns></returns>
-    public async Task<bool> SubscribeAsync(Device device, Control control)
-    {
-        try
-        {
-            if (TopicService.ConatinsTopic(Id, device, control))
-                return true;
-
-            var topic = await TopicService.AddTopic(Broker.Id, device, control);
-
-            if (!MqttService.IsConnected)
-                await ConnectAsync();
-
-            device.Controls.Add(control);
-            var result = await MqttService.SubscribeAsync(topic, control.QualityOfService);
-
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError("Failed to subscribe to topic.", ex.Message);
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// Updates subsribion topics for a device. 
-    /// </summary>
-    /// <param name="existingDevice"> Device must exist in collection of elemnts.</param>
-    /// <param name="controls"></param>
-    /// <returns></returns>
-    public async Task<int> UpdateSubscribtionsAsync(string deviceId, List<Control> controls)
-    {
-        HashSet<string> usedControls = new();
-
-        int failedSubscribtions = 0;
-
-        var device = Devices.First(x => x.Id == deviceId);
-
-        foreach (var control in controls)
-        {
-            try
-            {
-                var existingControl = device.Controls.FirstOrDefault(x => x.Id == control.Id);
-
-                var isSync = existingControl?.IsTheSame(control) ?? false;
-
-                if (existingControl is null || !isSync)
-                {
-                    if (!isSync)
-                        await UnsubscribeAsync(device.Id, existingControl!.Id);
-
-                    var topic = await TopicService.AddTopic(Broker.Id, device, control);
-
-                    if (!MqttService.IsConnected)
-                        await ConnectAsync();
-
-                    device.Controls.Add(control);
-                    await MqttService.SubscribeAsync(topic);
-                }
-
-                usedControls.Add(control.Id);
-            }
-            catch
-            {
-                ++failedSubscribtions;
-            }
-        }
-
-        foreach (var control in device.Controls)
-            if (!usedControls.Contains(control.Id))
-            {
-                var topic = await TopicService.RemoveTopic(Broker.Id, device, control);
-                await MqttService.UnsubscribeAsync(topic);
-                device.Controls.Remove(control);
-            }
-
-        return failedSubscribtions;
-    }
-
     public async ValueTask DisposeAsync()
     {
-        foreach (var device in Devices)
-            foreach (var control in device.Controls)
-                await TopicService.RemoveTopic(Broker.Id, device, control);
+        foreach (var control in _controls)
+        {
+            var device = _devices.First(x => x.Id == control.DeviceId);
+            await TopicService.RemoveTopic(_broker.Id, device, control);
+        }
 
-        await MqttService.DisconnectAsync();
-        MqttService.Dispose();
-    }
-
-    #region Privates
-
-    private async Task<MqttClientOptions> Options()
-    {
-        var optionsBuilder = _factory.CreateClientOptionsBuilder()
-            .WithClientId(Broker.ClientId)
-            .WithWebSocketServer($"wss://{Broker.Server}:{Broker.Port}/mqtt")
-            .WithCleanSession(false);
-
-        var result = await BrokerService.GetBrokerCredentials(Broker.Id);
-
-        //TODO: Notify about problem
-
-        if (result.Succeeded && !string.IsNullOrEmpty(result.Data.Username) && !string.IsNullOrEmpty(result.Data.Password))
-            optionsBuilder = optionsBuilder.WithCredentials(result.Data.Username, result.Data.Password);
-
-        return optionsBuilder.Build();
+        await _mqttClient.DisconnectAsync();
+        _mqttClient.Dispose();
     }
 
     private void InitializeCallbacks()
     {
-        MqttService.ApplicationMessageReceivedAsync += async (e) =>
+        _mqttClient.ApplicationMessageReceivedAsync += async (e) =>
         {
             var topic = e.ApplicationMessage.Topic;
             var message = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
-            await TopicService.UpdateMessageOnTopic(Broker.Id, topic, message);
+            await TopicService.UpdateMessageOnTopic(_broker.Id, topic, message);
             _logger.LogInformation("Message received. {topic} {message}", topic, message);
             RerenderPage?.Invoke();
         };
 
-        MqttService.DisconnectedAsync += async (e) =>
+        _mqttClient.DisconnectedAsync += async (e) =>
         {
             if (!IsConnected)
                 return;
 
-            _logger.LogWarning("Client disconnected. Reconnecting...", Broker.Id);
+            _logger.LogWarning("Client disconnected. Reconnecting...", _broker.Id);
             RerenderPage?.Invoke();
-            await MqttService.ReconnectAsync();
+            await _mqttClient.ReconnectAsync();
             RerenderPage?.Invoke();
-            _logger.LogWarning("Client reconnected.", Broker.Id);
+            _logger.LogWarning("Client reconnected.", _broker.Id);
         };
     }
-
-    #endregion
 }
