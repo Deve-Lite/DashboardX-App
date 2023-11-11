@@ -118,11 +118,6 @@ public abstract class BaseService
 
             var response = await _client.SendAsync(message);
 
-            response.Headers.TryGetValues("Set-Cookie", out var setCookie);
-
-            foreach (var cookie in setCookie ?? new List<string>())
-                _logger.LogInformation($"{cookie}");
-
             var payload = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode)

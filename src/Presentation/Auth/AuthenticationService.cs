@@ -98,7 +98,7 @@ public class AuthenticationService : BaseService, IAuthenticationService
             Data = resetPassword
         };
 
-        var response = await SendWithCookiesAsync(request);
+        var response = await SendAsync(request);
 
         return response;
     }
@@ -146,12 +146,5 @@ public class AuthenticationService : BaseService, IAuthenticationService
         var response = await SendAsync(request);
 
         return response;
-    }
-
-    private async Task<Result> SendWithCookiesAsync<T>(Request<T> request) where T : class, new()
-    {
-        var message = CreateMessage(request);
-        message.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
-        return await Run(message);
     }
 }

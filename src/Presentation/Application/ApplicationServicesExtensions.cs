@@ -20,7 +20,7 @@ public static class ApplicationServicesExtensions
         if(builder.HostEnvironment.IsDevelopment())
             baseAdress = builder.Configuration.GetValue<string>("Api:Development:Url")!;
 
-        builder.Services.AddSingleton(sp => new HttpClient()
+        builder.Services.AddSingleton(sp => new HttpClient(new CookieHandler())
         {
             Timeout = TimeSpan.FromSeconds(Convert.ToDouble(requestTime)),
             BaseAddress = new Uri(baseAdress),
