@@ -1,4 +1,5 @@
 @using Presentation.Utils;
+@using Presentation.Extensions;
 @inherits LayoutComponentBase
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
@@ -17,14 +18,18 @@
         <CascadingValue Value="@IsDarkMode">
             <AuthorizeView Roles="@($"{RolesConstraints.User}, {RolesConstraints.Admin}")">
                 <Authorized>
+                    @*todo: create different UI *@
+
                     <MudAppBar Elevation="1" Dense="@true" Color="Color.Primary">
-                        
-                        
+
+                        @if (DrawerMode == DrawerVariant.Responsive)
+                        {
                             <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                                           Disabled="@IsDesktop"
                                            Color="Color.Secondary"
                                            Edge="Edge.Start"
                                            OnClick="@ToggleDrawer" />
-                      
+                        }
 
                         <MudText Color="Color.Secondary" Typo="Typo.h6">
                             @_localizer["DashboardX"]
@@ -33,39 +38,37 @@
                         <MudSpacer />
 
                     </MudAppBar>
-                    <MudDrawer @bind-Open="@Open"
-                               ClipMode="DrawerClipMode.Docked"
-                               Elevation="1"
-                               Variant="@DrawerVariant.Responsive">
+                    <MudDrawer @bind-Open="@IsOpen"        
+                               PreserveOpenState="true"
+                               ClipMode="DrawerClipMode.Always"
+                               Variant="@DrawerMode"
+                               Elevation="1">
 
-                        <MudNavMenu>
-                            <MudList Clickable="true" Class="w-100">
+                        <MudNavMenu Class="pt-2">
+                            <MudNavLink Icon="@Icons.Material.Filled.DisplaySettings"
+                                        OnClick="NavigateToBrokers">
+                                @_localizer["Brokers"]
+                            </MudNavLink>
 
-                                <MudListItem Icon="@Icons.Material.Filled.DisplaySettings"
-                                             OnClick="NavigateToBrokers">
-                                    @_localizer["Brokers"]
-                                </MudListItem>
+                            <MudNavLink Icon="@Icons.Material.Filled.SettingsInputComponent"
+                                        OnClick="NavigateToDevices">
+                                @_localizer["Devices"]
+                            </MudNavLink>
 
-                                <MudListItem Icon="@Icons.Material.Filled.SettingsInputComponent"
-                                             OnClick="NavigateToDevices">
-                                    @_localizer["Devices"]
-                                </MudListItem>
+                            <MudNavLink Icon="@Icons.Material.Filled.Settings"
+                                        OnClick="NavigateToProfile">
+                                @_localizer["Settings"]
+                            </MudNavLink>
 
-                                <MudListItem Icon="@Icons.Material.Filled.Settings"
-                                             OnClick="NavigateToProfile">
-                                    @_localizer["Settings"]
-                                </MudListItem>
+                            <MudNavLink Icon="@Icons.Material.Filled.Email"
+                                        OnClick="NavigateToSubs">
+                                @_localizer["Subscribtions"]
+                            </MudNavLink>
 
-                                <MudListItem Icon="@Icons.Material.Filled.Email"
-                                             OnClick="NavigateToSubs">
-                                    @_localizer["Subscribtions"]
-                                </MudListItem>
-
-                                <MudListItem Icon="@Icons.Material.Filled.Logout"
-                                             OnClick="Logout">
-                                    @_localizer["Logout"]
-                                </MudListItem>
-                            </MudList>
+                            <MudNavLink Icon="@Icons.Material.Filled.Logout"
+                                        OnClick="Logout">
+                                @_localizer["Logout"]
+                            </MudNavLink>
                         </MudNavMenu>
                     </MudDrawer>
 
@@ -103,17 +106,18 @@
 </MudLayout>
 
 @code {
-    private bool Open { get; set; } = false;
+    private bool IsOpen { get; set; } = false;
     private bool IsDesktop { get; set; } = false;
     private bool IsLoading { get; set; } = false;
     private bool IsDarkMode { get; set; } = false;
+    private DrawerVariant DrawerMode { get; set; } = DrawerVariant.Temporary;
 
     private MudTheme AppTheme { get; set; } = ThemeColors.AppTheme;
     private MudThemeProvider _mudThemeProvider = new();
 
     protected override async Task OnInitializedAsync()
     {
-        base.OnInitialized();
+        BrowserResizeExtensions.OnResize += BrowserResized;
         _loadingService.OnLoadingChanged = (isLoading) =>
         {
             IsLoading = isLoading;
@@ -140,6 +144,8 @@
             }
         };
 
+        await _runtime.SubscribeToResizeEvent();
+        await BrowserResized(await _runtime.GetScreenWidth());
         await _preferenceService.LoadPreferences();
         await _mudThemeProvider!.WatchSystemPreference(OnSystemPreferenceChanged);
     }
@@ -151,46 +157,64 @@
         return Task.CompletedTask;
     }
 
-    private async Task ToggleDrawer()
+    private void ToggleDrawer()
     {
-
-        if (await _runtime.IsDesktop())
+        if (DrawerMode == DrawerVariant.Responsive)
         {
+            IsOpen = !IsOpen;
+            IsDesktop = false;
+        }
+    }
 
-            Open = true;
-            IsDesktop = true;
+    private void OpenChanged()
+    {
+        Console.WriteLine("casd");
+    }
+
+    private async Task BrowserResized(int width)
+    {
+        if (JsRuntimeExtensions.IsDektop(width))
+        {
+            DrawerMode = DrawerVariant.Responsive;
+            IsOpen = true;
+        }
+        else if (JsRuntimeExtensions.IsMobile(width))
+        {
+            DrawerMode = DrawerVariant.Responsive;
+            IsOpen = false;
         }
         else
         {
-
-            Open = !Open;
-            IsDesktop = false;
+            DrawerMode = DrawerVariant.Mini;
+            IsOpen = false;
         }
+
+        await InvokeAsync(StateHasChanged);
     }
 
     #region Navigations
 
     public void NavigateToBrokers()
     {
-        Open = false;
+        IsOpen = false;
         _navigationManager.NavigateTo("/brokers");
     }
 
     public void NavigateToDevices()
     {
-        Open = false;
+        IsOpen = false;
         _navigationManager.NavigateTo("/devices");
     }
 
     public void NavigateToSubs()
     {
-        Open = false;
+        IsOpen = false;
         _navigationManager.NavigateTo("/subs");
     }
 
     public void NavigateToProfile()
     {
-        Open = false;
+        IsOpen = false;
         _navigationManager.NavigateTo("/user");
     }
 

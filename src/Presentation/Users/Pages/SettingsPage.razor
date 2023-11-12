@@ -137,14 +137,12 @@
             User = result.Data;
             Preferences = User.GetPreferences();
             LoadedSuccessfully = true;
-
         }
 
         _loadingService.HideLoading();
 
         StateHasChanged();
     }
-
 
     public async Task UpdateSettings()
     {
