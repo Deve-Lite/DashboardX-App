@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "src\Common\Common
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "src\Core\Core.csproj", "{3D0D76B6-2D3D-4D08-A76C-3ED96A998F9E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PresentationTests", "src\PresentationTests\PresentationTests.csproj", "{959C881B-397A-4726-8885-76AABDA64572}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PresentationTests", "src\PresentationTests\PresentationTests.csproj", "{959C881B-397A-4726-8885-76AABDA64572}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

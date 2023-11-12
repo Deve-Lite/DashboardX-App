@@ -1,10 +1,9 @@
 @using Presentation.Utils;
 @using Presentation.Extensions;
 @inherits LayoutComponentBase
-@inject AuthenticationStateProvider AuthenticationStateProvider
 
-@inject IStringLocalizer<MainLayout> _localizer
 @inject AuthenticationStateProvider _authenticationStateProvider
+@inject IStringLocalizer<MainLayout> _localizer
 @inject ILocalStorageService _localStorage
 @inject IPrefrenceService _preferenceService
 @inject IClientService _clientService
@@ -16,91 +15,91 @@
 
     <CascadingValue Value="@AppTheme">
         <CascadingValue Value="@IsDarkMode">
-            <AuthorizeView Roles="@($"{RolesConstraints.User}, {RolesConstraints.Admin}")">
-                <Authorized>
-                    @*todo: create different UI *@
+            <CascadingValue Value="@Platform">
+                <AuthorizeView Roles="@($"{RolesConstraints.User}, {RolesConstraints.Admin}")">
+                    <Authorized>
+                        <MudAppBar Elevation="1" Dense="@true" Color="Color.Primary" Style="padding: 0px;">
 
-                    <MudAppBar Elevation="1" Dense="@true" Color="Color.Primary">
+                            <MudText Color="Color.Secondary" Typo="Typo.h6">
+                                @_localizer["DashboardX"]
+                            </MudText>
 
-                        @if (DrawerMode == DrawerVariant.Responsive)
+                            <MudSpacer />
+
+                            @if (Platform == Platform.Mobile)
+                            {
+                                <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                                               Disabled="@IsDesktop"
+                                               Color="Color.Secondary"
+                                               Edge="Edge.Start"
+                                               OnClick="@ToggleDrawer" />
+                            }
+
+                        </MudAppBar>
+                        <MudDrawer @bind-Open="@IsOpen"
+                                   ClipMode="DrawerClipMode.Always"
+                                   Anchor="@Anchor"
+                                   Variant="@DrawerMode"
+                                   Elevation="1">
+
+                            <MudNavMenu Class="pt-2">
+                                <MudNavLink Icon="@Icons.Material.Filled.DisplaySettings"
+                                            OnClick="NavigateToBrokers">
+                                    @_localizer["Brokers"]
+                                </MudNavLink>
+
+                                <MudNavLink Icon="@Icons.Material.Filled.SettingsInputComponent"
+                                            OnClick="NavigateToDevices">
+                                    @_localizer["Devices"]
+                                </MudNavLink>
+
+                                <MudNavLink Icon="@Icons.Material.Filled.Settings"
+                                            OnClick="NavigateToProfile">
+                                    @_localizer["Settings"]
+                                </MudNavLink>
+
+                                <MudNavLink Icon="@Icons.Material.Filled.Email"
+                                            OnClick="NavigateToSubs">
+                                    @_localizer["Subscribtions"]
+                                </MudNavLink>
+
+                                <MudNavLink Icon="@Icons.Material.Filled.Logout"
+                                            OnClick="Logout">
+                                    @_localizer["Logout"]
+                                </MudNavLink>
+                            </MudNavMenu>
+                        </MudDrawer>
+
+                        @if (IsLoading)
                         {
-                            <MudIconButton Icon="@Icons.Material.Filled.Menu"
-                                           Disabled="@IsDesktop"
-                                           Color="Color.Secondary"
-                                           Edge="Edge.Start"
-                                           OnClick="@ToggleDrawer" />
+                            <MudProgressLinear Color="Color.Tertiary"
+                                               Indeterminate="@IsLoading"
+                                               Size="Size.Medium"
+                                               Class="progress-linear-under-appbar position-absolute" />
                         }
 
-                        <MudText Color="Color.Secondary" Typo="Typo.h6">
-                            @_localizer["DashboardX"]
-                        </MudText>
-
-                        <MudSpacer />
-
-                    </MudAppBar>
-                    <MudDrawer @bind-Open="@IsOpen"        
-                               PreserveOpenState="true"
-                               ClipMode="DrawerClipMode.Always"
-                               Variant="@DrawerMode"
-                               Elevation="1">
-
-                        <MudNavMenu Class="pt-2">
-                            <MudNavLink Icon="@Icons.Material.Filled.DisplaySettings"
-                                        OnClick="NavigateToBrokers">
-                                @_localizer["Brokers"]
-                            </MudNavLink>
-
-                            <MudNavLink Icon="@Icons.Material.Filled.SettingsInputComponent"
-                                        OnClick="NavigateToDevices">
-                                @_localizer["Devices"]
-                            </MudNavLink>
-
-                            <MudNavLink Icon="@Icons.Material.Filled.Settings"
-                                        OnClick="NavigateToProfile">
-                                @_localizer["Settings"]
-                            </MudNavLink>
-
-                            <MudNavLink Icon="@Icons.Material.Filled.Email"
-                                        OnClick="NavigateToSubs">
-                                @_localizer["Subscribtions"]
-                            </MudNavLink>
-
-                            <MudNavLink Icon="@Icons.Material.Filled.Logout"
-                                        OnClick="Logout">
-                                @_localizer["Logout"]
-                            </MudNavLink>
-                        </MudNavMenu>
-                    </MudDrawer>
-
-                    @if (IsLoading)
-                    {
-                        <MudProgressLinear Color="Color.Tertiary"
-                                           Indeterminate="@IsLoading"
-                                           Size="Size.Medium"
-                                           Class="progress-linear-under-appbar position-absolute" />
-                    }
-
-                    <MudMainContent Style="height: 100vh;">
-                        @Body
-                    </MudMainContent>
-                </Authorized>
-                <NotAuthorized>
-                    @if (IsLoading)
-                    {
-                        <MudProgressLinear Color="Color.Tertiary"
-                                           Indeterminate="@IsLoading"
-                                           Size="Size.Medium"
-                                           Class="progress-linear position-absolute" />
-                    }
-
-                    <MudItem Class="image-in-background">
-                        <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-items-center bg-transparent" Style="height: 100vh;">
+                        <MudMainContent Style="height: 100vh;">
                             @Body
-                        </MudContainer>
-                    </MudItem>
+                        </MudMainContent>
+                    </Authorized>
+                    <NotAuthorized>
+                        @if (IsLoading)
+                        {
+                            <MudProgressLinear Color="Color.Tertiary"
+                                               Indeterminate="@IsLoading"
+                                               Size="Size.Medium"
+                                               Class="progress-linear position-absolute" />
+                        }
 
-                </NotAuthorized>
-            </AuthorizeView>
+                        <MudItem Class="image-in-background">
+                            <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-items-center bg-transparent" Style="height: 100vh;">
+                                @Body
+                            </MudContainer>
+                        </MudItem>
+
+                    </NotAuthorized>
+                </AuthorizeView>
+            </CascadingValue>
         </CascadingValue>
     </CascadingValue>
 </MudLayout>
@@ -109,11 +108,14 @@
     private bool IsOpen { get; set; } = false;
     private bool IsDesktop { get; set; } = false;
     private bool IsLoading { get; set; } = false;
-    private bool IsDarkMode { get; set; } = false;
     private DrawerVariant DrawerMode { get; set; } = DrawerVariant.Temporary;
-
-    private MudTheme AppTheme { get; set; } = ThemeColors.AppTheme;
+    private Anchor Anchor { get; set; } = Anchor.Left;
     private MudThemeProvider _mudThemeProvider = new();
+
+    // TODO: On next parameter create class for properties
+    public Platform Platform { get; set; } = Platform.Desktop;
+    public MudTheme AppTheme { get; set; } = ThemeColors.AppTheme;
+    public bool IsDarkMode { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -159,16 +161,11 @@
 
     private void ToggleDrawer()
     {
-        if (DrawerMode == DrawerVariant.Responsive)
+        if (Platform == Platform.Mobile)
         {
             IsOpen = !IsOpen;
             IsDesktop = false;
         }
-    }
-
-    private void OpenChanged()
-    {
-        Console.WriteLine("casd");
     }
 
     private async Task BrowserResized(int width)
@@ -176,46 +173,42 @@
         if (JsRuntimeExtensions.IsDektop(width))
         {
             DrawerMode = DrawerVariant.Responsive;
+            Platform = Platform.Desktop;
+            Anchor = Anchor.Left;
             IsOpen = true;
         }
         else if (JsRuntimeExtensions.IsMobile(width))
         {
             DrawerMode = DrawerVariant.Responsive;
+            Platform = Platform.Mobile;
+            Anchor = Anchor.Right;
             IsOpen = false;
         }
         else
         {
             DrawerMode = DrawerVariant.Mini;
+            Platform = Platform.Tablet;
+            Anchor = Anchor.Left;
             IsOpen = false;
         }
 
         await InvokeAsync(StateHasChanged);
     }
 
-    #region Navigations
+    private void NavigateToBrokers() => NavigateToPage("/brokers");
 
-    public void NavigateToBrokers()
-    {
-        IsOpen = false;
-        _navigationManager.NavigateTo("/brokers");
-    }
+    private void NavigateToDevices() => NavigateToPage("/devices");
 
-    public void NavigateToDevices()
-    {
-        IsOpen = false;
-        _navigationManager.NavigateTo("/devices");
-    }
+    private void NavigateToSubs() => NavigateToPage("/subs");
 
-    public void NavigateToSubs()
-    {
-        IsOpen = false;
-        _navigationManager.NavigateTo("/subs");
-    }
+    private void NavigateToProfile() => NavigateToPage("/user");
 
-    public void NavigateToProfile()
+    private void NavigateToPage(string page)
     {
-        IsOpen = false;
-        _navigationManager.NavigateTo("/user");
+        _navigationManager.NavigateTo(page);
+
+        if (Platform == Platform.Mobile)
+            IsOpen = false;
     }
 
     private async Task Logout()
@@ -229,6 +222,4 @@
 
         await _clientService.Logout();
     }
-
-    #endregion
 }
