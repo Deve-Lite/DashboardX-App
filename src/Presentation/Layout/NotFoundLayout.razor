@@ -1,0 +1,49 @@
+﻿@using Presentation.Utils;
+@inject IStringLocalizer<PageNotFound> _localizer
+
+@inject IPrefrenceService _preferenceService
+@inherits LayoutComponentBase
+
+<MudThemeProvider Theme="ThemeColors.AppTheme" />
+
+<MudElement Class="p-0 m-0 image-in-background" Style="width: 100vw;">
+    <MudContainer MaxWidth="MaxWidth.Small"
+                  Class="d-flex align-items-center bg-transparent "
+                  Style="height: 100vh;">
+        <MudCard Class="p-5"
+                 Style="border-radius: 1rem;"
+                 Elevation="1"
+                 Square="false">
+            <MudCardHeader>
+                <MudGrid>
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h4">
+                            @_localizer["Page Not Found"]
+                        </MudText>
+                    </MudItem>
+                </MudGrid>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.body2">
+                            @_localizer["Sorry but page you were looking for doesn't existing. Please check spelling or navigate to default page."]
+                        </MudText>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           OnClick="NavigateToHome">
+                    @_localizer["Go To Home Page"]
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+
+    </MudContainer>
+</MudElement>
+@code {
+    private void NavigateToHome() => _navigationManager.NavigateTo("/");
+}
+

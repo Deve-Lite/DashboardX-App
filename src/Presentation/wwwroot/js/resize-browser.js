@@ -5,6 +5,10 @@ window.browserResize = {
     },
     subscribeToResizeEvent: function () {
         window.addEventListener("resize", browserResize.resized);
-        console.log("Subnscribed to resize event.");
+        console.log("Subscribed to resize event.");
+    },
+    unsubscribeToResizeEvent: function () {
+        window.removeEventListener("resize", browserResize.resized);
+        console.log("Unsubscribed to resize event.");
     },
 }

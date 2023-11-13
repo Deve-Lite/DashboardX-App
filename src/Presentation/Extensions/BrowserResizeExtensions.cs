@@ -14,4 +14,9 @@ public static class BrowserResizeExtensions
     {
        await _runitme.InvokeAsync<object>("browserResize.subscribeToResizeEvent");
     }
+
+    public static async Task UnsubscribeToResizeEvent(this IJSRuntime _runitme)
+    {
+        await _runitme.InvokeAsync<object>("browserResize.unsubscribeToResizeEvent");
+    }
 }

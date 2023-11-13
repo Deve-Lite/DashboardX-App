@@ -8,6 +8,8 @@
 @inject IPrefrenceService _preferenceService
 @inject IClientService _clientService
 
+@implements IAsyncDisposable
+
 <MudLayout Class="p-0 m-0 w-100 h-100">
     <MudThemeProvider IsDarkMode="@IsDarkMode" @ref="_mudThemeProvider" Theme="@AppTheme" />
     <MudSnackbarProvider />
@@ -18,9 +20,10 @@
             <CascadingValue Value="@Platform">
                 <AuthorizeView Roles="@($"{RolesConstraints.User}, {RolesConstraints.Admin}")">
                     <Authorized>
-                        <MudAppBar Elevation="1" Dense="@true" Color="Color.Primary" Style="padding: 0px;">
+                        @*TODO: It might be better to create per Platform AppBar*@
+                        <MudAppBar DisableGutters="true" Elevation="1" Dense="@true" Color="Color.Primary" Style="padding-left: 16px; padding-right: 16px; margin-left: 0px; margin-right: 0px;">
 
-                            <MudText Color="Color.Secondary" Typo="Typo.h6">
+                            <MudText Color="Color.Secondary" Typo="Typo.h6" Style="padding: 0px">
                                 @_localizer["DashboardX"]
                             </MudText>
 
@@ -40,6 +43,7 @@
                                    ClipMode="DrawerClipMode.Always"
                                    Anchor="@Anchor"
                                    Variant="@DrawerMode"
+                                   HtmlTag="nav"
                                    Elevation="1">
 
                             <MudNavMenu Class="pt-2">
@@ -78,7 +82,7 @@
                                                Class="progress-linear-under-appbar position-absolute" />
                         }
 
-                        <MudMainContent Style="height: 100vh;">
+                        <MudMainContent Style="@($"height: 100vh; margin-left: {Margin}")">
                             @Body
                         </MudMainContent>
                     </Authorized>
@@ -96,7 +100,6 @@
                                 @Body
                             </MudContainer>
                         </MudItem>
-
                     </NotAuthorized>
                 </AuthorizeView>
             </CascadingValue>
@@ -105,6 +108,11 @@
 </MudLayout>
 
 @code {
+
+    /// <summary>
+    /// Fixes problem of missing styles.
+    /// </summary>
+    private string Margin { get; set; } = "var(--mud-drawer-width-left)";
     private bool IsOpen { get; set; } = false;
     private bool IsDesktop { get; set; } = false;
     private bool IsLoading { get; set; } = false;
@@ -152,6 +160,12 @@
         await _mudThemeProvider!.WatchSystemPreference(OnSystemPreferenceChanged);
     }
 
+    public async ValueTask DisposeAsync()
+    {
+        BrowserResizeExtensions.OnResize -= BrowserResized;
+        await _runtime.UnsubscribeToResizeEvent();
+    }
+
     private Task OnSystemPreferenceChanged(bool newValue)
     {
         IsDarkMode = newValue;
@@ -176,6 +190,7 @@
             Platform = Platform.Desktop;
             Anchor = Anchor.Left;
             IsOpen = true;
+            Margin = "var(--mud-drawer-width-left)";
         }
         else if (JsRuntimeExtensions.IsMobile(width))
         {
@@ -183,6 +198,7 @@
             Platform = Platform.Mobile;
             Anchor = Anchor.Right;
             IsOpen = false;
+            Margin = "0px;";
         }
         else
         {
@@ -190,6 +206,7 @@
             Platform = Platform.Tablet;
             Anchor = Anchor.Left;
             IsOpen = false;
+            Margin = "var(--mud-drawer-width-mini-left)";
         }
 
         await InvokeAsync(StateHasChanged);
