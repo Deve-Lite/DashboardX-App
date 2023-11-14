@@ -9,7 +9,6 @@ public class PasswordConfirmValidator : BaseValidator<PasswordConfirm>
         RuleFor(x => x.Password)
             .NotEmpty()
             .MinimumLength(6)
-            .MaximumLength(30)
-            .Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$");
+            .MaximumLength(30);
     }
 }

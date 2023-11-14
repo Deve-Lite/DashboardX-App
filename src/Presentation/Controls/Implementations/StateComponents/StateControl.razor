@@ -5,23 +5,21 @@
 
 @if (Condition == StateControlCondition.None)
 {
-    <MudButton Variant="Variant.Filled"
+    <MudIconButton Variant="Variant.Filled"
                Class="@Class"
-               StartIcon="@Icons.Material.Filled.CloudOff"
+               Icon="@Icons.Material.Filled.CloudOff"
                OnClick="NotAvaliableToast"
                Color="Color.Warning">
-        @_localizer["Inaccessible"]
-    </MudButton>
+    </MudIconButton>
 }
 else
 {
-    <MudButton Variant="Variant.Filled"
+    <MudIconButton Variant="Variant.Filled"
                Class="@Class"
-               Style="@($"border: 2px solid {GetBorderBackgroundColor()}; background-color: {GetBackgroundColor()};")"
-               StartIcon="@GetIcon()"
+               Style="@($"border: 1px solid {GetBorderBackgroundColor()}; background-color: {GetBackgroundColor()};")"
+               Icon="@GetIcon()"
                OnClick="ActionAsync">
-        @GetName()
-    </MudButton>
+    </MudIconButton>
 }
 
 @code
@@ -76,18 +74,6 @@ else
             Condition = StateControlCondition.Unknown;
     }
 
-    public override string GetName()
-    {
-        Value = Client!.TopicService.LastMessageOnTopic(Client!.Id, Device!, Control!);
-
-        if (Control!.Attributes!.OffPayload == Value)
-            return _localizer["Off"];
-        else if (Control!.Attributes!.OnPayload == Value)
-            return _localizer["On"];
-
-        return _localizer["Unk"];
-    }
-
     public override string GetBackgroundColor()
     {
         if (!Control!.IsAvailable)
@@ -139,9 +125,9 @@ else
     public string GetIcon()
     {
         if (Control!.Attributes!.OffPayload == Value)
-            return Icons.Material.Filled.Cloud;
-        else if (Control!.Attributes!.OnPayload == Value)
             return Icons.Material.Filled.CloudQueue;
+        else if (Control!.Attributes!.OnPayload == Value)
+            return Icons.Material.Filled.Cloud;
 
         return IconUtils.GetIcon(Control.Icon.Name);
     }
