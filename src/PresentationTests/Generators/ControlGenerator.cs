@@ -4,8 +4,8 @@ namespace PresentationTests.Generators;
 
 internal class ControlGenerator
 {
-    private static Control? firstDeviceControl1;
-    public static Control FirstDeviceControl1()
+    private static ControlDTO? firstDeviceControl1;
+    public static ControlDTO FirstDeviceControl1()
     {
         if (firstDeviceControl1 == null)
         {
@@ -16,8 +16,8 @@ internal class ControlGenerator
         return firstDeviceControl1;
     }
 
-    private static Control? firstDeviceControl2;
-    public static Control FirstDeviceControl2()
+    private static ControlDTO? firstDeviceControl2;
+    public static ControlDTO FirstDeviceControl2()
     {
         if (firstDeviceControl2 == null)
         {
@@ -28,8 +28,8 @@ internal class ControlGenerator
         return firstDeviceControl2;
     }
 
-    private static Control? firstDeviceControl3;
-    public static Control FirstDeviceControl3()
+    private static ControlDTO? firstDeviceControl3;
+    public static ControlDTO FirstDeviceControl3()
     {
         if (firstDeviceControl3 == null)
         {
@@ -41,8 +41,8 @@ internal class ControlGenerator
     }
 
 
-    private static Control? secondDeviceControl1;
-    public static Control SecondDeviceControl1()
+    private static ControlDTO? secondDeviceControl1;
+    public static ControlDTO SecondDeviceControl1()
     {
         if (secondDeviceControl1 == null)
         {
@@ -53,8 +53,8 @@ internal class ControlGenerator
         return secondDeviceControl1;
     }
 
-    private static Control? secondDeviceControl2;
-    public static Control SecondDeviceControl2()
+    private static ControlDTO? secondDeviceControl2;
+    public static ControlDTO SecondDeviceControl2()
     {
         if (secondDeviceControl2 == null)
         {
@@ -65,8 +65,8 @@ internal class ControlGenerator
         return secondDeviceControl2;
     }
 
-    private static Control? secondDeviceControl3;
-    public static Control SecondDeviceControl3()
+    private static ControlDTO? secondDeviceControl3;
+    public static ControlDTO SecondDeviceControl3()
     {
         if (secondDeviceControl3 == null)
         {
@@ -77,17 +77,17 @@ internal class ControlGenerator
         return secondDeviceControl3;
     }
 
-    public static Control GenerateControl()
+    public static ControlDTO GenerateControl()
     {
         var iconFaker = new Faker<Icon>()
             .RuleFor(i => i.BackgroundHex, f => f.Internet.Color())
             .RuleFor(i => i.Name, f => f.Random.String(15));
 
-        return new Faker<Control>()
+        return new Faker<ControlDTO>()
             .RuleFor(b => b.Name, f => f.Company.CompanyName())
             .RuleFor(b => b.Topic, f => $"/{f.Random.String(0, 10)}")
             .RuleFor(b => b.Icon, iconFaker.Generate())
-            .RuleFor(b => b.Icon, iconFaker.Generate()).RuleFor(b => b.Id, Guid.NewGuid().ToString())
+            .RuleFor(b => b.Id, Guid.NewGuid().ToString())
             .Generate();
     }
 }

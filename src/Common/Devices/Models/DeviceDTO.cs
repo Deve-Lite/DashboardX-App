@@ -16,5 +16,4 @@ public class DeviceDTO : BaseModel
 
     [JsonPropertyName("basePath")]
     public string BaseDevicePath { get; set; } = string.Empty;
-
 }

@@ -10,7 +10,7 @@
 <MudDialog>
     <DialogContent>
         <MudForm @ref="Form"
-                 Model="@Control"
+                 Model="@Model"
                  Validation="@(Validator.ValidateValue)"
                  ValidationDelay="0"
                  Class="m-0 p-0 w-100">
@@ -20,18 +20,18 @@
 
                         <MudItem xs="3"
                                  Class="p-2 m-0">
-                            <IconSelector @bind-IconName="@Control.Icon.Name"
+                            <IconSelector @bind-IconName="@Model.Icon.Name"
                                           Label="Icon" />
                         </MudItem>
 
                         <MudItem xs="9"
                                  Class="p-2 m-0">
-                            <ColorSelector @bind-Value="@Control.Icon.BackgroundHex"
+                            <ColorSelector @bind-Value="@Model.Icon.BackgroundHex"
                                            Label="Device Theme" />
                         </MudItem>
 
                         <MudItem xs="12">
-                            <MudTextField @bind-Value="Control.Name"
+                            <MudTextField @bind-Value="Model.Name"
                                           T="string"
                                           Label="@_localizer["Name"]"
                                           Variant="Variant.Filled"
@@ -39,11 +39,11 @@
                                           Clearable="true"
                                           Class="p-0 m-0"
                                           HelperText="@_localizer["Provide meaningful name."]"
-                                          For="@(() => Control.Name)" />
+                                          For="@(() => Model.Name)" />
                         </MudItem>
 
                         <MudItem xs="12">
-                            <MudTextField @bind-Value="Control.Topic"
+                            <MudTextField @bind-Value="Model.Topic"
                                           T="string"
                                           Label="@_localizer["Topic"]"
                                           Variant="Variant.Filled"
@@ -51,13 +51,13 @@
                                           Clearable="true"
                                           Class="p-0 m-0"
                                           HelperText="@_localizer["Provide topic ({deviceBaseTopic}{controlTopic})."]"
-                                          For="@(() => Control.Topic)" />
+                                          For="@(() => Model.Topic)" />
                         </MudItem>
 
                         <MudItem xs="12">
-                            <MudSelect @bind-Value="Control.QualityOfService"
+                            <MudSelect @bind-Value="Model.QualityOfService"
                                        Label="@_localizer["Quality of service"]"
-                                       For="(() => Control.QualityOfService)"
+                                       For="(() => Model.QualityOfService)"
                                        Variant="Variant.Filled"
                                        AnchorOrigin="Origin.BottomCenter">
 
@@ -68,20 +68,20 @@
                         </MudItem>
 
                         <MudItem xs="12" sm="6">
-                            <MudSwitch @bind-Checked="Control.IsAvailable"
+                            <MudSwitch @bind-Checked="Model.IsAvailable"
                                        Label="@_localizer["Is Avaliable"]"
                                        Color="Color.Primary" />
                         </MudItem>
 
                         <MudItem xs="12" sm="6">
-                            <MudSwitch @bind-Checked="Control.DisplayName"
+                            <MudSwitch @bind-Checked="Model.DisplayName"
                                        Label="@_localizer["Display Name"]"
                                        LabelPosition="LabelPosition.End"
                                        Color="Color.Primary" />
                         </MudItem>
 
                         <MudItem xs="12">
-                            <MudSwitch @bind-Checked="Control.IsConfiramtionRequired"
+                            <MudSwitch @bind-Checked="Model.IsConfiramtionRequired"
                                        Label="@_localizer["Sending data requires confirmation"]"
                                        Color="Color.Primary" />
 
@@ -89,12 +89,12 @@
 
                         <MudItem xs="12">
                             <MudSelect Label="@_localizer["Control Type"]"
-                                       For="(() => Control.Type)"
+                                       For="(() => Model.Type)"
                                        Variant="Variant.Filled"
                                        AnchorOrigin="Origin.BottomCenter"
-                                       Disabled="@(!string.IsNullOrEmpty(Control.Id))"
+                                       Disabled="@(!string.IsNullOrEmpty(Model.Id))"
                                        T="ControlType"
-                                       Value="Control.Type"
+                                       Value="Model.Type"
                                        ValueChanged="TypeChanged">
 
                                 <MudSelectItem Value="ControlType.Text">@_localizer["Text (One Way Source)"]</MudSelectItem>
@@ -112,14 +112,14 @@
                             <MudProgressLinear Size="Size.Small" Color="Color.Tertiary" Rounded="true" Value="100" />
                         </MudItem>
 
-                        @if (Control.Type == ControlType.Button)
+                        @if (Model.Type == ControlType.Button)
                         {
                             <MudItem xs="12">
                                 <MudText> @_localizer["Button is simplest control sending payload to broker when clicked."] </MudText>
                             </MudItem>
 
                             <MudItem xs="12">
-                                <MudTextField @bind-Value="Control.Attributes.Payload"
+                                <MudTextField @bind-Value="Model.Attributes.Payload"
                                               T="string"
                                               Lines="5"
                                               OnlyValidateIfDirty="true"
@@ -127,11 +127,11 @@
                                               Variant="Variant.Filled"
                                               Label="@_localizer["Payload"]"
                                               HelperText="@_localizer["Provide payload to be send on click."]"
-                                              For="@(() => Control.Attributes.Payload)" />
+                                          For="@(() => Model.Attributes.Payload)" />
                             </MudItem>
 
                         }
-                        else if (Control.Type == ControlType.Switch)
+                        else if (Model.Type == ControlType.Switch)
                         {
                             <MudItem xs="12">
                                 <MudText>
@@ -140,7 +140,7 @@
                             </MudItem>
 
                             <MudItem xs="12">
-                                <MudTextField @bind-Value="Control.Attributes.OnPayload"
+                                <MudTextField @bind-Value="Model.Attributes.OnPayload"
                                               T="string"
                                               Lines="5"
                                               Label="@_localizer["On Payload"]"
@@ -148,11 +148,11 @@
                                               OnlyValidateIfDirty="true"
                                               Class="p-0 m-0"
                                               HelperText="@_localizer["Patyload to be send when on action is performed."]"
-                                              For="@(() => Control.Attributes.OnPayload)" />
+                                              For="@(() => Model.Attributes.OnPayload)" />
                             </MudItem>
 
                             <MudItem xs="12">
-                                <MudTextField @bind-Value="Control.Attributes.OffPayload"
+                                <MudTextField @bind-Value="Model.Attributes.OffPayload"
                                               T="string"
                                               Lines="5"
                                               Label="@_localizer["Off Payload"]"
@@ -160,11 +160,11 @@
                                               OnlyValidateIfDirty="true"
                                               Class="p-0 m-0"
                                               HelperText="@_localizer["Patyload to be send when off action is performed."]"
-                                              For="@(() => Control.Attributes.OffPayload)" />
+                                              For="@(() => Model.Attributes.OffPayload)" />
                             </MudItem>
 
                         }
-                        else if (Control.Type == ControlType.Slider)
+                        else if (Model.Type == ControlType.Slider)
                         {
                             <MudItem xs="12">
                                 <MudText>
@@ -173,27 +173,27 @@
                             </MudItem>
 
                             <MudItem xs="6">
-                                <MudNumericField @bind-Value="Control.Attributes.MinValue"
+                                <MudNumericField @bind-Value="Model.Attributes.MinValue"
                                                  T="double?"
                                                  Label="@_localizer["Slider Min"]"
                                                  OnlyValidateIfDirty="true"
                                                  HelperText="@_localizer["Minimal slider value."]"
                                                  Variant="Variant.Filled"
-                                                 For="@(() => Control.Attributes.MinValue)" />
+                                                 For="@(() => Model.Attributes.MinValue)" />
                             </MudItem>
 
                             <MudItem xs="6">
-                                <MudNumericField @bind-Value="Control.Attributes.MaxValue"
+                                <MudNumericField @bind-Value="Model.Attributes.MaxValue"
                                                  T="double?"
                                                  Label="@_localizer["Slider Max"]"
                                                  OnlyValidateIfDirty="true"
                                                  HelperText="@_localizer["Maximal slider value."]"
                                                  Variant="Variant.Filled"
-                                                 For="@(() => Control.Attributes.MaxValue)" />
+                                                 For="@(() => Model.Attributes.MaxValue)" />
                             </MudItem>
 
                             <MudItem xs="12">
-                                <MudTextField @bind-Value="Control.Attributes.PayloadTemplate"
+                                <MudTextField @bind-Value="Model.Attributes.PayloadTemplate"
                                               T="string"
                                               Lines="5"
                                               Label="@_localizer["Payload Template"]"
@@ -201,7 +201,7 @@
                                               OnlyValidateIfDirty="true"
                                               Class="p-0 m-0"
                                               HelperText="@_localizer["Provide payload to be send on click with inserted value."]"
-                                              For="@(() => Control.Attributes.PayloadTemplate)" />
+                                              For="@(() => Model.Attributes.PayloadTemplate)" />
                             </MudItem>
 
                             <MudItem xs="6">
@@ -210,7 +210,7 @@
                                 </MudButton>
                             </MudItem>
                         }
-                        else if (Control.Type == ControlType.Text)
+                        else if (Model.Type == ControlType.Text)
                         {
                             <MudItem xs="12">
                                 <MudText>
@@ -218,7 +218,7 @@
                                 </MudText>
                             </MudItem>
                         }
-                        else if (Control.Type == ControlType.Radio)
+                        else if (Model.Type == ControlType.Radio)
                         {
                             <MudItem xs="12">
                                 <MudText>
@@ -282,7 +282,7 @@
                                         </MudTd>
                                     </MudTr>
 
-                                    @foreach (var option in Control!.Attributes!.Payloads!)
+                                    @foreach (var option in Model!.Attributes!.Payloads!)
                                     {
                                         <MudTr Class="p-0 m-0">
                                             <MudTd>@option.Key</MudTd>
@@ -296,7 +296,7 @@
                                 </MudSimpleTable>
                             </MudItem>
                         }
-                        else if (Control.Type == ControlType.DateTime)
+                        else if (Model.Type == ControlType.DateTime)
                         {
                             <MudItem xs="12">
                                 <MudText>
@@ -305,7 +305,7 @@
                             </MudItem>
 
                             <MudItem xs="12">
-                                <MudTextField @bind-Value="Control.Attributes.PayloadTemplate"
+                                <MudTextField @bind-Value="Model.Attributes.PayloadTemplate"
                                               T="string"
                                               Lines="5"
                                               Label="@_localizer["Payload Template"]"
@@ -313,11 +313,11 @@
                                               OnlyValidateIfDirty="true"
                                               Class="p-0 m-0"
                                               HelperText="@_localizer["Provide payload to be send on click with inserted value."]"
-                                              For="@(() => Control.Attributes.PayloadTemplate)" />
+                                          For="@(() => Model.Attributes.PayloadTemplate)" />
                             </MudItem>
 
                             <MudItem xs="7">
-                                <MudSwitch @bind-Checked="Control.Attributes.SendAsTicks"
+                                <MudSwitch @bind-Checked="Model.Attributes.SendAsTicks"
                                            Label="@_localizer["Send Date as Ticks"]"
                                            Color="Color.Primary" />
                             </MudItem>
@@ -328,7 +328,7 @@
                                 </MudButton>
                             </MudItem>
                         }
-                        else if (Control.Type == ControlType.Color)
+                        else if (Model.Type == ControlType.Color)
                         {
                             <MudItem xs="12">
                                 <MudText>
@@ -337,7 +337,7 @@
                             </MudItem>
 
                             <MudItem xs="12">
-                                <MudTextField @bind-Value="Control.Attributes.PayloadTemplate"
+                                <MudTextField @bind-Value="Model.Attributes.PayloadTemplate"
                                               T="string"
                                               Lines="5"
                                               Label="@_localizer["Payload Template"]"
@@ -345,15 +345,15 @@
                                               OnlyValidateIfDirty="true"
                                               Class="p-0 m-0"
                                               HelperText="@_localizer["Provide payload to be send on click with inserted value."]"
-                                              For="@(() => Control.Attributes.PayloadTemplate)" />
+                                              For="@(() => Model.Attributes.PayloadTemplate)" />
                             </MudItem>
 
                             <MudItem xs="7">
-                                <MudSelect @bind-Value="Control.Attributes.ColorFormatEnum" 
+                                <MudSelect @bind-Value="Model.Attributes.ColorFormatEnum" 
                                         Label="@_localizer["Format Type"]"
                                            Variant="Variant.Filled"
                                            AnchorOrigin="Origin.BottomCenter"
-                                           Disabled="@(!string.IsNullOrEmpty(Control.Id))"
+                                           Disabled="@(!string.IsNullOrEmpty(Model.Id))"
                                            T="ColorFormat">
 
                                     <MudSelectItem Value="ColorFormat.HexRGB">@_localizer["Hex RGB (#FFFFFF)"]</MudSelectItem>
@@ -366,7 +366,7 @@
                                 </MudButton>
                             </MudItem>
                         }
-                        else if (Control.Type == ControlType.State)
+                        else if (Model.Type == ControlType.State)
                         {
                             <MudItem xs="12">
                                 <MudText>
@@ -375,7 +375,7 @@
                             </MudItem>
 
                             <MudItem xs="12">
-                                <MudTextField @bind-Value="Control.Attributes.OnPayload"
+                                <MudTextField @bind-Value="Model.Attributes.OnPayload"
                                               T="string"
                                               Lines="5"
                                               Label="@_localizer["On Payload"]"
@@ -383,11 +383,11 @@
                                               OnlyValidateIfDirty="true"
                                               Class="p-0 m-0"
                                               HelperText="@_localizer["When this payload is seen device is on."]"
-                                              For="@(() => Control.Attributes.OnPayload)" />
+                                              For="@(() => Model.Attributes.OnPayload)" />
                             </MudItem>
 
                             <MudItem xs="12">
-                                <MudTextField @bind-Value="Control.Attributes.OffPayload"
+                                <MudTextField @bind-Value="Model.Attributes.OffPayload"
                                               T="string"
                                               Lines="5"
                                               Label="@_localizer["Off Payload"]"
@@ -395,7 +395,7 @@
                                               OnlyValidateIfDirty="true"
                                               Class="p-0 m-0"
                                               HelperText="@_localizer["When this payload is seen device is off."]"
-                                              For="@(() => Control.Attributes.OffPayload)" />
+                                              For="@(() => Model.Attributes.OffPayload)" />
                             </MudItem>
 
                         }
@@ -426,8 +426,8 @@
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
 
+    public ControlDTO Model { get; set; } = new();
     public ControlValidator Validator = new();
-
     public MudForm RadioForm = new();
     public RadioOption RadioOptions = new();
     public RadioOptionValidator RadioValidator = new();
@@ -436,62 +436,65 @@
     {
         if (!string.IsNullOrEmpty(Control.Id))
         {
-            Control = Control.Copy();
+            Model = Control.Dto();
             StateHasChanged();
         }
+        else
+        {
+            Model = new ControlDTO(DeviceId);
+        }
 
-        Control.DeviceId = DeviceId;
         base.OnInitialized();
     }
 
     private void TypeChanged(ControlType typeSelected)
     {
-        Control.Type = typeSelected;
-        Control.Attributes = new();
+        Model.Type = typeSelected;
+        Model.Attributes = new();
 
         switch (typeSelected)
         {
             case ControlType.Slider:
-                Control.Attributes.PayloadTemplate = string.Empty;
-                Control.Attributes.MinValue = 0;
-                Control.Attributes.MaxValue = 100;
+                Model.Attributes.PayloadTemplate = string.Empty;
+                Model.Attributes.MinValue = 0;
+                Model.Attributes.MaxValue = 100;
                 break;
             case ControlType.Switch or ControlType.State:
-                Control.Attributes.OnPayload = string.Empty;
-                Control.Attributes.OffPayload = string.Empty;
+                Model.Attributes.OnPayload = string.Empty;
+                Model.Attributes.OffPayload = string.Empty;
                 break;
             case ControlType.Button:
-                Control.Attributes.Payload = string.Empty;
+                Model.Attributes.Payload = string.Empty;
                 break;
             case ControlType.Radio:
-                Control.Attributes.Payloads = new();
+                Model.Attributes.Payloads = new();
                 break;
             case ControlType.DateTime:
-                Control.Attributes.SendAsTicks = false;
-                Control.Attributes.PayloadTemplate = string.Empty;
+                Model.Attributes.SendAsTicks = false;
+                Model.Attributes.PayloadTemplate = string.Empty;
                 break;
             case ControlType.Color:
-                Control.Attributes.PayloadTemplate = string.Empty;
-                Control.Attributes.ColorFormatEnum = ColorFormat.HexRGB;
+                Model.Attributes.PayloadTemplate = string.Empty;
+                Model.Attributes.ColorFormatEnum = ColorFormat.HexRGB;
                 break;
             default:
                 break;
         }
+
+        StateHasChanged();
     }
 
     private async Task SubmitAsync()
     {
-        Control.DeviceId = DeviceId;
-
         if (IsLoading)
             return;
 
         await Form.Validate();
 
-        if(Control.Type == ControlType.Radio)
+        if(Model.Type == ControlType.Radio)
         {
             RadioOptions = new();
-            var validationResult = await Validator.ValidateAsync(Control);
+            var validationResult = await Validator.ValidateAsync(Model);
 
             if (!validationResult.IsValid)
                 return;
@@ -506,10 +509,10 @@
 
         IResult result = Result.Fail();
 
-        if (string.IsNullOrEmpty(Control.Id))
-            result = await _controlService.CreateControl(ClientId, Control);
+        if (string.IsNullOrEmpty(Model.Id))
+            result = await _controlService.CreateControl(ClientId, Model);
         else
-            result = await _controlService.UpdateControl(ClientId, Control);
+            result = await _controlService.UpdateControl(ClientId, Model);
 
         var success = RequestHelpers.InvokeAfterRequest(_snackbar, result, _localizer["Successfully updated control."]);
 
@@ -528,39 +531,39 @@
         if (!RadioForm.IsValid)
             return;
 
-        if (Control!.Attributes!.Payloads!.ContainsKey(RadioOptions.Name))
+        if (Model!.Attributes!.Payloads!.ContainsKey(RadioOptions.Name))
         {
             _snackbar.Add(_localizer["This option already exists."], Severity.Warning);
             return;
         }
 
-        if (Control!.Attributes!.Payloads!.ContainsValue(RadioOptions.Payload))
+        if (Model!.Attributes!.Payloads!.ContainsValue(RadioOptions.Payload))
         {
             _snackbar.Add(_localizer["This payload already is used."], Severity.Warning);
             return;
         }
 
-        Control!.Attributes!.Payloads!.Add(RadioOptions.Name, RadioOptions.Payload);
+        Model!.Attributes!.Payloads!.Add(RadioOptions.Name, RadioOptions.Payload);
         RadioOptions = new();
     }
 
     private void EditOption(string name)
     {
-        var payload = Control!.Attributes!.Payloads![name];
+        var payload = Model!.Attributes!.Payloads![name];
 
         RadioOptions.Name = name;
         RadioOptions.Payload = payload;
 
-        Control!.Attributes!.Payloads!.Remove(name);
+        Model!.Attributes!.Payloads!.Remove(name);
     }
 
     private void RemoveOption(string name)
     {
-        Control!.Attributes!.Payloads!.Remove(name);
+        Model!.Attributes!.Payloads!.Remove(name);
     }
 
     private void InsertMapping()
     {
-        Control.Attributes.PayloadTemplate += "$value";
+        Model.Attributes.PayloadTemplate += "$value";
     }
 }

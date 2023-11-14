@@ -63,7 +63,7 @@ internal class ControlServiceTests : BaseServiceTest
 
         control.Name = newDisplayName;
 
-        var result = await ControlService.UpdateControl(device.BrokerId, control);
+        var result = await ControlService.UpdateControl(device.BrokerId, control.Dto());
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Succeeded);

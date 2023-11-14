@@ -1,6 +1,4 @@
-﻿using Common.Controls.Models;
-
-namespace Common.Devices.Models;
+﻿namespace Common.Devices.Models;
 
 public class Device : BaseModel
 {

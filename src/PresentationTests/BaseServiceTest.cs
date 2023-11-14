@@ -31,15 +31,15 @@ public class BaseServiceTest
         await FetchDeviceService.CreateDevice(DeviceDtoGenerator.FirstDevice());
         await FetchDeviceService.CreateDevice(DeviceDtoGenerator.SecondDevice());
 
-        var listOfControls = new List<List<Control>>()
+        var listOfControls = new List<List<ControlDTO>>()
         {
-            new List<Control>()
+            new List<ControlDTO>()
             {
                 ControlGenerator.FirstDeviceControl1(),
                 ControlGenerator.FirstDeviceControl2(),
                 ControlGenerator.FirstDeviceControl3(),
             },
-            new List<Control>()
+            new List<ControlDTO>()
             {
                 ControlGenerator.SecondDeviceControl1(),
                 ControlGenerator.SecondDeviceControl2(),
