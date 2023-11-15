@@ -24,15 +24,8 @@
 
         <MudGrid Class="m-0 p-3 w-100">
 
-            <MudItem xs="12" Class="p-0 pt-3 pb-3 m-0 mt-1">
-
-                <MudButton OnClick="async() => await _runtime.GoBack()"
-                           Color="Color.Dark"
-                           Variant="Variant.Filled"
-                           StartIcon="@Icons.Material.Filled.ArrowBackIos">
-                    @_localizer["Back"]
-                </MudButton>
-                @*TODO: Bread Crumb*@
+            <MudItem xs="12" Class="p-0 m-0">
+                <Breadcrumbs BreadcrumbItems="@BreadcrumbItems" />
             </MudItem>
 
             <MudItem xs="12" sm="12" md="9" lg="7" xl="5" xxl="4" Class="p-0 m-0 pt-4 pb-5 mud-w-auto">
@@ -152,7 +145,7 @@
                     @foreach (var device in Client!.GetDevices())
                     {
                         <MudListItem Class="d-flex m-0 p-0 pt-1 pb-1 align-items-center justify-content-center"
-                                 Href="@($"/devices/{device.Id}/{BrokerId}")">
+                                 Href="@($"/devices/{device.Id}/client/{BrokerId}")">
                             <MudGrid Class="w-100 p-0 m-0">
                                 <MudItem xs="1" Class="d-flex p-0 m-0 align-items-center justify-content-center">
 
@@ -205,6 +198,7 @@
 
 @code
 {
+
     [Parameter]
     public string BrokerId { get; set; } = string.Empty;
 
@@ -213,7 +207,15 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadPage();
+        
+        BreadcrumbItems = new()
+        {
+            new BreadcrumbItem("Brokers", href: "/brokers"),
+            new BreadcrumbItem($"{Client!.GetBroker().Name}", href: $"/brokers/{Client!.GetBroker().Id}"),
+        };
+
         await base.OnInitializedAsync();
+
     }
 
     public async Task LoadPage()
@@ -255,10 +257,5 @@
     {
         StateHasChanged();
         return Task.CompletedTask;
-    }
-
-    public void NavigateToDevice(Device device)
-    {
-        _navigationManager.NavigateTo($"/devices/{device.Id}/{BrokerId}");
     }
 }

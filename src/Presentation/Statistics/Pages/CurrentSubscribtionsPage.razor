@@ -1,0 +1,99 @@
+﻿@page "/statistics/subscribtions"
+@using Presentation.Statistics.Models;
+
+@inject IClientService _clientService
+
+@inherits BasePage
+
+<PageLoading FailedToLoad="!LoadedSuccessfully">
+    <LoadedContent>
+        <MudGrid Class="m-0 p-3 w-100">
+            <MudItem xs="12" Class="p-0 m-0">
+                <Breadcrumbs BreadcrumbItems="@BreadcrumbItems" />
+            </MudItem>
+
+            <MudItem xs="12" Class="m-0 p-0 pt-4 pb-5">
+                <MudTable Hover="true" Breakpoint="Breakpoint.Xs" Height="500px" FixedHeader="true"
+                          Items="@TopicInformations"
+                          GroupBy="@_groupDefinition"
+                          GroupHeaderStyle="background-color:var(--mud-palette-background-grey)"
+                          GroupFooterClass="mb-4"
+                          Dense="true"
+                          @ref="_tableRef">
+                    <HeaderContent>
+                        <MudTh>Topic</MudTh>
+                        <MudTh>Value</MudTh>
+                    </HeaderContent>
+                    <GroupHeaderTemplate>
+                        <MudTh colspan="2">@($"{context.Key}") </MudTh>
+                    </GroupHeaderTemplate>
+                    <RowTemplate>
+                        <MudTd DataLabel="Topic">@context.Topic</MudTd>
+                        <MudTd DataLabel="Value">@context.Value</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudItem>
+        </MudGrid>
+    </LoadedContent>
+</PageLoading>
+
+@code {
+
+    private MudTable<SubscribedTopicInformation> _tableRef;
+    private IList<SubscribedTopicInformation> TopicInformations { get; set; } = new List<SubscribedTopicInformation>();
+
+    public CurrentSubscribtionsPage()
+    {
+        BreadcrumbItems = new()
+        {
+            new BreadcrumbItem("Current Subsribtions", href: "/statistics/subscribtions"),
+        };
+    }
+
+    private TableGroupDefinition<SubscribedTopicInformation> _groupDefinition = new()
+        {
+            GroupName="",
+            Indentation = false,
+            Expandable = true,
+            IsInitiallyExpanded = true,
+            Selector = (e) => $"{e.BrokerName} - {e.DeviceName}"
+        };
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (_loadingService.IsLoading)
+            return;
+
+        _loadingService.ShowLoading();
+
+        var result = await _clientService.GetClients();
+        if (result.Succeeded)
+        {
+            foreach (var client in result.Data)
+                foreach (var device in client.GetDevices())
+                {
+                    var controls = client.GetControls(device.Id);
+
+                    foreach (var control in controls)
+                        TopicInformations.Add(new SubscribedTopicInformation(
+                            client.GetBroker().Name,
+                            device.Name,
+                            control.GetTopic(device),
+                            client.TopicService.LastMessageOnTopic(client.Id, device, control)));
+                    
+
+                }
+            
+
+            LoadedSuccessfully = true;
+        }
+
+        if (result.ShowToast)
+            foreach (var message in result.Messages)
+                _snackbar.Add(message, result.Severity);
+
+        _loadingService.HideLoading();
+    }
+
+
+}

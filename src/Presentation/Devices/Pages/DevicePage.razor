@@ -1,4 +1,4 @@
-﻿@page "/devices/{DeviceId}/{ClientId}"
+﻿@page "/devices/{DeviceId}/client/{ClientId}"
 @using Presentation.Brokers
 @using Presentation.Controls.Dialogs
 @using Presentation.Controls;
@@ -17,25 +17,13 @@
         <RefreshPageButton RefreshPage="LoadPage" />
     </FailedToLoadContent>
     <LoadedContent>
+
+        <AddButton OnClick="AddControl"
+                   Class="add-wrapper" />
+
         <MudGrid Class="m-0 p-3 w-100">
-            <MudItem xs="6" Class="p-0 pt-3 pb-3 m-0">
-                <MudButton OnClick="async() => await _runtime.GoBack()"
-                           Color="Color.Dark"
-                           Variant="Variant.Filled"
-                           StartIcon="@Icons.Material.Filled.ArrowBackIos">
-                    @_localizer["Back"]
-                </MudButton>
-            </MudItem>
-
-            <MudItem xs="6" Class="d-flex p-0 pt-3 pb-3 m-0 justify-content-end">
-
-                <MudButton OnClick="AddControl"
-                           Color="Color.Primary"
-                           Variant="Variant.Filled"
-                           StartIcon="@Icons.Material.Filled.AddToQueue">
-                    @_localizer["Add Control"]
-                </MudButton>
-
+            <MudItem xs="12" Class="p-0 m-0">
+                <Breadcrumbs BreadcrumbItems="@BreadcrumbItems" />
             </MudItem>
 
             <MudItem xs="12" sm="12" md="9" lg="7" xl="5" xxl="4"
@@ -160,9 +148,18 @@
 
     private StateControl? StateControl;
 
+
     protected override async Task OnInitializedAsync()
     {
         await LoadPage();
+
+        BreadcrumbItems = new()
+        {
+            new BreadcrumbItem("Brokers", href: "/brokers"),
+            new BreadcrumbItem($"{Client!.GetBroker().Name}", href: $"/brokers/{Client!.GetBroker().Id}"),
+            new BreadcrumbItem($"{Device.Name}", href: $"devices/{Device.Id}/client/{Client!.GetBroker().Id}", true),
+        };
+
         await base.OnInitializedAsync();
     }
 

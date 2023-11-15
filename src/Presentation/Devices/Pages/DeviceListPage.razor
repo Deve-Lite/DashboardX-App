@@ -19,8 +19,8 @@
 
         <MudGrid Class="m-0 p-3 w-100">
 
-            <MudItem xs="12" Class="p-0 pt-3 pb-3 m-0">
-                @*TODO: Bread Crumb*@
+            <MudItem xs="12" Class="p-0 m-0">
+                <Breadcrumbs BreadcrumbItems="@BreadcrumbItems" />
             </MudItem>
 
             <MudItem Class="p-0 pt-2" xs="12">
@@ -64,7 +64,7 @@
                         @foreach (var device in client.GetDevices())
                         {
                             <MudListItem Class="d-flex m-0 p-0 pt-1 pb-1 align-items-center justify-content-center"
-                                 Href="@($"/devices/{device.Id}/{client.Id}")">
+                                 Href="@($"/devices/{device.Id}/client/{client.Id}")">
 
                                 <MudGrid Class="w-100 p-0 m-0">
                                     <MudItem xs="1" Class="d-flex p-0 m-0 align-items-center justify-content-center">
@@ -118,6 +118,14 @@
 @code
 {
     private IList<IClient> Clients { get; set; } = new List<IClient>();
+
+    public DeviceListPage()
+    {
+        BreadcrumbItems = new()
+        {
+            new BreadcrumbItem("Devices", href: "/devices"),
+        };
+    }
 
     protected override async Task OnInitializedAsync()
     {

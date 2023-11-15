@@ -17,7 +17,9 @@
 
         <MudGrid Class="m-0 p-3 w-100">
 
-            <MudItem xs="12"> @*TODO: Bread Crumb*@ </MudItem>
+            <MudItem xs="12" Class="p-0 m-0">
+                <Breadcrumbs BreadcrumbItems="@BreadcrumbItems" />
+            </MudItem>
 
             <MudItem Class="p-0" xs="12">
                 <MudList Class="p-0 m-0"
@@ -112,6 +114,14 @@
 @code 
 {
     private IList<IClient> Clients { get; set; } = new List<IClient>();
+
+    public BrokerListPage()
+    {
+        BreadcrumbItems = new()
+        {
+            new BreadcrumbItem("Brokers", href: "/brokers"),
+        };
+    }
 
     protected override async Task OnInitializedAsync()
     {

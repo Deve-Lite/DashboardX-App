@@ -1,4 +1,4 @@
-﻿@page "/user"
+﻿@page "/user/settings"
 @using Presentation.Users.Dialogs;
 @using Presentation.Utils;
 
@@ -13,6 +13,10 @@
     </FailedToLoadContent>
     <LoadedContent>
         <MudGrid Class="m-0 p-3 w-100">
+            <MudItem xs="12" Class="p-0 m-0">
+                <Breadcrumbs BreadcrumbItems="@BreadcrumbItems" />
+            </MudItem>
+
             <MudItem xs="12" Class="d-flex p-0 m-0 justify-content-center">
                 <MudCard Elevation="5" Class="p-3" Style="display: inline-block;">
                     <MudCardContent>
@@ -110,12 +114,18 @@
     </LoadedContent>
 </PageLoading>
 
-
-
 @code {
 
     public User User { get; set; } = new();
     private Preferences Preferences = new();
+
+    public SettingsPage()
+    {
+        BreadcrumbItems = new()
+        {
+            new BreadcrumbItem("Settings", href: "/user/settings"),
+        };
+    }
 
     protected override async Task OnInitializedAsync()
     {
