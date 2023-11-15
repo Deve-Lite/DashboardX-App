@@ -124,17 +124,9 @@
 
                             <MudItem xs="12"
                                      Class="p-1 m-0">
-                                <MudTextField @bind-Value="CredentialsModel.Password"
-                                              Label="@_localizer["Password"]"
-                                              Variant="Variant.Filled"
-                                              OnlyValidateIfDirty="true"
-                                              Clearable="true"
-                                              Class="p-0 m-0"
-                                              For="@(() => CredentialsModel.Password)"
-                                              InputType="@_passwordInput"
-                                              Adornment="Adornment.End"
-                                              AdornmentIcon="@_passwordInputIcon"
-                                              OnAdornmentClick="TogglePasswordVisibility" />
+                                <PasswordTextField @bind-Value="CredentialsModel.Password"
+                                               Label="@_localizer["Password"]"
+                                               For="@(() => CredentialsModel.Password)" />
                             </MudItem>
                         }
                     </MudGrid>
@@ -160,6 +152,7 @@
     [Parameter]
     public BrokerDTO Model { get; set; } = new();
 
+    private bool ShowAuthorizationFields { get; set; }
     private BrokerCredentialsDTO CredentialsModel { get; set; } = new();
     private MudForm CredentialsForm = new();
     private BrokerValidator BrokerValidator = new();
@@ -241,30 +234,4 @@
 
         Dialog!.Close(DialogResult.Ok(result));
     }
-
-
-    #region Form
-
-    private bool ShowAuthorizationFields { get; set; } = false;
-    private bool _passwordVisibility;
-    private InputType _passwordInput = InputType.Password;
-    private string _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
-
-    private void TogglePasswordVisibility()
-    {
-        if (_passwordVisibility)
-        {
-            _passwordVisibility = false;
-            _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
-            _passwordInput = InputType.Password;
-        }
-        else
-        {
-            _passwordVisibility = true;
-            _passwordInputIcon = Icons.Material.Filled.Visibility;
-            _passwordInput = InputType.Text;
-        }
-    }
-
-    #endregion
 }
