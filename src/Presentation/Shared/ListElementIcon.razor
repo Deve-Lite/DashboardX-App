@@ -1,9 +1,9 @@
 ﻿@using Presentation.Utils;
 <MudPaper Elevation="5" 
-          Class="@($"{Padding} m-0 rounded-circle")"
+          Class="icon-wrapper"
           Style="@($"background-color: {GetBackgroundColor()};")">
-    <MudIcon Class="p-0 m-0"
-             Size="IconSize"
+    <MudIcon Class="icon"
+            
              Icon="@IconUtils.GetIcon(Icon?.Name!)"/>
 </MudPaper>
 
@@ -11,11 +11,5 @@
 {
     [Parameter]
     public Icon Icon { get; set; } = new();
-    [Parameter]
-    public Size IconSize { get; set; } = Size.Medium;
-
-    public string Padding { get; set; } = "p-2";
-    public string DefaultColor { get; set; } = string.Empty;
-
     public string GetBackgroundColor() => string.IsNullOrEmpty(Icon.BackgroundHex) ? ThemeColors.ColorPrimary : Icon.BackgroundHex;
 }

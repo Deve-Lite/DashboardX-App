@@ -37,3 +37,16 @@
 .dim-background:hover::before {
     opacity: 1;
 }
+
+
+@media (max-width: 1280px) {
+    .ignore-tablet {
+        display:none;
+    }
+}
+
+@media (max-width: 600px) {
+    .ignore-mobile {
+        display: none;
+    }
+}

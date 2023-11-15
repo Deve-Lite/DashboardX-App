@@ -1,0 +1,51 @@
+﻿.icon-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+    border-radius: 25% !important;
+    margin: 0;
+}
+
+.icon {
+    font-size: 2rem !important;
+    margin: 0;
+    padding: 0;
+}
+
+@media screen and (max-width: 1280px) {
+    .icon {
+        font-size: 1.75rem !important;
+        margin: 0;
+        padding: 0;
+    }
+
+    .icon-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 2rem !important;
+        height: 2rem !important;
+        border-radius: 25% !important;
+        margin: 0;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .icon {
+        font-size: 1.25rem !important;
+        margin: 0;
+        padding: 0;
+    }
+
+    .icon-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 1.5rem !important;
+        height: 1.5rem !important;
+        border-radius: 25% !important;
+        margin: 0;
+    }
+}

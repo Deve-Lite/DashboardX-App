@@ -2,8 +2,8 @@
 
 public static class JsRuntimeExtensions
 {
-    private const int MaxMobileScreenWidth = 768;
-    private const int MinDesktopScreenWidth = 1440;
+    private const int MaxMobileScreenWidth = 600;
+    private const int MinDesktopScreenWidth = 1280;
 
     public static async Task<int> GetScreenWidth(this IJSRuntime runtime)
         => await runtime.InvokeAsync<int>("window.getScreenWidth");
