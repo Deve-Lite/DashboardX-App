@@ -11,20 +11,13 @@
         <RefreshPageButton RefreshPage="LoadPage" />
     </FailedToLoadContent>
     <LoadedContent>
+
+        <AddButton OnClick="() => BrokerPagesUtils.AddBroker(_dialogService, StateHasChanged, _localizer)"
+                   Class="add-wrapper" />
+
         <MudGrid Class="m-0 p-3 w-100">
 
-            <MudItem xs="7"> </MudItem>
-            <MudItem xs="5" Class="d-flex justify-content-end">
-
-                <MudButton OnClick="() => BrokerPagesUtils.AddBroker(_dialogService, StateHasChanged, _localizer)"
-                           Color="Color.Primary"
-                           Variant="Variant.Filled"
-                           StartIcon="@Icons.Material.Filled.AddToQueue">
-                    @_localizer["Add Broker"]
-                </MudButton>
-
-
-            </MudItem>
+            <MudItem xs="12"> @*TODO: Bread Crumb*@ </MudItem>
 
             <MudItem Class="p-0" xs="12">
                 <MudList Class="p-0 m-0"
@@ -68,8 +61,7 @@
                                      Href="@($"/brokers/{client.Id}")">
                             <MudGrid Class="w-100 p-0 m-0">
                                 <MudItem xs="1" Class="d-flex m-0 p-0 align-items-center justify-content-center">
-                                    <ListElementIcon Icon="@client!.GetBroker().Icon"
-                                                 IconSize="Size.Medium" />
+                                    <ListElementIcon Icon="@client!.GetBroker().Icon"/>
                                 </MudItem>
                                 <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-start">
                                     <MudText>

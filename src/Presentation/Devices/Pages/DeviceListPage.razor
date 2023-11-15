@@ -12,21 +12,15 @@
         <RefreshPageButton RefreshPage="LoadPage" />
     </FailedToLoadContent>
     <LoadedContent>
+
+        <AddButton OnClick="() => DevicePagesUtils.AddDevice(StateHasChanged, _dialogService, _localizer)"
+                   Class="add-wrapper"/>
+
+
         <MudGrid Class="m-0 p-3 w-100">
 
-            <MudItem xs="7" Class="p-0 pt-3 pb-3 m-0">
-
-            </MudItem>
-
-            <MudItem xs="5" Class="d-flex p-0 pt-3 pb-3 m-0 justify-content-end">
-
-                <MudButton OnClick="() => DevicePagesUtils.AddDevice(StateHasChanged, _dialogService, _localizer)"
-                           Color="Color.Primary"
-                           Variant="Variant.Filled"
-                           StartIcon="@Icons.Material.Filled.AddToQueue">
-                    @_localizer["Add Device"]
-                </MudButton>
-
+            <MudItem xs="12" Class="p-0 pt-3 pb-3 m-0">
+                @*TODO: Bread Crumb*@
             </MudItem>
 
             <MudItem Class="p-0 pt-2" xs="12">
@@ -70,13 +64,12 @@
                         @foreach (var device in client.GetDevices())
                         {
                             <MudListItem Class="d-flex m-0 p-0 pt-1 pb-1 align-items-center justify-content-center"
-                                         Href="@($"/devices/{device.Id}/{client.Id}")">
+                                 Href="@($"/devices/{device.Id}/{client.Id}")">
 
                                 <MudGrid Class="w-100 p-0 m-0">
                                     <MudItem xs="1" Class="d-flex p-0 m-0 align-items-center justify-content-center">
 
-                                        <ListElementIcon Icon="@device.Icon"
-                                                     IconSize="Size.Medium" />
+                                        <ListElementIcon Icon="@device.Icon" />
                                     </MudItem>
                                     <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-start">
                                         <MudText Class="hide-overlapping-text">
@@ -95,19 +88,19 @@
                                     </MudItem>
                                     <MudItem xs="3" Class="d-flex m-0 p-0 align-items-center justify-content-center">
                                         <StateControl Client="client"
-                                                      Device="device"
-                                                      RerenderPage="StateHasChanged" />
+                                              Device="device"
+                                              RerenderPage="StateHasChanged" />
                                     </MudItem>
                                     <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-evenly">
                                         <MudIconButton Class="z-10"
-                                                       Icon="@IconUtils.DefaultEditIcon"
-                                                       OnClick="() => DevicePagesUtils.UpdateDevice(device, _dialogService, StateHasChanged, _localizer)">
+                                               Icon="@IconUtils.DefaultEditIcon"
+                                               OnClick="() => DevicePagesUtils.UpdateDevice(device, _dialogService, StateHasChanged, _localizer)">
 
                                         </MudIconButton>
 
                                         <MudIconButton Class="z-10"
-                                                       Icon="@IconUtils.DefaultRemoveIcon"
-                                                       OnClick="() => DevicePagesUtils.RemoveDevice(device, _dialogService, _localizer, _navigationManager, _runtime)">
+                                               Icon="@IconUtils.DefaultRemoveIcon"
+                                               OnClick="() => DevicePagesUtils.RemoveDevice(device, _dialogService, _localizer, _navigationManager, _runtime)">
 
                                         </MudIconButton>
                                     </MudItem>

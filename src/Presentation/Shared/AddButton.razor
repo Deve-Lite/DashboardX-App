@@ -1,0 +1,14 @@
+﻿@inherits MudBaseButton
+
+<MudButton Class="@Class"
+           OnClick="@OnClick"
+           Variant="Variant.Filled"
+           Color="Color.Primary">
+    <MudIcon Class="add-icon"
+             Icon="@AddIcon" />
+</MudButton>
+
+@code {
+    [Parameter]
+    public string AddIcon { get; set; } = @Icons.Material.Filled.Add;
+}

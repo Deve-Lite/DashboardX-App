@@ -18,9 +18,13 @@
         <RefreshPageButton RefreshPage="LoadPage" />
     </FailedToLoadContent>
     <LoadedContent>
+
+        <AddButton OnClick="() => DevicePagesUtils.AddDevice(StateHasChanged, _dialogService, _localizer, Client!.Id)"
+                   Class="add-wrapper" />
+
         <MudGrid Class="m-0 p-3 w-100">
 
-            <MudItem xs="6" Class="p-0 pt-3 pb-3 m-0 mt-1">
+            <MudItem xs="12" Class="p-0 pt-3 pb-3 m-0 mt-1">
 
                 <MudButton OnClick="async() => await _runtime.GoBack()"
                            Color="Color.Dark"
@@ -28,17 +32,7 @@
                            StartIcon="@Icons.Material.Filled.ArrowBackIos">
                     @_localizer["Back"]
                 </MudButton>
-
-            </MudItem>
-            <MudItem xs="6" Class="d-flex p-0 pt-3 pb-3 m-0 justify-content-end">
-
-                <MudButton OnClick="() => DevicePagesUtils.AddDevice(StateHasChanged, _dialogService, _localizer, Client!.Id)"
-                           Color="Color.Primary"
-                           Variant="Variant.Filled"
-                           StartIcon="@Icons.Material.Filled.AddToQueue">
-                    @_localizer["Add Device"]
-                </MudButton>
-
+                @*TODO: Bread Crumb*@
             </MudItem>
 
             <MudItem xs="12" sm="12" md="9" lg="7" xl="5" xxl="4" Class="p-0 m-0 pt-4 pb-5 mud-w-auto">
@@ -158,12 +152,11 @@
                     @foreach (var device in Client!.GetDevices())
                     {
                         <MudListItem Class="d-flex m-0 p-0 pt-1 pb-1 align-items-center justify-content-center"
-                                     Href="@($"/devices/{device.Id}/{BrokerId}")">
+                                 Href="@($"/devices/{device.Id}/{BrokerId}")">
                             <MudGrid Class="w-100 p-0 m-0">
                                 <MudItem xs="1" Class="d-flex p-0 m-0 align-items-center justify-content-center">
 
-                                    <ListElementIcon Icon="@device.Icon"
-                                                 IconSize="Size.Medium" />
+                                    <ListElementIcon Icon="@device.Icon" />
 
                                 </MudItem>
                                 <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-start">
@@ -188,14 +181,14 @@
                                 </MudItem>
                                 <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-evenly">
                                     <MudIconButton Class="z-10"
-                                                   Icon="@IconUtils.DefaultEditIcon"
-                                                   OnClick="() => DevicePagesUtils.UpdateDevice(device, _dialogService, StateHasChanged, _localizer)">
+                                               Icon="@IconUtils.DefaultEditIcon"
+                                               OnClick="() => DevicePagesUtils.UpdateDevice(device, _dialogService, StateHasChanged, _localizer)">
 
                                     </MudIconButton>
 
                                     <MudIconButton Class="z-10"
-                                                   Icon="@IconUtils.DefaultRemoveIcon"
-                                                   OnClick="() => DevicePagesUtils.RemoveDevice(device, _dialogService, _localizer, _navigationManager, _runtime)">
+                                               Icon="@IconUtils.DefaultRemoveIcon"
+                                               OnClick="() => DevicePagesUtils.RemoveDevice(device, _dialogService, _localizer, _navigationManager, _runtime)">
 
                                     </MudIconButton>
                                 </MudItem>
