@@ -2,7 +2,7 @@
 @using Presentation.Statistics.Models;
 
 @inject IClientService _clientService
-
+@inject IStringLocalizer<CurrentSubscribtionsPage> _localizer
 @inherits BasePage
 
 <PageLoading FailedToLoad="!LoadedSuccessfully">
@@ -13,23 +13,30 @@
             </MudItem>
 
             <MudItem xs="12" Class="m-0 p-0 pt-4 pb-5">
-                <MudTable Hover="true" Breakpoint="Breakpoint.Xs" Height="500px" FixedHeader="true"
+                <MudTable Hover="true"
+                          Breakpoint="Breakpoint.Xs"  
+                          FixedHeader="true"
                           Items="@TopicInformations"
                           GroupBy="@_groupDefinition"
                           GroupHeaderStyle="background-color:var(--mud-palette-background-grey)"
                           GroupFooterClass="mb-4"
                           Dense="true"
                           @ref="_tableRef">
+                    <ColGroup>
+                        <col style="width: 60px;" />
+                        <col />
+                        <col />
+                    </ColGroup>
                     <HeaderContent>
-                        <MudTh>Topic</MudTh>
-                        <MudTh>Value</MudTh>
+                        <MudTh Class="ellipsis">@_localizer["Topic"]</MudTh>
+                        <MudTh>@_localizer["Value"]</MudTh>
                     </HeaderContent>
                     <GroupHeaderTemplate>
-                        <MudTh colspan="2">@($"{context.Key}") </MudTh>
+                        <MudTh colspan="2"> @($"{context.GroupName}: {context.Key}")</MudTh>
                     </GroupHeaderTemplate>
                     <RowTemplate>
-                        <MudTd DataLabel="Topic">@context.Topic</MudTd>
-                        <MudTd DataLabel="Value">@context.Value</MudTd>
+                            <MudTd Class="ellipsis" DataLabel="@_localizer["Topic"]">@context.Topic</MudTd>
+                            <MudTd DataLabel="@_localizer["Value"]">@context.Value</MudTd>
                     </RowTemplate>
                 </MudTable>
             </MudItem>
@@ -52,10 +59,10 @@
 
     private TableGroupDefinition<SubscribedTopicInformation> _groupDefinition = new()
         {
-            GroupName="",
+            GroupName="Device",
             Indentation = false,
             Expandable = true,
-            IsInitiallyExpanded = true,
+            IsInitiallyExpanded = false,
             Selector = (e) => $"{e.BrokerName} - {e.DeviceName}"
         };
 
@@ -80,11 +87,7 @@
                             device.Name,
                             control.GetTopic(device),
                             client.TopicService.LastMessageOnTopic(client.Id, device, control)));
-                    
-
                 }
-            
-
             LoadedSuccessfully = true;
         }
 

@@ -38,6 +38,11 @@
     opacity: 1;
 }
 
+.ellipsis {
+    width: 400px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
 .add-wrapper {
     position: absolute !important;
@@ -64,6 +69,11 @@
 }
 
 @media screen and (max-width: 1280px) {
+
+    .ellipsis {
+        width: 300px;
+    }
+
     .add-icon {
         font-size: 2.5rem !important;
         margin: 0;
@@ -77,6 +87,11 @@
 }
 
 @media screen and (max-width: 600px) {
+
+    .ellipsis {
+        width: auto;
+    }
+
     .add-icon {
         font-size: 2rem !important;
         margin: 0;
