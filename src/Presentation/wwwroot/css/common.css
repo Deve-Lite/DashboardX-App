@@ -68,6 +68,14 @@
     padding: 0;
 }
 
+.list-icon {
+    font-size: 2.75rem !important;
+}
+
+.list-option-icon {
+    font-size: 2.25rem !important;
+}
+
 @media screen and (max-width: 1280px) {
 
     .ellipsis {
@@ -83,6 +91,14 @@
     .add-wrapper {
         width: 3rem;
         height: 3rem;
+    }
+
+    .list-icon {
+        font-size: 2.25rem !important;
+    }
+
+    .list-option-icon {
+        font-size: 1.75rem !important;
     }
 }
 
@@ -102,4 +118,17 @@
         width: 2.5rem;
         height: 2.5rem;
     }
+
+    .list-icon {
+        font-size: 1.75rem !important;
+    }
+
+    .list-option-icon {
+        font-size: 1.5rem !important;
+    }
 }
+
+.animate-simple {
+    
+}
+

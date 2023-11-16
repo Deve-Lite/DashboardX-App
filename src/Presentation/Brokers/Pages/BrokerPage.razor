@@ -5,6 +5,7 @@
 @using Presentation.Brokers;
 @using Presentation.Utils;
 @using Presentation.Controls.Implementations;
+@using Presentation.Brokers.Shared;
 
 @inject IClientService _clientService
 @inject IStringLocalizer<BrokerPage> _localizer
@@ -191,6 +192,7 @@
                         <MudProgressLinear Size="Size.Small" Color="Color.Primary" Rounded="true" Value="0" />
                     }
                 </MudList>
+
             </MudItem>
         </MudGrid>
     </LoadedContent>
@@ -207,7 +209,7 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadPage();
-        
+
         BreadcrumbItems = new()
         {
             new BreadcrumbItem("Brokers", href: "/brokers"),
