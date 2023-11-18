@@ -24,9 +24,15 @@ public class FetchBrokerService : AuthorizedService, IFetchBrokerService
             Route = "api/v1/brokers"
         };
 
-        var response = await SendAsync<List<Broker>>(request);
+        var response = await SendAsync<List<BrokerDTO>>(request);
 
-        return response;
+        if(response.Succeeded)
+        {
+            var brokers = response.Data.Select(x => Broker.FromDto(x)).ToList();
+            return Result<List<Broker>>.Success(brokers, response.StatusCode);
+        }
+
+        return Result<List<Broker>>.Fail(response.StatusCode, response.Messages[0]);
     }
 
     public async Task<IResult<Broker>> GetBroker(string id)
@@ -37,9 +43,15 @@ public class FetchBrokerService : AuthorizedService, IFetchBrokerService
             Route = $"api/v1/brokers/{id}"
         };
 
-        var response = await SendAsync<Broker>(request);
+        var response = await SendAsync<BrokerDTO>(request);
 
-        return response;
+        if (response.Succeeded)
+        {
+            var broker = Broker.FromDto(response.Data);
+            return Result<Broker>.Success(broker, response.StatusCode);
+        }
+
+        return Result<Broker>.Fail(response.StatusCode, response.Messages[0]);
     }
 
     public async Task<IResult<Broker>> CreateBroker(BrokerDTO dto)

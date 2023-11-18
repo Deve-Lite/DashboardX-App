@@ -36,73 +36,19 @@ public class Control : BaseModel
     #endregion
 
     #region Foreign Keys
-
-    [JsonPropertyName("deviceId")]
     public string DeviceId { get; set; } = string.Empty;
-
     #endregion
-    [JsonPropertyName("name")]
+
     public string Name { get; set; } = string.Empty;
-
-    [JsonPropertyName("icon")]
     public Icon Icon { get; set; } = new();
-
-    [JsonPropertyName("topic")]
     public string Topic { get; set; } = string.Empty;
-
-    [JsonPropertyName("type")]
     public string StringType { get; set; } = string.Empty;
-    [JsonIgnore]
-    public ControlType Type
-    {
-        get
-        {
-            return StringType switch
-            {
-                "button" => ControlType.Button,
-                "color" => ControlType.Color,
-                "date-time" => ControlType.DateTime,
-                "radio" => ControlType.Radio,
-                "slider" => ControlType.Slider,
-                "state" => ControlType.State,
-                "switch" => ControlType.Switch,
-                "text-out" => ControlType.Text,
-                _ => ControlType.Button,
-            };
-        }
-        set
-        {
-            StringType = value switch
-            {
-                ControlType.Button => "button",
-                ControlType.Color => "color",
-                ControlType.DateTime => "date-time",
-                ControlType.Radio => "radio",
-                ControlType.Slider => "slider",
-                ControlType.State => "state",
-                ControlType.Switch => "switch",
-                ControlType.Text => "text-out",
-                _ => "button",
-            };
-        }
-    }
-
-    [JsonPropertyName("qualityOfService")]
+    public ControlType Type { get; set; }
     public MqttQualityOfServiceLevel QualityOfService { get; set; } = MqttQualityOfServiceLevel.AtMostOnce;
-
-    [JsonPropertyName("canDisplayName")]
     public bool DisplayName { get; set; } = true;
-
-    [JsonPropertyName("isAvailable")]
     public bool IsAvailable { get; set; } = true;
-
-    [JsonPropertyName("isConfirmationRequired")]
     public bool IsConfiramtionRequired { get; set; } = false;
-
-    [JsonPropertyName("canNotifyOnPublish")]
     public bool NotifyOnPublish { get; set; } = false;
-
-    [JsonPropertyName("attributes")]
     public ControlAttributes Attributes { get; set; } = new();
 
     public bool IsSubscribed { get; set; } = false;
@@ -131,29 +77,7 @@ public class Control : BaseModel
                Type == ControlType.Switch ||
                Type == ControlType.Radio  || 
                Type == ControlType.Text;
-    }
-
-    public Control Copy()
-    {
-        var attrCopy = Attributes.Copy();
-
-        return new()
-        {
-            Id = Id,
-            DeviceId = DeviceId,
-            Name = Name,
-            Icon = Icon.Copy(),
-            Topic = Topic,
-            Type = Type,
-            QualityOfService = QualityOfService,
-            DisplayName = DisplayName,
-            IsAvailable = IsAvailable,
-            IsConfiramtionRequired = IsConfiramtionRequired,
-            NotifyOnPublish = NotifyOnPublish,
-            Attributes = attrCopy,
-        };
-    }
-
+    } 
     public void Update(Control newControl)
     {
         Id = newControl.Id;
@@ -169,4 +93,20 @@ public class Control : BaseModel
         NotifyOnPublish = newControl.NotifyOnPublish;
         Attributes = newControl.Attributes.Copy();
     }
+
+    public static Control FromDto(ControlDTO x) => new Control
+    {
+        Id = x.Id,
+        DeviceId = x.DeviceId,
+        Name = x.Name,
+        Icon = x.Icon.Copy(),
+        Topic = x.Topic,
+        Type = x.Type,
+        QualityOfService = x.QualityOfService,
+        DisplayName = x.DisplayName,
+        IsAvailable = x.IsAvailable,
+        IsConfiramtionRequired = x.IsConfiramtionRequired,
+        NotifyOnPublish = x.NotifyOnPublish,
+        Attributes = x.Attributes.Copy(),
+    };
 }

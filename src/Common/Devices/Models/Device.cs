@@ -2,26 +2,24 @@
 
 public class Device : BaseModel
 {
-    [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
-
-    [JsonPropertyName("placing")]
     public string Placing { get; set; } = string.Empty;
-
-    [JsonPropertyName("icon")]
-    public Icon Icon { get; set; } = new();
-
-    [JsonPropertyName("brokerId")]
     public string BrokerId { get; set; } = string.Empty;
-
-    [JsonPropertyName("basePath")]
     public string BaseDevicePath { get; set; } = string.Empty;
-
-    [JsonPropertyName("updatedAt")]
+    public Icon Icon { get; set; } = new();
     public DateTime EditedAt { get; set; }
-
-    [JsonIgnore]
     public bool SuccessfullControlsDownload { get; set; } = false;
+
+    public static Device FromDto(DeviceDTO x) => new()
+    {
+            Id = x.Id,
+            Name = x.Name,
+            Placing = x.Placing,
+            Icon = x.Icon,
+            BrokerId = x.BrokerId,
+            BaseDevicePath = x.BaseDevicePath,
+            EditedAt = x.EditedAt
+    };
 
     public DeviceDTO Dto() => new()
     {

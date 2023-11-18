@@ -13,9 +13,7 @@ public class FetchControlService : AuthorizedService, IFetchControlService
         ILogger<AuthorizedService> logger,
         NavigationManager navigationManager,
         AuthenticationStateProvider authenticationState) 
-        : base(httpClient, loadingService, logger, navigationManager, authenticationState)
-    {
-    }
+        : base(httpClient, loadingService, logger, navigationManager, authenticationState) { }
 
     public async Task<IResult<List<Control>>> GetControls(string deviceId)
     {
@@ -25,9 +23,15 @@ public class FetchControlService : AuthorizedService, IFetchControlService
             Route = $"api/v1/devices/{deviceId}/controls"
         };
 
-        var response = await SendAsync<List<Control>>(request);
+        var response = await SendAsync<List<ControlDTO>>(request);
 
-        return response;
+        if (response.Succeeded)
+        {
+            var brokers = response.Data.Select(x => Control.FromDto(x)).ToList();
+            return Result<List<Control>>.Success(brokers, response.StatusCode);
+        }
+
+        return Result<List<Control>>.Fail(response.StatusCode, response.Messages[0]);
     }
 
     public async Task<IResult> RemoveControl(string deviceId, string controlId)
