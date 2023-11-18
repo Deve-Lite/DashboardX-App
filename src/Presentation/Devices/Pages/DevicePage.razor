@@ -1,8 +1,8 @@
 ﻿@page "/devices/{DeviceId}/client/{ClientId}"
 @using Presentation.Brokers
 @using Presentation.Controls.Dialogs
-@using Presentation.Controls;
-@using Presentation.Controls.Implementations.StateComponents
+@using Presentation.Controls
+@using Presentation.Devices.Shared.DeviceStates
 
 @inject IClientService _clientService
 @inject NavigationManager _navigationManager
@@ -104,10 +104,11 @@
 
                         <BrokerConnectionSwitch Client="Client" />
 
-                        <StateControl @ref="StateControl" Class="z-10 m-0 ml-2"
-                                      Client="@Client"
-                                      Device="@Device" 
-                                      RerenderPage="StateHasChanged" />
+                        <DeviceState @ref="State" 
+                                     Class="z-10 m-0 ml-2"
+                                     Client="@Client"
+                                     Device="@Device" 
+                                     RerenderPage="StateHasChanged" />
 
                     </MudCardActions>
 
@@ -146,8 +147,7 @@
     public IClient? Client { get; set; }
     public Device Device { get; set; } = new();
 
-    private StateControl? StateControl;
-
+    private DeviceState? State;
 
     protected override async Task OnInitializedAsync()
     {
@@ -197,7 +197,7 @@
     {
         await ControlPagesUtils.AddControl(_dialogService, DeviceId, StateHasChanged, _localizer, ClientId);
 
-        StateControl!.Update();
+        State!.Update();
     }
 
     public void Dispose()

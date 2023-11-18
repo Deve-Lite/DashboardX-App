@@ -1,7 +1,7 @@
 ﻿@page "/devices"
-@using Presentation.Controls.Implementations.StateComponents
 @using Presentation.Utils;
 @using Presentation.Controls.Implementations;
+@using Presentation.Devices.Shared;
 @inject IClientService _clientService
 @inject IStringLocalizer<DeviceListPage> _localizer
 
@@ -13,7 +13,7 @@
     </FailedToLoadContent>
     <LoadedContent>
 
-        <AddButton OnClick="() => DevicePagesUtils.AddDevice(StateHasChanged, _dialogService, _localizer)"
+        <AddButton OnClick="CreateDevice"
                    Class="add-wrapper"/>
 
 
@@ -23,100 +23,38 @@
                 <Breadcrumbs BreadcrumbItems="@BreadcrumbItems" />
             </MudItem>
 
-            <MudItem Class="p-0 pt-2" xs="12">
-                <MudList Class="p-0 w-100"
-                         Dense="true"
-                         Clickable="true">
+            @foreach(var client in Clients)
+            {
+                <MudItem xs="12" lg="6" Class="p-2 m-0">
 
-                    <MudListSubheader Class="d-flex p-0 m-0">
-                        <MudGrid Class="p-0 m-0">
-                            <MudItem xs="1" Class="d-flex p-1 m-0">
+                    <MudText Align="Align.Left" Typo="Typo.h5" Class="hide-overlapping-text">
+                        @client.GetBroker().Name
+                    </MudText>
 
-                            </MudItem>
-                            <MudItem xs="2" Class="d-flex p-1 m-0 align-items-center justify-content-start">
-                                <MudText Typo="Typo.h6">
-                                    @_localizer["Name"]
-                                </MudText>
-                            </MudItem>
-                            <MudItem xs="2" Class="d-flex p-1 m-0 align-items-center justify-content-start">
-                                <MudText Typo="Typo.h6">
-                                    @_localizer["Placing"]
-                                </MudText>
-                            </MudItem>
-                            <MudItem xs="2" Class="d-flex p-1 m-0 align-items-center justify-content-start">
-                                <MudText Typo="Typo.h6">
-                                    @_localizer["Broker"]
-                                </MudText>
-                            </MudItem>
-                            <MudItem xs="3" Class="d-flex p-1 m-0 align-items-center justify-content-center">
-                                <MudText Typo="Typo.h6">
-                                    @_localizer["State"]
-                                </MudText>
-                            </MudItem>
-                            <MudItem xs="2"> </MudItem>
-                        </MudGrid>
+                    <MudProgressLinear Size="Size.Small" Color="Color.Primary" Rounded="true" Value="100"/>
 
-                    </MudListSubheader>
+                    <MudGrid Class="p-0 pt-2 m-0 w-100">
 
-                    <MudProgressLinear Size="Size.Small" Color="Color.Primary" Rounded="true" Value="100" />
-
-                    @foreach (var client in Clients)
                         @foreach (var device in client.GetDevices())
                         {
-                            <MudListItem Class="d-flex m-0 p-0 pt-1 pb-1 align-items-center justify-content-center"
-                                 Href="@($"/devices/{device.Id}/client/{client.Id}")">
-
-                                <MudGrid Class="w-100 p-0 m-0">
-                                    <MudItem xs="1" Class="d-flex p-0 m-0 align-items-center justify-content-center">
-
-                                        <ListElementIcon Icon="@device.Icon" />
-                                    </MudItem>
-                                    <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-start">
-                                        <MudText Class="hide-overlapping-text">
-                                            @device.Name
-                                        </MudText>
-                                    </MudItem>
-                                    <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-start">
-                                        <MudText Class="hide-overlapping-text">
-                                            @device.Placing
-                                        </MudText>
-                                    </MudItem>
-                                    <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-start">
-                                        <MudText Class="hide-overlapping-text">
-                                            @client.GetBroker().Name
-                                        </MudText>
-                                    </MudItem>
-                                    <MudItem xs="3" Class="d-flex m-0 p-0 align-items-center justify-content-center">
-                                        <StateControl Client="client"
-                                              Device="device"
-                                              RerenderPage="StateHasChanged" />
-                                    </MudItem>
-                                    <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-evenly">
-                                        <MudIconButton Class="z-10"
-                                               Icon="@IconUtils.DefaultEditIcon"
-                                               OnClick="() => DevicePagesUtils.UpdateDevice(device, _dialogService, StateHasChanged, _localizer)">
-
-                                        </MudIconButton>
-
-                                        <MudIconButton Class="z-10"
-                                               Icon="@IconUtils.DefaultRemoveIcon"
-                                               OnClick="() => DevicePagesUtils.RemoveDevice(device, _dialogService, _localizer, _navigationManager, _runtime)">
-
-                                        </MudIconButton>
-                                    </MudItem>
-                                </MudGrid>
-                            </MudListItem>
-
-                            <MudProgressLinear Size="Size.Small" Color="Color.Primary" Rounded="true" Value="0" />
+                            <MudItem xs="12" sm="6" md="4" lg="6" xl="4" xxl="3" Class="p-1 m-0">
+                                <DeviceElement Client="@client" DeviceId="@device.Id"/>
+                            </MudItem>
                         }
-                </MudList>
-            </MudItem>
+
+                    </MudGrid>
+                </MudItem>
+            }
         </MudGrid>
     </LoadedContent>
 </PageLoading>
 
 @code
 {
+    /// <summary>
+    /// TODO: Subscribe to all devices updates on controls to refresh elements - Lamp state control example
+    /// </summary>
+
     private IList<IClient> Clients { get; set; } = new List<IClient>();
 
     public DeviceListPage()
@@ -131,6 +69,17 @@
     {
         await LoadPage();
         await base.OnInitializedAsync();
+    }
+
+    public async Task CreateDevice()
+    {
+        if(Clients.Count == 0)
+        {
+            _snackbar.Add(_localizer["First create broker!"], Severity.Info);
+            return;
+        }
+
+        await DevicePagesUtils.AddDevice(StateHasChanged, _dialogService, _localizer);
     }
 
     public async Task LoadPage()

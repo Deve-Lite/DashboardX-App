@@ -1,9 +1,9 @@
 ﻿@using Presentation.Utils;
-@inject IStringLocalizer<StateControl> _localizer
 
-@inherits BaseControl
 
-@if (Condition == StateControlCondition.None)
+@inject IStringLocalizer<DeviceState> _localizer
+
+@if (Condition == DeviceCondition.None)
 {
     <MudIconButton Variant="Variant.Filled"
                Class="@Class"
@@ -26,11 +26,20 @@ else
 {
     [Parameter]
     public string Class { get; set; } = string.Empty;
-
+    [Parameter]
+    public IClient? Client { get; set; }
+    [Parameter]
+    public Device? Device { get; set; }
     [Parameter]
     public Action? RerenderPage { get; set; }
 
-    private StateControlCondition Condition = StateControlCondition.None;
+    [CascadingParameter]
+    protected MudTheme? AppTheme { get; set; }
+    [CascadingParameter]
+    protected bool IsDarkMode { get; set; }
+
+    private Control Control { get; set; } = new();
+    private DeviceCondition Condition = DeviceCondition.None;
     private string Value { get; set; } = string.Empty;
 
     protected override async Task OnInitializedAsync()
@@ -45,11 +54,11 @@ else
         Value = await Client!.TopicService.LastMessageOnTopicAsync(Client!.Id, Device!, Control!);
 
         if (Control!.Attributes!.OffPayload == Value)
-            Condition = StateControlCondition.Off;
+            Condition = DeviceCondition.Off;
         else if (Control!.Attributes!.OnPayload == Value)
-            Condition = StateControlCondition.On;
+            Condition = DeviceCondition.On;
         else
-            Condition = StateControlCondition.Unknown;
+            Condition = DeviceCondition.Unknown;
     }
 
     public void Update()
@@ -60,21 +69,21 @@ else
 
         if (control is null)
         {
-            Condition = StateControlCondition.None;
+            Condition = DeviceCondition.None;
             return;
         }
 
         Control = control;
 
         if (Control!.Attributes!.OffPayload == Value)
-            Condition = StateControlCondition.Off;
+            Condition = DeviceCondition.Off;
         else if (Control!.Attributes!.OnPayload == Value)
-            Condition = StateControlCondition.On;
+            Condition = DeviceCondition.On;
         else
-            Condition = StateControlCondition.Unknown;
+            Condition = DeviceCondition.Unknown;
     }
 
-    public override string GetBackgroundColor()
+    public string GetBackgroundColor()
     {
         if (!Control!.IsAvailable)
         {
@@ -102,7 +111,7 @@ else
         return $"{Control!.Icon.BackgroundHex}80";
     }
 
-    public override string GetBorderBackgroundColor()
+    public string GetBorderBackgroundColor()
     {
         if (!Control!.IsAvailable)
         {
@@ -140,14 +149,14 @@ else
             return;
         }
 
-        var parameters = new DialogParameters<StateControlDialog>
+        var parameters = new DialogParameters<StateDialog>
         {
             { x => x.Control, Control },
             { x => x.Client, Client },
             { x => x.RerenderPage, RerenderPage}
         };
 
-        var dialog = await DialogService!.ShowAsync<StateControlDialog>(_localizer["Device state"], parameters);
+        var dialog = await _dialogService!.ShowAsync<StateDialog>(_localizer["Device state"], parameters);
         var result = await dialog.Result;
 
         if (result.Canceled)
@@ -158,16 +167,38 @@ else
 
         var onPayload = Convert.ToBoolean(result.Data);
 
-        if (!await ConfirmationDialog())
-            return;
+        if (Control!.IsConfiramtionRequired)
+        {
+            var confirmationParameters = new DialogParameters<ConfirmDialog>
+            {
+                { x => x.Description, _localizer["Sending this message requires confirmation."] }
+            };
+            var confirmationDialog = await _dialogService!.ShowAsync<ConfirmDialog>(_localizer["Confirmation Required"], confirmationParameters);
+            var confirmationResult = await dialog.Result;
+
+            if (confirmationResult.Canceled)
+                return;
+
+            bool confirmed = Convert.ToBoolean(result.Data);
+
+            if (!confirmed)
+                return;
+        }
 
         var topic = Control!.GetTopic(Device!);
         var payload = Control.Attributes.OffPayload;
 
         if (onPayload)
+        {
+
             payload = Control.Attributes.OnPayload;
+        }
+
+        Value = payload!;
 
         await Client!.PublishAsync(topic, payload!, Control!.QualityOfService);
+
+        RerenderPage!.Invoke();
     }
 
     public void NotAvaliableToast()
@@ -175,3 +206,4 @@ else
         _snackbar.Add(_localizer["This device doesn't have state control."], Severity.Warning);
     }
 }
+

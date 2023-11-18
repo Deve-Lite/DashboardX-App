@@ -38,6 +38,16 @@
     opacity: 1;
 }
 
+.hide-overlapping-text {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.text-600 {
+    font-weight:600;
+}
+
 .ellipsis {
     width: 400px;
     overflow: hidden;
@@ -69,7 +79,7 @@
 }
 
 .list-icon {
-    font-size: 2.75rem !important;
+    font-size: 2.5rem !important;
 }
 
 .list-option-icon {
@@ -94,7 +104,7 @@
     }
 
     .list-icon {
-        font-size: 2.25rem !important;
+        font-size: 2rem !important;
     }
 
     .list-option-icon {
@@ -127,8 +137,3 @@
         font-size: 1.5rem !important;
     }
 }
-
-.animate-simple {
-    
-}
-

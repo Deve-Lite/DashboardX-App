@@ -39,4 +39,8 @@
 		<ProjectReference Include="..\Common\Common.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Controls\Implementations\StateComponents\" />
+	</ItemGroup>
+
 </Project>

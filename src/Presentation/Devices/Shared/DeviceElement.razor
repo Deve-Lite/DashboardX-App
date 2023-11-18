@@ -1,26 +1,27 @@
-﻿@using Presentation.Utils;
+﻿@using Presentation.Devices.Shared.DeviceStates
+@using Presentation.Utils;
 
-@inject IStringLocalizer<BrokerElement> _localizer
+@inject IStringLocalizer<DeviceElement> _localizer
 
 <MudPaper Class="m-0 p-0 rounded-4 animate-simple" Elevation="1">
     <MudGrid Class="m-0 p-0 w-100">
-        <MudItem xs="12" Class="m-0 p-0" @onclick="HandleBrokerClick">
-            <MudPaper Elevation="2" Class="m-0 p-1 rounded-4 d-flex">
+        <MudItem xs="12" Class="m-0 p-0" @onclick="HandleDeviceClick">
+            <MudPaper Elevation="2" Class="m-0 p-1 rounded-4">
                 <MudGrid Class="m-0 p-0 w-100">
                     <MudItem xs="3" Class="m-0 p-2 d-flex justify-content-center align-items-center">
                         <MudPaper Elevation="5"
                                   Class="m-0 p-1 rounded-5"
                                   Style="@($"background-color: {GetBackgroundColor()};")">
                             <MudIcon Class="list-icon"
-                                     Icon="@IconUtils.GetIcon(Broker.Icon?.Name!)" />
+                                     Icon="@IconUtils.GetIcon(Device.Icon?.Name!)" />
                         </MudPaper>
                     </MudItem>
 
                     <MudItem xs="9" Class="m-0 p-2">
                         <MudGrid Class="m-0 p-0 w-100">
                             <MudItem xs="12" Class="m-0 p-0">
-                                <MudText Typo="Typo.h6" Class="hide-overlapping-text text-600" Style="font-weight: 500;">
-                                    @Broker.Name
+                                <MudText Typo="Typo.h6" Class="hide-overlapping-text text-600">
+                                    @Device.Name
                                 </MudText>
                             </MudItem>
 
@@ -45,14 +46,17 @@
             <MudItem xs="12" Class="m-0 p-0 pt-2 pb-2">
                 <MudGrid Class="m-0 p-0">
                     <MudItem Class="p-2 pb-0 pt-0 m-0">
-                        <BrokerConnection Client="@Client" />
+                        <DeviceState Class="z-10 m-0 ml-2" 
+                                     Client="Client" 
+                                     Device="Device"
+                                     RerenderPage="RerenderPage!" />
                     </MudItem>
 
                     <MudItem Class="p-2 pb-0 pt-0 m-0">
                         <MudIconButton Class="z-10"
                                        Icon="@IconUtils.DefaultEditIcon"
                                        Variant="Variant.Filled"
-                                       OnClick="() => BrokerPagesUtils.UpdateBroker(Client, _dialogService, StateHasChanged, _localizer)" />
+                                       OnClick="() => DevicePagesUtils.UpdateDevice(Device, _dialogService, RerenderPage!, _localizer)" />
 
                     </MudItem>
 
@@ -60,7 +64,7 @@
                         <MudIconButton Class="z-10"
                                        Icon="@IconUtils.DefaultRemoveIcon"
                                        Variant="Variant.Filled"
-                                       OnClick="() => BrokerPagesUtils.RemoveBroker(Client, _dialogService, StateHasChanged, _localizer)" />
+                                       OnClick="() => DevicePagesUtils.RemoveDevice(Device, _dialogService, _localizer, _navigationManager, _runtime)" />
 
                     </MudItem>
                 </MudGrid>
@@ -69,27 +73,32 @@
     </MudGrid>
 </MudPaper>
 
+@code 
+{
 
-
-@code {
     [Parameter]
     public IClient Client { get; set; } = default!;
+    [Parameter]
+    public string DeviceId { get; set; } = string.Empty;
+    [Parameter]
+    public Action? RerenderPage { get; set; }
 
+    private Device Device { get; set; } = default!;
     private bool IsExpanded { get; set; } = false;
-    private Broker Broker { get; set; } = default!;
     private string UnderNameText { get; set; } = string.Empty;
 
     protected override void OnInitialized()
     {
-        Broker = Client.GetBroker();
+        Device = Client.GetDevices().First(x => x.Id == DeviceId);
         UnderNameText = _localizer["Show Actions"];
+        RerenderPage = StateHasChanged;
     }
 
-    public string GetBackgroundColor() => string.IsNullOrEmpty(Broker.Icon.BackgroundHex) ? ThemeColors.ColorPrimary : Broker.Icon.BackgroundHex;
+    public string GetBackgroundColor() => string.IsNullOrEmpty(Device.Icon.BackgroundHex) ? ThemeColors.ColorPrimary : Device.Icon.BackgroundHex;
 
-    public void HandleBrokerClick()
+    public void HandleDeviceClick()
     {
-        _navigationManager.NavigateTo($"/brokers/{Client.Id}");
+        _navigationManager.NavigateTo($"/devices/{DeviceId}/client/{Client.Id}");
     }
 
     public void HandleExpand()
