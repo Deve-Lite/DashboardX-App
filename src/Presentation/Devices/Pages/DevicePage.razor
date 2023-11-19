@@ -26,8 +26,8 @@
                 <Breadcrumbs BreadcrumbItems="@BreadcrumbItems" />
             </MudItem>
 
-            <MudItem xs="12" sm="12" md="9" lg="7" xl="5" xxl="4"
-                     Class="p-0 m-0 pt-4 pb-5 mud-w-auto">
+            <MudItem xs="12" 
+                Class="p-0 m-0 pt-4 pb-5 mud-w-auto">
                 <MudCard Elevation="5"
                          Class="m-0 p-4 rounded-2">
                     <MudCardContent Class="p-0 m-0">
@@ -137,16 +137,15 @@
     </LoadedContent>
 </PageLoading>
 
-@code {
-
+@code 
+{
     [Parameter]
     public string DeviceId { get; set; } = string.Empty;
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
 
-    public IClient? Client { get; set; }
-    public Device Device { get; set; } = new();
-
+    private IClient? Client { get; set; }
+    private Device Device { get; set; } = new();
     private DeviceState? State;
 
     protected override async Task OnInitializedAsync()
@@ -175,7 +174,7 @@
         if (result.Succeeded)
         {
             Client = result.Data;
-            Client.RerenderPage += Rerender;
+            Client.SetOnMessageReceivedEventHandler(RerenderPage);
             LoadedSuccessfully = true;
             Device = Client.GetDevices().FirstOrDefault(x => x.Id == DeviceId)!;
         }
@@ -189,8 +188,6 @@
                 _snackbar.Add(message, result.Severity);
 
         _loadingService.HideLoading();
-
-        StateHasChanged();
     }
 
     public async Task AddControl()
@@ -202,13 +199,6 @@
 
     public void Dispose()
     {
-#pragma warning disable CS8601
-        Client!.RerenderPage -= Rerender!;
-    }
-
-    private Task Rerender()
-    {
-        StateHasChanged();
-        return Task.CompletedTask;
+        Client!.ClearOnMessageReceivedEventHandler();
     }
 }

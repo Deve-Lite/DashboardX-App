@@ -7,6 +7,8 @@
 
 @inherits BasePage
 
+@implements IDisposable
+
 <PageLoading FailedToLoad="!LoadedSuccessfully">
     <FailedToLoadContent>
         <RefreshPageButton RefreshPage="LoadPage" />
@@ -15,7 +17,6 @@
 
         <AddButton OnClick="CreateDevice"
                    Class="add-wrapper"/>
-
 
         <MudGrid Class="m-0 p-3 w-100">
 
@@ -51,10 +52,6 @@
 
 @code
 {
-    /// <summary>
-    /// TODO: Subscribe to all devices updates on controls to refresh elements - Lamp state control example
-    /// </summary>
-
     private IList<IClient> Clients { get; set; } = new List<IClient>();
 
     public DeviceListPage()
@@ -71,17 +68,6 @@
         await base.OnInitializedAsync();
     }
 
-    public async Task CreateDevice()
-    {
-        if(Clients.Count == 0)
-        {
-            _snackbar.Add(_localizer["First create broker!"], Severity.Info);
-            return;
-        }
-
-        await DevicePagesUtils.AddDevice(StateHasChanged, _dialogService, _localizer);
-    }
-
     public async Task LoadPage()
     {
         if (_loadingService.IsLoading)
@@ -94,6 +80,10 @@
         if (result.Succeeded)
         {
             Clients = result.Data;
+
+            foreach (var client in Clients)
+                client.SetOnMessageReceivedEventHandler(RerenderPage);
+
             LoadedSuccessfully = true;
         }
         else
@@ -106,7 +96,22 @@
                 _snackbar.Add(message, result.Severity);
 
         _loadingService.HideLoading();
+    }
 
-        StateHasChanged();
+    public async Task CreateDevice()
+    {
+        if (Clients.Count == 0)
+        {
+            _snackbar.Add(_localizer["First create broker!"], Severity.Info);
+            return;
+        }
+
+        await DevicePagesUtils.AddDevice(StateHasChanged, _dialogService, _localizer);
+    }
+
+    public void Dispose()
+    {
+        foreach (var client in Clients)
+            client?.ClearOnMessageReceivedEventHandler();
     }
 }

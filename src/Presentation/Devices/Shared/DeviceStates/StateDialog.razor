@@ -10,7 +10,7 @@
 
             <MudItem xs="6">
                 <MudButton Color="Color.Error"
-                Variant="Variant.Filled"
+                           Variant="Variant.Filled"
                            StartIcon="@Icons.Material.Filled.TvOff"
                            OnClick="() => SubmitState(false)">
                     @_localizer["Off"]
@@ -29,6 +29,10 @@
         </MudGrid>
     </DialogContent>
     <DialogActions>
+        <MudButton OnClick="Cancel"
+                   Variant="Variant.Filled"
+                   Color="Color.Warning">@_localizer["Cancel"]</MudButton>
+
         <MudButton OnClick="RemoveStateControl"
                    Variant="Variant.Filled"
                    Color="Color.Error">@_localizer["Remove"]</MudButton>

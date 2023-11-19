@@ -24,11 +24,11 @@ public class Client : IClient, IAsyncDisposable
     private readonly IList<Control> _controls;
     private readonly Broker _broker;
 
-    public bool IsConnected { get; private set; }
-    public string Id => _broker.Id;
+    private Func<Task>? RerenderPageOnMessageReceived = null;
 
+    public string Id => _broker.Id;
+    public bool IsConnected { get; private set; }
     public ITopicService TopicService { get; private set; }
-    public Func<Task> RerenderPage { get; set; }
 
     public Client(ITopicService topic,
                   IMqttClient mqttClient,
@@ -45,13 +45,19 @@ public class Client : IClient, IAsyncDisposable
         _logger = clientLogger;
 
         InitializeCallbacks();
-        RerenderPage += () =>
-        {
-            return Task.CompletedTask;
-        };
 
         _controls = new List<Control>();
         _devices = new List<Device>();
+    }
+
+
+    public void SetOnMessageReceivedEventHandler(Func<Task> refreshAction)
+    {
+        RerenderPageOnMessageReceived = refreshAction;
+    }
+    public void ClearOnMessageReceivedEventHandler() 
+    {
+        RerenderPageOnMessageReceived = null;
     }
 
     public Broker GetBroker() => _broker;
@@ -316,7 +322,7 @@ public class Client : IClient, IAsyncDisposable
     public async Task DisconnectAsync()
     {
         IsConnected = false;
-        RerenderPage?.Invoke();
+        RerenderPageOnMessageReceived?.Invoke();
         await _mqttClient.DisconnectAsync();
     }
     public async Task<IResult> PublishAsync(string topic, string payload, MqttQualityOfServiceLevel quality)
@@ -368,8 +374,6 @@ public class Client : IClient, IAsyncDisposable
 
             var status = Result.Success();
 
-            //Think what happens on += InitializeCallbacks();
-
             foreach (var control in _controls)
             {
                 if (!control.ShouldBeSubscribed())
@@ -383,7 +387,7 @@ public class Client : IClient, IAsyncDisposable
             }
 
             IsConnected = true;
-            RerenderPage?.Invoke();
+            RerenderPageOnMessageReceived?.Invoke();
 
             return status;
         }
@@ -423,7 +427,7 @@ public class Client : IClient, IAsyncDisposable
             var message = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
             await TopicService.UpdateMessageOnTopic(_broker.Id, topic, message);
             _logger.LogInformation("Message received. {topic} {message}", topic, message);
-            RerenderPage?.Invoke();
+            RerenderPageOnMessageReceived?.Invoke();
         };
 
         _mqttClient.DisconnectedAsync += async (e) =>
@@ -432,9 +436,9 @@ public class Client : IClient, IAsyncDisposable
                 return;
 
             _logger.LogWarning("Client disconnected. Reconnecting...", _broker.Id);
-            RerenderPage?.Invoke();
+            RerenderPageOnMessageReceived?.Invoke();
             await _mqttClient.ReconnectAsync();
-            RerenderPage?.Invoke();
+            RerenderPageOnMessageReceived?.Invoke();
             _logger.LogWarning("Client reconnected.", _broker.Id);
         };
     }

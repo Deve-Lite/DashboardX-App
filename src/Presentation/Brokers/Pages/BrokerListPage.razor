@@ -62,6 +62,10 @@
         if (result.Succeeded)
         {
             Clients = result.Data;
+
+            foreach (var client in Clients)
+                client.SetOnMessageReceivedEventHandler(RerenderPage);
+                
             LoadedSuccessfully = true;
         }
         else
@@ -74,8 +78,12 @@
                 _snackbar.Add(message, result.Severity);
 
         _loadingService.HideLoading();
+    }
 
-        StateHasChanged();
+    public void Dispose()
+    {
+        foreach (var client in Clients)
+            client?.ClearOnMessageReceivedEventHandler();
     }
 
     private async Task ConnectAsync(Client client)
@@ -84,10 +92,5 @@
 
         if (result.Succeeded && result.ShowToast)
             _snackbar.Add(result.Messages.First(), Severity.Error);
-    }
-
-    private void NavigateToBroker(Client clinet)
-    {
-        _navigationManager.NavigateTo($"/brokers/{clinet.Id}");
     }
 }

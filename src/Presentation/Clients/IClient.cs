@@ -8,7 +8,8 @@ public interface IClient
     bool IsConnected { get; }
     ITopicService TopicService { get; }
 
-    Func<Task> RerenderPage { get; set; }
+    public void SetOnMessageReceivedEventHandler(Func<Task> refreshAction);
+    public void ClearOnMessageReceivedEventHandler();
 
     Broker GetBroker();
     Task UpdateBroker(Broker broker);

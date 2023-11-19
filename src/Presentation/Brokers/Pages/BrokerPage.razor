@@ -29,7 +29,7 @@
                 <Breadcrumbs BreadcrumbItems="@BreadcrumbItems" />
             </MudItem>
 
-            <MudItem xs="12" sm="12" md="9" lg="7" xl="5" xxl="4" Class="p-0 m-0 pt-4 pb-5 mud-w-auto">
+            <MudItem xs="12" Class="p-0 m-0 pt-4 pb-5 mud-w-auto">
                 <MudCard Elevation="5"
                          Class="m-0 p-4 rounded-2">
                     <MudCardContent Class="m-0 p-0">
@@ -163,8 +163,8 @@
 
         if (result.Succeeded)
         {
-            Client = result.Data;
-            Client!.RerenderPage += Rerender;
+            Client = result.Data; 
+            Client?.SetOnMessageReceivedEventHandler(RerenderPage);
             LoadedSuccessfully = true;
         }
         else
@@ -177,19 +177,10 @@
                 _snackbar.Add(message, result.Severity);
 
         _loadingService.HideLoading();
-
-        StateHasChanged();
     }
 
     public void Dispose()
     {
-#pragma warning disable CS8601
-        Client!.RerenderPage -= Rerender;
-    }
-
-    private Task Rerender()
-    {
-        StateHasChanged();
-        return Task.CompletedTask;
+        Client?.ClearOnMessageReceivedEventHandler();
     }
 }

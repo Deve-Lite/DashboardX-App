@@ -25,7 +25,7 @@ public class ClientMockup : IClient
     public bool IsConnected => _isConnected;
 
     public ITopicService TopicService { get; set; }
-    public Func<Task> RerenderPage { get; set; }
+    public Func<Task> RerenderPageOnMessageReceived { get; set; }
 
     public Task<IResult> AddControl(Control control)
     {
