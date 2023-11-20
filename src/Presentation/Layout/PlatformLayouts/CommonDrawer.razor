@@ -1,0 +1,53 @@
+﻿@inject IStringLocalizer<CommonDrawer> _localizer
+@inject AuthenticationStateProvider _authenticationStateProvider
+@inject ILocalStorageService _localStorage
+@inject IClientService _clientService
+
+<MudNavMenu Class="pt-2">
+    <MudNavLink Icon="@Icons.Material.Filled.DisplaySettings"
+                OnClick="NavigateToBrokers">
+        @_localizer["Brokers"]
+    </MudNavLink>
+
+    <MudNavLink Icon="@Icons.Material.Filled.SettingsInputComponent"
+                OnClick="NavigateToDevices">
+        @_localizer["Devices"]
+    </MudNavLink>
+
+    <MudNavLink Icon="@Icons.Material.Filled.Settings"
+                OnClick="NavigateToProfile">
+        @_localizer["Settings"]
+    </MudNavLink>
+
+    <MudNavLink Icon="@Icons.Material.Filled.Email"
+                OnClick="NavigateToStatistics">
+        @_localizer["Subscribtions"]
+    </MudNavLink>
+
+    <MudNavLink Icon="@Icons.Material.Filled.Logout"
+                OnClick="Logout">
+        @_localizer["Logout"]
+    </MudNavLink>
+</MudNavMenu>
+
+@code {
+    protected void NavigateToBrokers() => _navigationManager!.NavigateTo("/brokers");
+    protected void NavigateToDevices() => _navigationManager!.NavigateTo("/devices");
+    protected void NavigateToStatistics() => _navigationManager!.NavigateTo("/statistics/subscribtions");
+    protected void NavigateToProfile() => _navigationManager!.NavigateTo("/user/settings");
+
+    protected async Task Logout()
+    {
+        //TODO: Dialog confirm logout
+
+        var applicationAuthorization = (_authenticationStateProvider as ApplicationStateProvider)!;
+
+        await applicationAuthorization.Logout();
+        await _localStorage!.RemoveItemAsync(BrokerConstraints.BrokerListName);
+        await _localStorage!.RemoveItemAsync(DeviceConstants.DevicesListName);
+        await _localStorage!.RemoveItemAsync(UserConstraints.PreferencesStorage);
+
+        //TODO: Logout for
+        await _clientService.Logout();
+    }
+}

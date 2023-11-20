@@ -1,0 +1,24 @@
+﻿@inherits BaseLayout
+
+<MudAppBar DisableGutters="true" 
+    Elevation="1" 
+    Dense="true" 
+    Color="Color.Primary" 
+    Style="padding-left: 16px; padding-right: 16px; margin-left: 0px; margin-right: 0px;">
+    <MudText Color="Color.Secondary" Typo="Typo.h6" Style="padding: 0px">
+        DashboardX
+    </MudText>
+</MudAppBar>
+
+<MudDrawer Variant="DrawerVariant.Mini"
+           ClipMode="DrawerClipMode.Always"
+           Anchor="Anchor.Left"
+           Elevation="1">
+    <CommonDrawer />
+</MudDrawer>
+<MudMainContent Class="view-height" Style="padding-top: 0 !important;">
+    @Body
+</MudMainContent>
+@code {
+
+}

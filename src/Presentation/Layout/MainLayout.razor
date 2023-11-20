@@ -1,5 +1,6 @@
 @using Presentation.Utils;
 @using Presentation.Extensions;
+@using Presentation.Layout.PlatformLayouts;
 
 @inject AuthenticationStateProvider _authenticationStateProvider
 @inject IStringLocalizer<MainLayout> _localizer
@@ -9,6 +10,7 @@
 
 @inherits LayoutComponentBase
 
+@implements IBrowserViewportObserver
 @implements IAsyncDisposable
 
 <MudLayout Class="p-0 m-0 w-100 h-100">
@@ -20,63 +22,20 @@
         <CascadingValue Value="@IsDarkMode">
             <AuthorizeView Roles="@($"{RolesConstraints.User}, {RolesConstraints.Admin}")">
                 <Authorized>
-                    @*TODO: It might be better to create per Platform AppBar*@
-                    <MudAppBar DisableGutters="true" Elevation="1" Dense="@true" Color="Color.Primary" Style="padding-left: 16px; padding-right: 16px; margin-left: 0px; margin-right: 0px;">
 
-                        <MudText Color="Color.Secondary" Typo="Typo.h6" Style="padding: 0px">
-                            @_localizer["DashboardX"]
-                        </MudText>
+                    @if (_width <= 600)
+                    {
+                        <MobileLayout Body="@Body" />
+                    }
+                    else if (_width >=1280)
+                    {
 
-                        <MudSpacer />
-
-                        @if (Platform == Platform.Mobile)
-                        {
-                            <MudIconButton Icon="@Icons.Material.Filled.Menu"
-                                       Disabled="@IsDesktop"
-                                       Color="Color.Secondary"
-                                       Edge="Edge.Start"
-                                       OnClick="@ToggleDrawer" />
-                        }
-
-                    </MudAppBar>
-                    <MudDrawer @bind-Open="@IsOpen"
-                               ClipMode="DrawerClipMode.Always"
-                               Anchor="@Anchor"
-                               Width="200px"
-                               Variant="@DrawerMode"
-                               Elevation="1">
-
-                        <MudNavMenu Class="pt-2">
-                            <MudNavLink Icon="@Icons.Material.Filled.DisplaySettings"
-                                        OnClick="NavigateToBrokers">
-                                @_localizer["Brokers"]
-                            </MudNavLink>
-
-                            <MudNavLink Icon="@Icons.Material.Filled.SettingsInputComponent"
-                                        OnClick="NavigateToDevices">
-                                @_localizer["Devices"]
-                            </MudNavLink>
-
-                            <MudNavLink Icon="@Icons.Material.Filled.Settings"
-                                        OnClick="NavigateToProfile">
-                                @_localizer["Settings"]
-                            </MudNavLink>
-
-                            <MudNavLink Icon="@Icons.Material.Filled.Email"
-                                        OnClick="NavigateToSubs">
-                                @_localizer["Subscribtions"]
-                            </MudNavLink>
-
-                            <MudNavLink Icon="@Icons.Material.Filled.Logout"
-                                        OnClick="Logout">
-                                @_localizer["Logout"]
-                            </MudNavLink>
-                        </MudNavMenu>
-                    </MudDrawer>
-
-                    <MudMainContent Style="@($"height: 100vh; margin-left: {Margin}")">
-                        @Body
-                    </MudMainContent>
+                        <DesktopLayout Body="@Body" />
+                    }
+                    else
+                    {
+                        <TabletLayout Body="@Body" />
+                    }
                 </Authorized>
                 <NotAuthorized>
                     <MudItem Class="image-in-background">
@@ -90,7 +49,12 @@
     </CascadingValue>
 </MudLayout>
 
+
+
 @code {
+
+    [Inject]
+    private IBrowserViewportService BrowserViewportService { get; set; }
 
     /// <summary>
     /// Fixes problem of missing styles.
@@ -106,6 +70,18 @@
 
     public MudTheme AppTheme { get; set; } = ThemeColors.AppTheme;
     public bool IsDarkMode { get; set; } = false;
+    public int _width { get; set; } = 0;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await BrowserViewportService.SubscribeAsync(this, fireImmediately: true);
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -135,10 +111,25 @@
         await _preferenceService.LoadPreferences();
         await _mudThemeProvider!.WatchSystemPreference(OnSystemPreferenceChanged);
     }
+    public Guid Id { get; } = Guid.NewGuid();
+
+    public ResizeOptions ResizeOptions => new()
+        {
+            ReportRate = 50,
+            NotifyOnBreakpointOnly = true
+        };
+
+    public Task NotifyBrowserViewportChangeAsync(BrowserViewportEventArgs browserViewportEventArgs)
+    {
+        _width = browserViewportEventArgs.BrowserWindowSize.Width;
+
+        return InvokeAsync(StateHasChanged);
+    }
 
     public async ValueTask DisposeAsync()
     {
         BrowserResizeExtensions.OnResize -= BrowserResized;
+        await BrowserViewportService.UnsubscribeAsync(this);
         await _runtime.UnsubscribeToResizeEvent();
     }
 
@@ -156,7 +147,7 @@
         await _localStorage.RemoveItemAsync(BrokerConstraints.BrokerListName);
         await _localStorage.RemoveItemAsync(DeviceConstants.DevicesListName);
         await _localStorage.RemoveItemAsync(UserConstraints.PreferencesStorage);
-
+        //TODO: Reset Preferences
         await _clientService.Logout();
     }
 

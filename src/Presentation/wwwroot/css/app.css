@@ -79,3 +79,8 @@ a, .btn-link {
         transform: rotate(360deg);
     }
 }
+
+.view-height
+{
+    height: 100vh !important;
+}

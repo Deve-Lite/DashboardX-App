@@ -1,5 +1,4 @@
-﻿using Common.Controls.Models;
-using MQTTnet.Protocol;
+﻿using MQTTnet.Protocol;
 
 namespace PresentationTests.InternalPresentationMockups;
 
@@ -25,7 +24,16 @@ public class ClientMockup : IClient
     public bool IsConnected => _isConnected;
 
     public ITopicService TopicService { get; set; }
-    public Func<Task> RerenderPageOnMessageReceived { get; set; }
+
+    public void ClearOnMessageReceivedEventHandler()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void SetOnMessageReceivedEventHandler(Func<Task> refreshAction)
+    {
+        throw new NotImplementedException();
+    }
 
     public Task<IResult> AddControl(Control control)
     {
