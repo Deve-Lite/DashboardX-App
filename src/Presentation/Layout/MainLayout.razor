@@ -23,19 +23,41 @@
             <AuthorizeView Roles="@($"{RolesConstraints.User}, {RolesConstraints.Admin}")">
                 <Authorized>
 
+                    <MudHidden Breakpoint="Breakpoint.SmAndUp">
+
+                        <MobileLayout Body="@Body" />
+                    </MudHidden>
+
+                    
+                    <MudHidden Breakpoint="Breakpoint.MdAndDown">
+                        <DesktopLayout Body="@Body" />
+                    </MudHidden>
+
+                    
+                    <MudHidden Breakpoint="Breakpoint.Xs">
+                        <MudHidden Breakpoint="Breakpoint.LgAndUp">
+
+                            <TabletLayout Body="@Body" />
+                        </MudHidden>
+                    </MudHidden>
+
+
+                    @* 
+                        //TODO: REMOVE BROWSER EVENTS!! AND MY EXTENSIONS
+                        //TODO: Think of extracting generating Body from navigation elements because this causes reredner of body
+                        
                     @if (_width <= 600)
                     {
                         <MobileLayout Body="@Body" />
                     }
                     else if (_width >=1280)
                     {
-
                         <DesktopLayout Body="@Body" />
                     }
                     else
                     {
                         <TabletLayout Body="@Body" />
-                    }
+                    }*@
                 </Authorized>
                 <NotAuthorized>
                     <MudItem Class="image-in-background">
