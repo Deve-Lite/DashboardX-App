@@ -28,7 +28,7 @@
 <MudDrawer @bind-Open="IsOpen"
            Anchor="Anchor.Right" 
            PreserveOpenState="false">
-    <CommonDrawer/>
+    <CommonDrawer OnSelected="CloseDrawer" />
 </MudDrawer>
 
 @code {
@@ -41,5 +41,11 @@
     private void OpenDrawer()
     {
         IsOpen = true;
+    }
+
+    private void CloseDrawer()
+    {
+        IsOpen = false;
+        StateHasChanged();
     }
 }

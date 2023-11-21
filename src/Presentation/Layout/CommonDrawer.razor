@@ -33,10 +33,19 @@
 </MudNavMenu>
 
 @code {
-    protected void NavigateToBrokers() => _navigationManager!.NavigateTo("/brokers");
-    protected void NavigateToDevices() => _navigationManager!.NavigateTo("/devices");
-    protected void NavigateToStatistics() => _navigationManager!.NavigateTo("/statistics/subscribtions");
-    protected void NavigateToProfile() => _navigationManager!.NavigateTo("/user/settings");
+    [Parameter]
+    public Action? OnSelected { get; set; }
+
+    protected void NavigateToBrokers() => OnNavigateClick("/brokers");
+    protected void NavigateToDevices() => OnNavigateClick("/devices");
+    protected void NavigateToStatistics() => OnNavigateClick("/statistics/subscribtions");
+    protected void NavigateToProfile() => OnNavigateClick("/user/settings");
+
+    protected void OnNavigateClick(string route)
+    {
+        _navigationManager!.NavigateTo(route);
+        OnSelected?.Invoke();
+    }
 
     protected async Task Logout()
     {
