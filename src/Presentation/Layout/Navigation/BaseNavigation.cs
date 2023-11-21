@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components;
 
-namespace Presentation.Layout.PlatformLayouts;
+namespace Presentation.Layout.Navigation;
 
-public class BaseLayout : MudComponentBase
+public class BaseNavigation : MudComponentBase
 {
     [Parameter]
     public RenderFragment? Body { get; set; }

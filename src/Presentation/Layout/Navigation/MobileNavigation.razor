@@ -1,4 +1,4 @@
-﻿@inherits BaseLayout
+﻿@inherits BaseNavigation
 
 <MudAppBar DisableGutters="true" 
            Bottom="true"
@@ -8,15 +8,15 @@
            Style="padding-left: 16px; padding-right: 16px; margin-left: 0px; margin-right: 0px;">
 
     <MudSpacer />
-    <MudIconButton Icon="@Icons.Material.Filled.SettingsInputComponent"
+    <MudIconButton Icon="@CommonLayoutSettings.DevicesIcon"
                    Color="Color.Secondary"
                    OnClick="@NavigateToDevices" />
     <MudSpacer />
-    <MudIconButton Icon="@Icons.Material.Filled.DisplaySettings"
+    <MudIconButton Icon="@CommonLayoutSettings.BrokersIcon"
                    Color="Color.Secondary"
                    OnClick="@NavigateToBrokers" />
     <MudSpacer />
-    <MudIconButton Icon="@Icons.Material.Filled.QueryStats" 
+    <MudIconButton Icon="@CommonLayoutSettings.StatisticsIcon"
                    Color="Color.Secondary"
                    OnClick="@NavigateToStatistics" />
     <MudSpacer />
@@ -30,9 +30,7 @@
            PreserveOpenState="false">
     <CommonDrawer/>
 </MudDrawer>
-<MudMainContent Class="view-height" Style="padding-top: 0 !important;">
-    @Body
-</MudMainContent>
+
 @code {
     public bool IsOpen { get; set; } = false;
 

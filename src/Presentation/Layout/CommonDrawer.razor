@@ -1,30 +1,32 @@
-﻿@inject IStringLocalizer<CommonDrawer> _localizer
+﻿@using Presentation.Layout.Navigation;
+
+@inject IStringLocalizer<CommonDrawer> _localizer
 @inject AuthenticationStateProvider _authenticationStateProvider
 @inject ILocalStorageService _localStorage
 @inject IClientService _clientService
 
 <MudNavMenu Class="pt-2">
-    <MudNavLink Icon="@Icons.Material.Filled.DisplaySettings"
+    <MudNavLink Icon="@CommonLayoutSettings.BrokersIcon"
                 OnClick="NavigateToBrokers">
         @_localizer["Brokers"]
     </MudNavLink>
 
-    <MudNavLink Icon="@Icons.Material.Filled.SettingsInputComponent"
+    <MudNavLink Icon="@CommonLayoutSettings.DevicesIcon"
                 OnClick="NavigateToDevices">
         @_localizer["Devices"]
     </MudNavLink>
 
-    <MudNavLink Icon="@Icons.Material.Filled.Settings"
-                OnClick="NavigateToProfile">
-        @_localizer["Settings"]
-    </MudNavLink>
-
-    <MudNavLink Icon="@Icons.Material.Filled.Email"
+    <MudNavLink Icon="@CommonLayoutSettings.StatisticsIcon"
                 OnClick="NavigateToStatistics">
         @_localizer["Subscribtions"]
     </MudNavLink>
 
-    <MudNavLink Icon="@Icons.Material.Filled.Logout"
+    <MudNavLink Icon="@CommonLayoutSettings.SettingsIcon"
+                OnClick="NavigateToProfile">
+        @_localizer["Settings"]
+    </MudNavLink>
+
+    <MudNavLink Icon="@CommonLayoutSettings.LogoutIcon"
                 OnClick="Logout">
         @_localizer["Logout"]
     </MudNavLink>
