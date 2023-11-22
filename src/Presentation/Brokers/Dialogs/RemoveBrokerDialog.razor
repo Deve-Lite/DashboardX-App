@@ -1,44 +1,44 @@
 ﻿@using Presentation.Utils;
+@using Presentation.Shared.Dialogs;
 @inject IStringLocalizer<RemoveBrokerDialog> _localizer;
 @inject IBrokerService _brokerService;
 
+@inherits BaseDialog
+
 <MudDialog>
     <DialogContent>
-        <DialogLoading IsLoading="IsLoading">
-            <LoadedContent>
-                <MudText>@_localizer["Are you sure you want to remove this broker?"]</MudText>
-                <MudText Class="hide-overlapping-text">@_localizer["Server name:"] @Broker.Name</MudText>
-                <MudText Class="hide-overlapping-text">@_localizer["Server url:"] @Broker.Server</MudText>
-                <MudText Class="hide-overlapping-text">@_localizer["Client id:"] @Broker.ClientId</MudText>
-            </LoadedContent>
-        </DialogLoading>
+        <LoadingDialog>
+            <Content>
+                <MudElement Class="p-3">
+                    <MudText>@_localizer["Are you sure you want to remove this broker?"]</MudText>
+                    <MudText Class="hide-overlapping-text">@_localizer["Server name:"] @Broker.Name</MudText>
+                    <MudText Class="hide-overlapping-text">@_localizer["Server url:"] @Broker.Server</MudText>
+                    <MudText Class="hide-overlapping-text">@_localizer["Client id:"] @Broker.ClientId</MudText>
+                </MudElement>
+            </Content>
+            <Actions>
+                <MudButton OnClick="Cancel" Class="m-1">
+                    @_localizer["Cancel"]
+                </MudButton>
+                <MudButton OnClick="RemoveAsync"
+                           Class="m-1"
+                           Variant="Variant.Filled"
+                           Color="Color.Error">
+                    @_localizer["Remove"]
+                </MudButton>
+            </Actions>
+        </LoadingDialog>
     </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="Cancel"
-                   Disabled="IsLoading">
-            @_localizer["Cancel"]
-        </MudButton>
-        <MudButton OnClick="RemoveAsync"
-                   Disabled="IsLoading"
-                   ButtonType="ButtonType.Submit"
-                   Variant="Variant.Filled"
-                   Color="Color.Error">
-            @_localizer["Remove"]
-        </MudButton>
-    </DialogActions>
 </MudDialog>
 
 @code
 {
-    [CascadingParameter]
-    private MudDialogInstance? Dialog { get; set; }
+    // TODO: Implement new way of handling dialogs
+    // TODO: Test look of loading action in dialogs 
+    // TODO: Remove space betwen title
 
     [Parameter]
     public Broker Broker { get; set; } = new();
-
-    public bool IsLoading { get; set; }
-
-    private void Cancel() => Dialog!.Cancel();
 
     private async Task RemoveAsync()
     {

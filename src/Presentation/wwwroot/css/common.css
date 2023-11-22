@@ -14,12 +14,6 @@
     flex-wrap: wrap; 
 }
 
-@media (min-width: 768px) {
-    .flex-list-justify {
-        justify-content: flex-start;
-    }
-}
-
 .dim-background::before {
     content: "";
     position: fixed;
@@ -87,7 +81,11 @@
 
 .main-body 
 {
-    height: 100vh !important;
+    height: 100% !important;
+}
+
+.dialog-footer{
+    padding-bottom: 1rem;
 }
 
 @media screen and (max-width: 1280px) {
@@ -146,5 +144,19 @@
 
     .main-body {
         padding-top: 0 !important;
+    }
+
+    .flex-list-justify {
+        justify-content: flex-start;
+    }
+
+    .dialog-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        display:flex;
+        align-items: center;
+        justify-content: space-evenly;
     }
 }

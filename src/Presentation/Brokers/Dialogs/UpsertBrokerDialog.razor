@@ -1,5 +1,4 @@
-﻿
-@using Presentation.Utils;
+﻿@using Presentation.Utils;
 @inject IStringLocalizer<UpsertBrokerDialog> _localizer;
 @inject IBrokerService _brokerService
 @inject IFetchBrokerService _fetchBrokerService
@@ -15,7 +14,7 @@
                          Validation="@(BrokerValidator.ValidateValue)"
                          ValidationDelay="0"
                          Class="m-0 p-0 w-100">
-                    <MudGrid Class="m-0 p-3 pt-0 w-100">
+                    <MudGrid Class="m-0 p-0 w-100">
 
                         <MudItem xs="3"
                                  Class="p-1 m-0">
@@ -135,7 +134,7 @@
             </LoadedContent>
         </DialogLoading>
     </DialogContent>
-    <DialogActions>
+    <DialogActions >
         <MudButton OnClick="Cancel"
                    Disabled="IsLoading">
             @_localizer["Cancel"]

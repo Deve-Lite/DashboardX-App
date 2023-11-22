@@ -24,7 +24,7 @@
                 <Breadcrumbs BreadcrumbItems="@BreadcrumbItems" />
             </MudItem>
 
-            @foreach(var client in Clients)
+            @foreach(var client in Clients.Where(x => x.GetDevices().Any()))
             {
                 <MudItem xs="12" lg="6" Class="p-2 m-0">
 
