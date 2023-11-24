@@ -23,8 +23,9 @@ public class BrokerPagesUtils
     public static async Task RemoveBroker(IClient client, IDialogService dialogService, Action refreshUI, IStringLocalizer<object> localizer)
     {
         var parameters = new DialogParameters<RemoveBrokerDialog> { { x => x.Broker, client.GetBroker() } };
+        var options = new DialogOptions() { NoHeader=true, };
 
-        var dialog = await dialogService.ShowAsync<RemoveBrokerDialog>(localizer["Remove Broker"], parameters);
+        var dialog = await dialogService.ShowAsync<RemoveBrokerDialog>("", parameters, options);
         var result = await dialog.Result;
 
         if (result.Canceled)

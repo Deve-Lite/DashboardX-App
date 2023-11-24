@@ -8,13 +8,18 @@
 <MudDialog>
     <DialogContent>
         <LoadingDialog>
+            <Title>
+                <MudText Align="Align.Start"
+                         Class="m-0 mt-2 mb-2"
+                         Typo="Typo.h6">
+                    @_localizer["Remove Broker"]
+                </MudText>
+            </Title>
             <Content>
-                <MudElement Class="p-3">
-                    <MudText>@_localizer["Are you sure you want to remove this broker?"]</MudText>
-                    <MudText Class="hide-overlapping-text">@_localizer["Server name:"] @Broker.Name</MudText>
-                    <MudText Class="hide-overlapping-text">@_localizer["Server url:"] @Broker.Server</MudText>
-                    <MudText Class="hide-overlapping-text">@_localizer["Client id:"] @Broker.ClientId</MudText>
-                </MudElement>
+                <MudText>@_localizer["Are you sure you want to remove this broker?"]</MudText>
+                <MudText Class="hide-overlapping-text">@_localizer["Server name:"] @Broker.Name</MudText>
+                <MudText Class="hide-overlapping-text">@_localizer["Server url:"] @Broker.Server</MudText>
+                <MudText Class="hide-overlapping-text">@_localizer["Client id:"] @Broker.ClientId</MudText>
             </Content>
             <Actions>
                 <MudButton OnClick="Cancel" Class="m-1">
@@ -33,10 +38,6 @@
 
 @code
 {
-    // TODO: Implement new way of handling dialogs
-    // TODO: Test look of loading action in dialogs 
-    // TODO: Remove space betwen title
-
     [Parameter]
     public Broker Broker { get; set; } = new();
 
@@ -48,16 +49,26 @@
         if (IsLoading)
             return;
 
-        IsLoading = true;
+        var options = Dialog.Options;
+        options.DisableBackdropClick = true;
+        Dialog!.SetOptions(options);
+
+        // TODO: Create method invoking provided function that solves problem of IsLoading func
+
+        _loadingService.ShowLoading();
 
         var result = await _brokerService.RemoveBroker(Broker.Id);
 
         var success = RequestHelpers.InvokeAfterRequest(_snackbar, result, _localizer["Successfully removed broker."]);
 
-        IsLoading = false;
+        _loadingService.HideLoading();
 
         if (!success)
+        {
+            options.DisableBackdropClick = false;
+            Dialog!.SetOptions(options);
             return;
+        }
 
         Dialog!.Close(DialogResult.Ok(result));
     }
