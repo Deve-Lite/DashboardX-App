@@ -47,17 +47,18 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadPage();
         await base.OnInitializedAsync();
+
+        await _loadingService.InvokeAsync(LoadPage);
     }
 
-    public async Task LoadPage()
+    protected async Task RefreshPage()
     {
-        if (_loadingService.IsLoading)
-            return;
+        await _loadingService.InvokeAsync(LoadPage);
+    }
 
-        _loadingService.ShowLoading();
-
+    public async Task<IResult> LoadPage()
+    {
         var result = await _clientService.GetClients();
         if (result.Succeeded)
         {
@@ -65,7 +66,7 @@
 
             foreach (var client in Clients)
                 client.SetOnMessageReceivedEventHandler(RerenderPage);
-                
+
             LoadedSuccessfully = true;
         }
         else
@@ -77,7 +78,7 @@
             foreach (var message in result.Messages)
                 _snackbar.Add(message, result.Severity);
 
-        _loadingService.HideLoading();
+        return result;
     }
 
     public void Dispose()

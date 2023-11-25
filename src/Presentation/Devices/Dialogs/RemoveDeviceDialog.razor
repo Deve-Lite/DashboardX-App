@@ -1,4 +1,5 @@
 ﻿@using Presentation.Utils;
+@using Presentation.Shared.Dialogs;
 @inject IStringLocalizer<RemoveDeviceDialog> _localizer;
 @inject IDeviceService _deviceService;
 
@@ -6,27 +7,32 @@
 
 <MudDialog>
     <DialogContent>
-        <DialogLoading IsLoading="IsLoading">
-            <LoadedContent>
+        <LoadingDialog>
+            <Title>
+                <MudText Align="Align.Start"
+                         Class="m-0 mt-2 mb-2"
+                         Typo="Typo.h6">
+                    @_localizer["Remove Broker"]
+                </MudText>
+            </Title>
+            <Content>
                 <MudText>@_localizer["Are you sure you want to remove this device?"]</MudText>
                 <MudText>@_localizer["Name:"] @Device.Name</MudText>
                 <MudText>@_localizer["Placing:"] @Device.Placing</MudText>
-            </LoadedContent>
-        </DialogLoading>
+            </Content>
+            <Actions>
+                <MudButton OnClick="Cancel" Class="m-1">
+                    @_localizer["Cancel"]
+                </MudButton>
+                <MudButton OnClick="RemoveAsync"
+                           Class="m-1"
+                           Variant="Variant.Filled"
+                           Color="Color.Error">
+                    @_localizer["Remove"]
+                </MudButton>
+            </Actions>
+        </LoadingDialog>
     </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="Cancel" 
-                   Disabled="IsLoading">
-            @_localizer["Cancel"]
-        </MudButton>
-        <MudButton OnClick="RemoveAsync" 
-                   Disabled="IsLoading"
-                   ButtonType="ButtonType.Submit"
-                   Variant="Variant.Filled"
-                   Color="Color.Error">
-                   @_localizer["Remove"] 
-        </MudButton>
-    </DialogActions>
 </MudDialog>
 
 @code
@@ -38,24 +44,21 @@
 
     private async Task RemoveAsync()
     {
+        var result = await _loadingService.InvokeDialogAsync(RemoveAction);
 
+        if (result.Succeeded)
+            Dialog!.Close(DialogResult.Ok(result));
+    }
+
+    private async Task<IResult> RemoveAction()
+    {
         if (string.IsNullOrEmpty(Device.Id))
-            return;
-
-        if (IsLoading)
-            return;
-
-        IsLoading = true;
+            return Result.Fail();
 
         var result = await _deviceService.RemoveDevice(ClientId, Device.Id);
 
         var success = RequestHelpers.InvokeAfterRequest(_snackbar, result, _localizer["Successfully removed device."]);
 
-        IsLoading = false;
-
-        if (!success)
-            return;
-
-        Dialog!.Close(DialogResult.Ok(result));
+        return result;
     }
 }

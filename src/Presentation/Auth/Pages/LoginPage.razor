@@ -123,15 +123,18 @@
 
     private async Task LoginAsync()
     {
-        if (_loadingService.IsLoading)
-            return;
+        var result = await _loadingService.InvokeAsync(LoginAction);
 
+        if (result.Succeeded)
+            await OnSuccessfullLogin();
+    }
+
+    private async Task<IResult> LoginAction()
+    {
         await Form!.Validate();
 
         if (!Form.IsValid)
-            return;
-
-        _loadingService.ShowLoading();
+            return Result.Fail();
 
         await _localStorage.SetItemAsync(AuthConstraints.RememberMeName, RememberMe);
 
@@ -143,9 +146,9 @@
             ResendButtonVisible = true;
         }
         else
-            await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnSuccessfullLogin);
+            RequestHelpers.InvokeAfterRequest(_snackbar, result);
 
-        _loadingService.HideLoading();
+        return result;
     }
 
     private async Task ResendConfirmEmail()

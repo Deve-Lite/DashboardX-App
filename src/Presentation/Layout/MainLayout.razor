@@ -19,7 +19,6 @@
         <CascadingValue Value="@IsDarkMode">
             <AuthorizeView Roles="@($"{RolesConstraints.User}, {RolesConstraints.Admin}")">
                 <Authorized>
-
                     <MudHidden Breakpoint="Breakpoint.Xs" Invert="true">
                         <MobileNavigation />
                     </MudHidden>
@@ -39,8 +38,9 @@
                     </MudMainContent>
                 </Authorized>
                 <NotAuthorized>
-                    <MudItem Class="image-in-background">
-                        <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-items-center bg-transparent" Style="height: 100vh;">
+                    <MudItem Class="image-in-background main-body">
+                        <MudContainer MaxWidth="MaxWidth.Small" 
+                                      Class="d-flex align-items-center bg-transparent main-body">
                             @Body
                         </MudContainer>
                     </MudItem>
@@ -58,7 +58,6 @@
     public MudTheme AppTheme { get; set; } = ThemeColors.AppTheme;
     public bool IsDarkMode { get; set; } = false;
     public int _width { get; set; } = 0;
-
 
     protected override async Task OnInitializedAsync()
     {
@@ -86,6 +85,8 @@
             }
         };
 
+        //_loadingService.SetRefreshAction(RefreshAsync);
+
         await _preferenceService.LoadPreferences();
         await _mudThemeProvider!.WatchSystemPreference(OnSystemPreferenceChanged);
     }
@@ -98,4 +99,6 @@
             await InvokeAsync(StateHasChanged);
         }
     }
+
+    private async Task RefreshAsync() => await InvokeAsync(StateHasChanged);
 }

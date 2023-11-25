@@ -44,32 +44,30 @@
     private async Task RemoveAsync()
     {
         if (string.IsNullOrEmpty(Broker.Id))
-            return;
-
-        if (IsLoading)
-            return;
-
-        var options = Dialog.Options;
-        options.DisableBackdropClick = true;
-        Dialog!.SetOptions(options);
-
-        // TODO: Create method invoking provided function that solves problem of IsLoading func
-
-        _loadingService.ShowLoading();
-
-        var result = await _brokerService.RemoveBroker(Broker.Id);
-
-        var success = RequestHelpers.InvokeAfterRequest(_snackbar, result, _localizer["Successfully removed broker."]);
-
-        _loadingService.HideLoading();
-
-        if (!success)
         {
-            options.DisableBackdropClick = false;
-            Dialog!.SetOptions(options);
+            Dialog!.Close();
             return;
         }
 
-        Dialog!.Close(DialogResult.Ok(result));
+        var result = await _loadingService.InvokeDialogAsync(RemoveAction);
+
+        if (result.Succeeded)
+            Dialog!.Close(DialogResult.Ok(result));
+
+    }
+
+    private async Task<IResult> RemoveAction()
+    {
+        var options = Dialog!.Options;
+        options.DisableBackdropClick = true;
+        Dialog!.SetOptions(options);
+
+        var result = await _brokerService.RemoveBroker(Broker.Id);
+
+        RequestHelpers.InvokeAfterRequest(_snackbar, result, _localizer["Successfully removed broker."]);
+
+        options.DisableBackdropClick = false;
+        Dialog!.SetOptions(options);
+        return result;
     }
 }

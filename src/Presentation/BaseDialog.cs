@@ -13,27 +13,6 @@ public class BaseDialog : MudDialog, IBrowserViewportObserver, IAsyncDisposable
     public Guid Id { get; } = Guid.NewGuid();
     public ResizeOptions ResizeOptions { get; } = new() { NotifyOnBreakpointOnly = false };
 
-    private bool isLoading = false;
-    protected bool IsLoading
-    {
-        get
-        {
-            return isLoading;
-        }
-        set
-        {
-            if (Dialog is not null)
-            {
-                var x = Dialog.Options;
-                x.DisableBackdropClick = value;
-                x.CloseOnEscapeKey = !value;
-                Dialog.SetOptions(Dialog.Options);
-            }
-
-            isLoading = value;
-        }
-    }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender && IsBrowserViewportsEventsAvailable())

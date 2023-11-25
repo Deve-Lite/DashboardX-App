@@ -14,7 +14,7 @@
 
 <PageLoading FailedToLoad="!LoadedSuccessfully">
     <FailedToLoadContent>
-        <RefreshPageButton RefreshPage="LoadPage" />
+        <RefreshPageButton RefreshPage="RefreshPage" />
     </FailedToLoadContent>
     <LoadedContent>
 
@@ -32,7 +32,6 @@
                          Class="m-0 p-4 rounded-2">
                     <MudCardContent Class="p-0 m-0">
                         <MudGrid Class="m-0 p-0 w-100">
-
                             <MudItem xs="12">
                                 <MudText Typo="Typo.h6" Align="Align.Center"> @Device.Name</MudText>
                             </MudItem>
@@ -111,7 +110,6 @@
                                      RerenderPage="StateHasChanged" />
 
                     </MudCardActions>
-
                 </MudCard>
             </MudItem>
 
@@ -150,25 +148,18 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadPage();
-
-        BreadcrumbItems = new()
-        {
-            new BreadcrumbItem("Brokers", href: "/brokers"),
-            new BreadcrumbItem($"{Client!.GetBroker().Name}", href: $"/brokers/{Client!.GetBroker().Id}"),
-            new BreadcrumbItem($"{Device.Name}", href: $"devices/{Device.Id}/client/{Client!.GetBroker().Id}", true),
-        };
-
         await base.OnInitializedAsync();
+
+        await _loadingService.InvokeAsync(LoadPage);
     }
 
-    public async Task LoadPage()
+    protected async Task RefreshPage()
     {
-        if (_loadingService.IsLoading)
-            return;
+        await _loadingService.InvokeAsync(LoadPage);
+    }
 
-        _loadingService.ShowLoading();
-
+    protected async Task<IResult> LoadPage()
+    {
         var result = await _clientService.GetClient(ClientId);
 
         if (result.Succeeded)
@@ -187,10 +178,17 @@
             foreach (var message in result.Messages)
                 _snackbar.Add(message, result.Severity);
 
-        _loadingService.HideLoading();
+        BreadcrumbItems = new()
+        {
+            new BreadcrumbItem("Brokers", href: "/brokers"),
+            new BreadcrumbItem($"{Client!.GetBroker().Name}", href: $"/brokers/{Client!.GetBroker().Id}"),
+            new BreadcrumbItem($"{Device.Name}", href: $"devices/{Device.Id}/client/{Client!.GetBroker().Id}", true),
+        };
+
+        return result;
     }
 
-    public async Task AddControl()
+    protected async Task AddControl()
     {
         await ControlPagesUtils.AddControl(_dialogService, DeviceId, StateHasChanged, _localizer, ClientId);
 

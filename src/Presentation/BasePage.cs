@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Presentation.Application.Interfaces;
 
 namespace Presentation;
 
@@ -6,10 +7,19 @@ public class BasePage : ComponentBase
 {
     [Inject]
     protected ILogger<BasePage> Logger { get; set; } = default!;
+    [Inject]
+    protected ILoadingService LoadingService { get; set; } = default!;
+
     protected bool LoadedSuccessfully { get; set; } = true;
     protected List<BreadcrumbItem> BreadcrumbItems { get; set; } = new();
 
     private bool awaitingRefresh = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        LoadingService.SetRefreshAction(RerenderPage);
+    }
 
     protected Task RerenderPage()
     {

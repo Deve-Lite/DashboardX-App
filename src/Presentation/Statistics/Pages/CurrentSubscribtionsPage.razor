@@ -6,6 +6,9 @@
 @inherits BasePage
 
 <PageLoading FailedToLoad="!LoadedSuccessfully">
+    <FailedToLoadContent>
+        <RefreshPageButton RefreshPage="RefreshPage" />
+    </FailedToLoadContent>
     <LoadedContent>
         <MudGrid Class="m-0 p-3 w-100">
             <MudItem xs="12" Class="p-0 m-0">
@@ -44,7 +47,7 @@
     </LoadedContent>
 </PageLoading>
 
-@code {
+    @code {
 
     private MudTable<SubscribedTopicInformation> _tableRef;
     private IList<SubscribedTopicInformation> TopicInformations { get; set; } = new List<SubscribedTopicInformation>();
@@ -68,11 +71,17 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (_loadingService.IsLoading)
-            return;
+        await base.OnInitializedAsync();
+        await _loadingService.InvokeAsync(LoadPage);
+    }
 
-        _loadingService.ShowLoading();
+    protected async Task RefreshPage()
+    {
+        await _loadingService.InvokeAsync(LoadPage);
+    }
 
+    protected async Task<IResult> LoadPage()
+    {
         var result = await _clientService.GetClients();
         if (result.Succeeded)
         {
@@ -95,8 +104,6 @@
             foreach (var message in result.Messages)
                 _snackbar.Add(message, result.Severity);
 
-        _loadingService.HideLoading();
+        return result;
     }
-
-
 }

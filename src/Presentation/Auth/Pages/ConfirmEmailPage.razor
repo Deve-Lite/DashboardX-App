@@ -22,22 +22,21 @@
 
         if (!string.IsNullOrEmpty(Token))
         {
-
-            if (LoadingService.IsLoading)
-                return;
-
-            LoadingService.ShowLoading();
-
-            var confirmResult = await AuthenticationService.ConfirmEmail(Token);
-
-            if (confirmResult.Succeeded)
-                Snackbar.Add(_localizer["Successfully confirmed email."], Severity.Success);
-            else
-                Snackbar.Add(_localizer["Failed to confirm email. Please try to login."], Severity.Error);
-
-            LoadingService.HideLoading();
+            var result = await _loadingService.InvokeAsync(ConfirmEmailAction);
         }
 
         NavigationManager.NavigateTo("/auth/login");
+    }
+
+    private async Task<IResult> ConfirmEmailAction()
+    {
+        var result = await AuthenticationService.ConfirmEmail(Token);
+
+        if (result.Succeeded)
+            Snackbar.Add(_localizer["Successfully confirmed email."], Severity.Success);
+        else
+            Snackbar.Add(_localizer["Failed to confirm email. Please try to login."], Severity.Error);
+
+        return result;
     }
 }

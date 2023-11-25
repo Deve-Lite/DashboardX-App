@@ -110,7 +110,6 @@ public abstract class AuthorizedService : BaseService
         _applicationStateProvider?.Logout();
         //TODO: Create new service that will work as navigation
         //manager and loading service to handle such situations
-        _loadingService.HideLoading();
         _navigationManager.NavigateTo("/auth/login");
 
         return false;

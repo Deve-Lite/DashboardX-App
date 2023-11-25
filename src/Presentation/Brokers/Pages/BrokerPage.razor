@@ -98,7 +98,7 @@
                         <MudButton Class="z-10 m-0 ml-2 mr-2"
                                    Variant="Variant.Filled"
                                    Color="Color.Error"
-                                   OnClick="() => BrokerPagesUtils.RemoveBroker(Client!, _dialogService, StateHasChanged, _localizer)">
+                                   OnClick="() => BrokerPagesUtils.RemoveBroker(Client!, _dialogService, StateHasChanged, _localizer, _navigationManager, _runtime)">
                             @_localizer["Delete"]
                         </MudButton>
 
@@ -140,25 +140,18 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadPage();
-
-        BreadcrumbItems = new()
-        {
-            new BreadcrumbItem("Brokers", href: "/brokers"),
-            new BreadcrumbItem($"{Client!.GetBroker().Name}", href: $"/brokers/{Client!.GetBroker().Id}"),
-        };
-
         await base.OnInitializedAsync();
 
+        await _loadingService.InvokeAsync(LoadPage);
     }
 
-    public async Task LoadPage()
+    protected async Task RefreshPage()
     {
-        if (_loadingService.IsLoading)
-            return;
+        await _loadingService.InvokeAsync(LoadPage);
+    }
 
-        _loadingService.ShowLoading();
-
+    protected async Task<IResult> LoadPage()
+    {
         var result = await _clientService.GetClient(BrokerId);
 
         if (result.Succeeded)
@@ -176,7 +169,13 @@
             foreach (var message in result.Messages)
                 _snackbar.Add(message, result.Severity);
 
-        _loadingService.HideLoading();
+        BreadcrumbItems = new()
+        {
+            new BreadcrumbItem("Brokers", href: "/brokers"),
+            new BreadcrumbItem($"{Client!.GetBroker().Name}", href: $"/brokers/{Client!.GetBroker().Id}"),
+        };
+
+        return result;
     }
 
     public void Dispose()

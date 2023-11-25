@@ -1,4 +1,6 @@
 ﻿@using Presentation.Utils;
+@using Presentation.Shared.Dialogs;
+
 @inject IStringLocalizer<UpsertBrokerDialog> _localizer;
 @inject IBrokerService _brokerService
 @inject IFetchBrokerService _fetchBrokerService
@@ -7,8 +9,15 @@
 
 <MudDialog>
     <DialogContent>
-        <DialogLoading IsLoading="IsLoading">
-            <LoadedContent>
+        <LoadingDialog>
+            <Title>
+                <MudText Align="Align.Start"
+                         Class="m-0 mt-2 mb-2"
+                         Typo="Typo.h6">
+                    @Title()
+                </MudText>
+            </Title>
+            <Content>
                 <MudForm @ref="@Form"
                          Model="@Model"
                          Validation="@(BrokerValidator.ValidateValue)"
@@ -89,7 +98,7 @@
                                           For="@(() => Model.ClientId)" />
                         </MudItem>
 
-                        
+
                     </MudGrid>
                 </MudForm>
 
@@ -124,26 +133,25 @@
                             <MudItem xs="12"
                                      Class="p-1 m-0">
                                 <PasswordTextField @bind-Value="CredentialsModel.Password"
-                                               Label="@_localizer["Password"]"
-                                               For="@(() => CredentialsModel.Password)" />
+                                                   Label="@_localizer["Password"]"
+                                                   For="@(() => CredentialsModel.Password)" />
                             </MudItem>
                         }
                     </MudGrid>
                 </MudForm>
-
-            </LoadedContent>
-        </DialogLoading>
+            </Content>
+            <Actions>
+                <MudButton OnClick="Cancel">
+                    @_localizer["Cancel"]
+                </MudButton>
+                <MudButton OnClick="SubmitAsync"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary">
+                    @_localizer["Submit"]
+                </MudButton>
+            </Actions>
+        </LoadingDialog>
     </DialogContent>
-    <DialogActions >
-        <MudButton OnClick="Cancel"
-                   Disabled="IsLoading">
-            @_localizer["Cancel"]
-        </MudButton>
-        <MudButton OnClick="SubmitAsync"
-                   Disabled="IsLoading"
-                   Variant="Variant.Filled"
-                   Color="Color.Primary">@_localizer["Submit"] </MudButton>
-    </DialogActions>
 </MudDialog>
 
 @code
@@ -194,15 +202,25 @@
         await base.OnAfterRenderAsync(firstRender);
     }
 
+    protected override string Title()
+        => !string.IsNullOrWhiteSpace(Model.Id) ? _localizer["Update Broker"] : _localizer["Add Broker"];
+
     private async Task SubmitAsync()
     {
-        if (IsLoading)
-            return;
+        var result = await _loadingService.InvokeDialogAsync(SumbitAction);
+
+        if (result.Succeeded)
+            Dialog!.Close(DialogResult.Ok(result));
+    }
+
+    private async Task<IResult> SumbitAction()
+    {
+        IResult result = Result.Fail();
 
         await Form!.Validate();
 
         if (!Form.IsValid)
-            return;
+            return result;
 
         if (!ShowAuthorizationFields || string.IsNullOrEmpty(CredentialsModel.Password) || string.IsNullOrEmpty(CredentialsModel.Username))
         {
@@ -213,24 +231,15 @@
         await CredentialsForm!.Validate();
 
         if (!CredentialsForm.IsValid)
-            return;
-
-        IsLoading = true;
-
-        IResult result = Result.Fail();
+            return result;
 
         if (string.IsNullOrEmpty(Model.Id))
             result = await _brokerService.CreateBroker(Model, CredentialsModel);
         else
             result = await _brokerService.UpdateBroker(Model, CredentialsModel);
 
-        var success = RequestHelpers.InvokeAfterRequest(_snackbar, result, _localizer["Successfully updated broker."]);
+        RequestHelpers.InvokeAfterRequest(_snackbar, result, _localizer["Successfully updated broker."]);
 
-        IsLoading = false;
-
-        if (!success)
-            return;
-
-        Dialog!.Close(DialogResult.Ok(result));
+        return result;
     }
 }

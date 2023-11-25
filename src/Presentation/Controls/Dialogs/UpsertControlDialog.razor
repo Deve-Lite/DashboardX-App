@@ -1,6 +1,8 @@
 ﻿@using MQTTnet.Protocol;
 @using Presentation.Utils;
 @using Presentation.Controls.Implementations.RadioComponents;
+@using Presentation.Shared.Dialogs;
+
 @inject IStringLocalizer<UpsertControlDialog> _localizer;
 @inject IControlService _controlService
 @inject IFetchBrokerService _brokerService
@@ -9,13 +11,21 @@
 
 <MudDialog>
     <DialogContent>
-        <MudForm @ref="Form"
-                 Model="@Model"
-                 Validation="@(Validator.ValidateValue)"
-                 ValidationDelay="0"
-                 Class="m-0 p-0 w-100">
-            <DialogLoading IsLoading="IsLoading">
-                <LoadedContent>
+        <LoadingDialog>
+            <Title>
+                <MudText Align="Align.Start"
+                         Class="m-0 mt-2 mb-2"
+                         Typo="Typo.h6">
+                    @Title()
+                </MudText>
+            </Title>
+            <Content>
+                <MudForm @ref="Form"
+                         Model="@Model"
+                         Validation="@(Validator.ValidateValue)"
+                         ValidationDelay="0"
+                         Class="m-0 p-0 w-100">
+
                     <MudGrid Class="m-0 p-3 w-100">
 
                         <MudItem xs="3"
@@ -127,7 +137,7 @@
                                               Variant="Variant.Filled"
                                               Label="@_localizer["Payload"]"
                                               HelperText="@_localizer["Provide payload to be send on click."]"
-                                          For="@(() => Model.Attributes.Payload)" />
+                                              For="@(() => Model.Attributes.Payload)" />
                             </MudItem>
 
                         }
@@ -313,7 +323,7 @@
                                               OnlyValidateIfDirty="true"
                                               Class="p-0 m-0"
                                               HelperText="@_localizer["Provide payload to be send on click with inserted value."]"
-                                          For="@(() => Model.Attributes.PayloadTemplate)" />
+                                              For="@(() => Model.Attributes.PayloadTemplate)" />
                             </MudItem>
 
                             <MudItem xs="7">
@@ -349,8 +359,8 @@
                             </MudItem>
 
                             <MudItem xs="7">
-                                <MudSelect @bind-Value="Model.Attributes.ColorFormatEnum" 
-                                        Label="@_localizer["Format Type"]"
+                                <MudSelect @bind-Value="Model.Attributes.ColorFormatEnum"
+                                           Label="@_localizer["Format Type"]"
                                            Variant="Variant.Filled"
                                            AnchorOrigin="Origin.BottomCenter"
                                            Disabled="@(!string.IsNullOrEmpty(Model.Id))"
@@ -400,25 +410,28 @@
 
                         }
                     </MudGrid>
-                </LoadedContent>
-            </DialogLoading>
-        </MudForm>
+
+                </MudForm>
+            </Content>
+            <Actions>
+                <MudButton OnClick="Cancel">
+                    @_localizer["Cancel"]
+                </MudButton>
+                <MudButton OnClick="SubmitAsync"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary">
+                    @_localizer["Submit"]
+                </MudButton>
+            </Actions>
+        </LoadingDialog>
     </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="Cancel"
-                   Disabled="IsLoading">
-            @_localizer["Cancel"]
-        </MudButton>
-        <MudButton OnClick="SubmitAsync"
-                   Disabled="IsLoading"
-                   ButtonType="ButtonType.Submit"
-                   Variant="Variant.Filled"
-                   Color="Color.Primary">@_localizer["Submit"] </MudButton>
-    </DialogActions>
 </MudDialog>
 
 @code
 {
+    //TODO: Split dialog into 2 page dialog
+        //TODO: Change ControlDTO dialog
+
     [Parameter]
     public Control Control { get; set; } = new();
     [Parameter]
@@ -446,6 +459,9 @@
 
         base.OnInitialized();
     }
+
+    protected override string Title()
+        => !string.IsNullOrWhiteSpace(Model.Id) ? _localizer["Update Control"] : _localizer["Add Control"];
 
     private void TypeChanged(ControlType typeSelected)
     {
@@ -484,44 +500,43 @@
         StateHasChanged();
     }
 
+
     private async Task SubmitAsync()
     {
-        if (IsLoading)
-            return;
+        var result = await _loadingService.InvokeDialogAsync(SubmitAction);
+
+        if (result.Succeeded)
+            Dialog!.Close(DialogResult.Ok(result));
+    }
+
+    public async Task<IResult> SubmitAction()
+    {
+        IResult result = Result.Fail();
 
         await Form.Validate();
 
-        if(Model.Type == ControlType.Radio)
+        if (Model.Type == ControlType.Radio)
         {
             RadioOptions = new();
             var validationResult = await Validator.ValidateAsync(Model);
 
             if (!validationResult.IsValid)
-                return;
+                return result;
         }
         else
         {
             if (!Form.IsValid)
-                return;
+                return result;
         }
-
-        IsLoading = true;
-
-        IResult result = Result.Fail();
 
         if (string.IsNullOrEmpty(Model.Id))
             result = await _controlService.CreateControl(ClientId, Model);
         else
             result = await _controlService.UpdateControl(ClientId, Model);
 
-        var success = RequestHelpers.InvokeAfterRequest(_snackbar, result, _localizer["Successfully updated control."]);
+        RequestHelpers.InvokeAfterRequest(_snackbar, result, _localizer["Successfully updated control."]);
 
-        IsLoading = false;
-
-        if (!success)
-            return;
-
-        Dialog!.Close(DialogResult.Ok(result));
+        return result;
     }
 
     private async Task AddOption()
