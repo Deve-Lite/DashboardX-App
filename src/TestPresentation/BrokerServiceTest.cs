@@ -3,85 +3,79 @@ using Presentation.Brokers.Interfaces;
 
 namespace PresentationTests;
 
-internal class BrokerServiceTest : BaseServiceTest
+public class BrokerServiceTest : BaseTest, IAsyncLifetime
 {
-    public IBrokerService BrokerService { get; private set; }
+    private IBrokerService BrokerService { get; set; }
 
-    public BrokerServiceTest() : base()
+    public  async Task InitializeAsync()
     {
         BrokerService = new BrokerService(FetchBrokerService, ClientManager);
+        await Setup();
     }
 
-    [SetUp]
-    public override async Task SetUpTest()
+    public Task DisposeAsync()
     {
-        await base.SetUpTest();
+        TearDown();
+        return Task.CompletedTask;
     }
 
-    [TearDown]
-    public void TearDown()
-    {
-        base.TearDownTest();
-        BrokerService = new BrokerService(FetchBrokerService, ClientManager);
-    }
-
-    [Test]
+    [Fact]
     public async Task CreateBrokerTest()
     {
         var clients = await ClientService.GetClientsWithDevices();
 
-        Assert.That(clients!.Data, Has.Count.EqualTo(2));
+        Assert.NotNull(clients);
+        Assert.True(clients!.Data.Count == 2);
 
         var newBroker = BrokerDtoGenerator.GenerateBrokerDto();
         var result = await BrokerService.CreateBroker(newBroker, BrokerDtoGenerator.GenerateBrokerCredentialsDto());
 
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Succeeded);
+        Assert.NotNull(result);
+        Assert.True(result.Succeeded);
 
         clients = await ClientService.GetClients();
 
-        Assert.That(clients.Data, Has.Count.EqualTo(3));
-
+        Assert.True(clients!.Data.Count == 3);
     }
 
-    [Test]
+    [Fact]
     public async Task UpdateBrokerTest()
     {
         var clients = await ClientService.GetClientsWithDevices();
 
-        Assert.That(clients!.Data, Has.Count.EqualTo(2));
+        Assert.Equal(2, clients!.Data.Count);
 
         var brokers = await FetchBrokerService.GetBrokers();
         var broker = brokers.Data[0];
         broker.Server = "google.com";
         var result = await BrokerService.UpdateBroker(broker.Dto(), BrokerDtoGenerator.GenerateBrokerCredentialsDto());
 
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Succeeded);
+        Assert.NotNull(result);
+        Assert.True(result.Succeeded);
 
         clients = await ClientService.GetClients();
 
-        Assert.That(clients.Data, Has.Count.EqualTo(2));
-        Assert.That(clients.Data.Any(x => x.GetBroker().Server == "google.com"), Is.True);
+        Assert.Equal(2, clients.Data.Count);
+        Assert.Contains(clients.Data, x => x.GetBroker().Server == "google.com");
     }
 
-    [Test]
+    [Fact]
     public async Task RemoveBrokerTest()
     {
         var clients = await ClientService.GetClientsWithDevices();
 
-        Assert.That(clients!.Data, Has.Count.EqualTo(2));
+        Assert.Equal(2, clients!.Data.Count);
 
         var brokers = await FetchBrokerService.GetBrokers();
         var brokerToRemove = brokers.Data[0];
 
         var result = await BrokerService.RemoveBroker(brokerToRemove.Id);
 
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Succeeded);
+        Assert.NotNull(result);
+        Assert.True(result.Succeeded);
 
         clients = await ClientService.GetClients();
 
-        Assert.That(clients.Data, Has.Count.EqualTo(1));
+        Assert.Equal(1, clients.Data.Count);
     }
 }

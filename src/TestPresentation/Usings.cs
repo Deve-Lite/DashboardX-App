@@ -1,6 +1,4 @@
-global using NUnit;
-global using NUnit.Framework;
-
+global using Xunit;
 
 global using Common;
 global using Common.App;

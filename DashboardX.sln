@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "src\Common\Common
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "src\Core\Core.csproj", "{3D0D76B6-2D3D-4D08-A76C-3ED96A998F9E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PresentationTests", "src\PresentationTests\PresentationTests.csproj", "{959C881B-397A-4726-8885-76AABDA64572}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestPresentation", "src\TestPresentation\TestPresentation.csproj", "{E0E9835F-7A9C-4B43-B57D-244AA8656175}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +29,10 @@ Global
 		{3D0D76B6-2D3D-4D08-A76C-3ED96A998F9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3D0D76B6-2D3D-4D08-A76C-3ED96A998F9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3D0D76B6-2D3D-4D08-A76C-3ED96A998F9E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{959C881B-397A-4726-8885-76AABDA64572}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{959C881B-397A-4726-8885-76AABDA64572}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{959C881B-397A-4726-8885-76AABDA64572}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{959C881B-397A-4726-8885-76AABDA64572}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0E9835F-7A9C-4B43-B57D-244AA8656175}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0E9835F-7A9C-4B43-B57D-244AA8656175}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0E9835F-7A9C-4B43-B57D-244AA8656175}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0E9835F-7A9C-4B43-B57D-244AA8656175}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
