@@ -1,9 +1,7 @@
 ﻿@using Presentation.Layout.Navigation;
 
 @inject IStringLocalizer<CommonDrawer> _localizer
-@inject AuthenticationStateProvider _authenticationStateProvider
-@inject ILocalStorageService _localStorage
-@inject IClientService _clientService
+@inject IAuthenticationManager _authenticationManager
 
 <MudNavMenu Class="pt-2">
     <MudNavLink Icon="@CommonLayoutSettings.BrokersIcon"
@@ -51,14 +49,6 @@
     {
         //TODO: Dialog confirm logout
 
-        var applicationAuthorization = (_authenticationStateProvider as ApplicationStateProvider)!;
-
-        await applicationAuthorization.Logout();
-        await _localStorage!.RemoveItemAsync(BrokerConstraints.BrokerListName);
-        await _localStorage!.RemoveItemAsync(DeviceConstants.DevicesListName);
-        await _localStorage!.RemoveItemAsync(UserConstraints.PreferencesStorage);
-
-        //TODO: Logout for
-        await _clientService.Logout();
+        await _authenticationManager.Logout();
     }
 }

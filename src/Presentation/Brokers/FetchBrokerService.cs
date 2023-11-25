@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using System.Text.Json;
 using Presentation.Application.Interfaces;
 
@@ -8,11 +7,9 @@ namespace Presentation.Brokers;
 public class FetchBrokerService : AuthorizedService, IFetchBrokerService
 {
     public FetchBrokerService(HttpClient httpClient,
-                         ILogger<FetchBrokerService> logger,
-                         ILoadingService loadingService,    
-                         NavigationManager navigationManager,
-                         AuthenticationStateProvider authenticationState)
-        : base(httpClient, loadingService, logger, navigationManager, authenticationState)
+                              ILogger<FetchBrokerService> logger,
+                              IAuthenticationManager authenticationManager)
+        : base(httpClient, logger, authenticationManager)
     {
     }
 

@@ -8,6 +8,7 @@ public static class ApplicationServicesExtensions
     {
 
         builder.Services.AddScoped<AuthenticationStateProvider, ApplicationStateProvider>();
+        builder.Services.AddScoped<IAuthenticationManager, AuthenticationManager>();
 
         builder.Services.AddBlazoredLocalStorageAsSingleton();
         builder.Services.AddBlazoredSessionStorageAsSingleton();

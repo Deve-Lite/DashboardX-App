@@ -9,10 +9,8 @@ public class FetchDeviceService : AuthorizedService, IFetchDeviceService
 {
     public FetchDeviceService(HttpClient httpClient, 
                          ILogger<FetchDeviceService> logger,
-                         ILoadingService loadingService,
-                         NavigationManager navigationManager, 
-                         AuthenticationStateProvider authenticationState)
-        : base(httpClient, loadingService, logger, navigationManager, authenticationState)
+                               IAuthenticationManager authenticationManager)
+        : base(httpClient, logger, authenticationManager)
     {
     }
 

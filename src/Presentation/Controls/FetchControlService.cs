@@ -1,6 +1,5 @@
 ﻿using System.Text.Json.Serialization;
 using System.Text.Json;
-using Microsoft.AspNetCore.Components;
 using Presentation.Application.Interfaces;
 
 namespace Presentation.Controls;
@@ -9,11 +8,9 @@ namespace Presentation.Controls;
 public class FetchControlService : AuthorizedService, IFetchControlService
 {
     public FetchControlService(HttpClient httpClient,
-        ILoadingService loadingService,
-        ILogger<AuthorizedService> logger,
-        NavigationManager navigationManager,
-        AuthenticationStateProvider authenticationState) 
-        : base(httpClient, loadingService, logger, navigationManager, authenticationState) { }
+                               ILogger<AuthorizedService> logger,
+                               IAuthenticationManager authenticationManager)
+        : base(httpClient, logger, authenticationManager) { }
 
     public async Task<IResult<List<Control>>> GetControls(string deviceId)
     {
