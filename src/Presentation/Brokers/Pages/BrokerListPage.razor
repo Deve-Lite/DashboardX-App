@@ -48,8 +48,25 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-
+        _loadingService.SetRefreshAction(SilentRefreshPage);
         await _loadingService.InvokeAsync(LoadPage);
+    }
+
+    protected async Task SilentRefreshPage()
+    {
+        var result = await _clientService.GetClients(false);
+
+        if (result.Succeeded)
+        {
+            Clients = result.Data;
+
+            StateHasChanged();
+
+            foreach (var client in Clients)
+                client.SetOnMessageReceivedEventHandler(RerenderPage);
+        }
+
+        await RerenderPage();
     }
 
     protected async Task RefreshPage()

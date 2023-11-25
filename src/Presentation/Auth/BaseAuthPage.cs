@@ -10,8 +10,6 @@ public class BaseAuthPage : BasePage
     [Inject]
     protected IAuthenticationService AuthenticationService { get; set; } = default!;
     [Inject]
-    protected ILoadingService LoadingService { get; set; } = default!;
-    [Inject]
     protected ISnackbar Snackbar { get; set; } = default!;
     [Inject]
     protected IUserService UserService { get; set; } = default!;

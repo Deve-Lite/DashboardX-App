@@ -8,8 +8,7 @@ public class DevicePagesUtils
 {
 
     public static async Task UpdateDevice(Device device, 
-        IDialogService dialogService, 
-        Action refreshUI, 
+        IDialogService dialogService,  
         IStringLocalizer<object> localizer)
     {
         var parameters = new DialogParameters<UpsertDeviceDialog>
@@ -29,11 +28,6 @@ public class DevicePagesUtils
             return;
 
         var x = result.Data as Result<Client> ?? Result<Client>.Fail(message: localizer["Couldn't parse response."]);
-
-        if (x.Succeeded)
-        {
-            refreshUI.Invoke();
-        }
     }
 
     public static async Task RemoveDevice(Device device, 

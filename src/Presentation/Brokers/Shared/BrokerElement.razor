@@ -1,6 +1,8 @@
 ﻿@using Presentation.Utils;
 
 @inject IStringLocalizer<BrokerElement> _localizer
+@inject IClientService _clientService
+@inject ILogger<BrokerElement> _logger
 
 <MudPaper Class="m-0 p-0 rounded-4 animate-simple" Elevation="1">
     <MudGrid Class="m-0 p-0 w-100">
@@ -82,7 +84,13 @@
     protected override void OnInitialized()
     {
         Broker = Client.GetBroker();
+
         UnderNameText = _localizer["Show Actions"];
+    }
+
+    protected override void OnParametersSet()
+    {
+        Broker = Client.GetBroker();
     }
 
     public string GetBackgroundColor() => string.IsNullOrEmpty(Broker.Icon.BackgroundHex) ? ThemeColors.ColorPrimary : Broker.Icon.BackgroundHex;

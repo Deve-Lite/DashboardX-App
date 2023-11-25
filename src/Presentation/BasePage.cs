@@ -37,6 +37,8 @@ public class BasePage : ComponentBase
         timer.Elapsed += async (sender, e) =>
         {
             await InvokeAsync(StateHasChanged);
+            timer.Stop();
+            timer.Dispose();
             awaitingRefresh = false;
         };
 

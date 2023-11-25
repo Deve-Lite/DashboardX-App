@@ -190,7 +190,6 @@ else
 
         if (onPayload)
         {
-
             payload = Control.Attributes.OnPayload;
         }
 
@@ -198,7 +197,7 @@ else
 
         await Client!.PublishAsync(topic, payload!, Control!.QualityOfService);
 
-        RerenderPage!.Invoke();
+        StateHasChanged();
     }
 
     public void NotAvaliableToast()

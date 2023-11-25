@@ -34,8 +34,11 @@ public class ClientService : IClientService
 
         clientsResult.Data.Clear();
     }
-    public async Task<IResult<IList<IClient>>> GetClientsWithDevices()
+    public async Task<IResult<IList<IClient>>> GetClientsWithDevices(bool fetch = true)
     {
+        if (!fetch)
+            return Result<IList<IClient>>.Success(_clientManager.GetClients().Data);
+
         var brokersTask = _brokerService.GetBrokers();
         var devicesTask = _deviceService.GetDevices();
 
@@ -91,8 +94,11 @@ public class ClientService : IClientService
 
         return Result<IList<IClient>>.Fail(clientsResult.Data, brokersResult.StatusCode);
     }
-    public async Task<IResult<IList<IClient>>> GetClients()
+    public async Task<IResult<IList<IClient>>> GetClients(bool fetch = true)
     {
+        if (!fetch)
+            return Result<IList<IClient>>.Success(_clientManager.GetClients().Data);
+
         var result = await _brokerService.GetBrokers();
 
         if (!result.Succeeded)
@@ -120,8 +126,11 @@ public class ClientService : IClientService
 
         return Result<IList<IClient>>.Success(clientsResult.Data, result.StatusCode);
     }
-    public async Task<IResult<IClient>> GetClient(string brokerId)
+    public async Task<IResult<IClient>> GetClient(string brokerId, bool fetch = true)
     {
+        if (!fetch)
+            return Result<IClient>.Success(_clientManager.GetClients().Data.First(x => x.Id == brokerId));
+
         var brokerTask = _brokerService.GetBroker(brokerId);
         var deviceTask = _deviceService.GetDevices(brokerId);
 
