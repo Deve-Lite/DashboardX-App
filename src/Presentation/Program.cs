@@ -1,5 +1,4 @@
 using Presentation;
-using Presentation.Application.Interfaces;
 using Presentation.Auth;
 using Presentation.Brokers;
 using Presentation.Controls;
@@ -18,11 +17,8 @@ builder.AddClientServices();
 builder.AddUserServices();
 builder.AddApplicationServices();
 
-var build = builder.Build();
+var host = builder.Build();
 
-var authManager = build.Services.GetService<IAuthenticationManager>();
-var clientService = build.Services.GetService<IClientService>();
+host.ObserveLogout();
 
-authManager.ObserveLogout(clientService);
-
-await build.RunAsync();
+await host.RunAsync();

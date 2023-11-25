@@ -85,8 +85,6 @@
             }
         };
 
-        //_loadingService.SetRefreshAction(RefreshAsync);
-
         await _preferenceService.LoadPreferences();
         await _mudThemeProvider!.WatchSystemPreference(OnSystemPreferenceChanged);
     }

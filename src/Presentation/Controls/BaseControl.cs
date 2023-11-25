@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Presentation.Shared;
+using Presentation.Shared.Dialogs;
 
 namespace Presentation.Controls;
 
