@@ -1,8 +1,9 @@
-﻿namespace Presentation.Clients;
+﻿using Presentation.Application.Interfaces;
 
-public interface IClientService
+namespace Presentation.Clients;
+
+public interface IClientService : ILogoutObserver
 {
-    Task Logout();
     Task<IResult<IList<IClient>>> GetClientsWithDevices(bool fetch = true);
     Task<IResult<IList<IClient>>> GetClients(bool fetch = true);
     Task<IResult<IClient>> GetClient(string clientId, bool fetch = true);

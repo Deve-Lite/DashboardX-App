@@ -1,7 +1,9 @@
-﻿namespace Presentation.Clients;
+﻿using Presentation.Application.Interfaces;
+
+namespace Presentation.Clients;
 
 //TODO: Thinkof extending class with localizer
-public class ClientService : IClientService
+public class ClientService : IClientService, ILogoutObserver
 {
     private readonly IFetchBrokerService _brokerService;
     private readonly IFetchDeviceService _deviceService;

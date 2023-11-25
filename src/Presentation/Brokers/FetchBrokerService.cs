@@ -9,9 +9,7 @@ public class FetchBrokerService : AuthorizedService, IFetchBrokerService
     public FetchBrokerService(HttpClient httpClient,
                               ILogger<FetchBrokerService> logger,
                               IAuthenticationManager authenticationManager)
-        : base(httpClient, logger, authenticationManager)
-    {
-    }
+        : base(httpClient, logger, authenticationManager) { }
 
     public async Task<IResult<List<Broker>>> GetBrokers()
     {
