@@ -14,12 +14,6 @@
     flex-wrap: wrap; 
 }
 
-@media (min-width: 768px) {
-    .flex-list-justify {
-        justify-content: flex-start;
-    }
-}
-
 .dim-background::before {
     content: "";
     position: fixed;
@@ -36,4 +30,133 @@
 
 .dim-background:hover::before {
     opacity: 1;
+}
+
+.hide-overlapping-text {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.text-600 {
+    font-weight:600;
+}
+
+.ellipsis {
+    width: 400px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.add-wrapper {
+    position: absolute !important;
+    bottom: 0 !important;
+    right: 0 !important;
+    width: 3.5rem;
+    height: 3.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 25% !important;
+    padding: 0 !important;
+    min-width: 0 !important;
+    margin-bottom: 30px !important;
+    margin-right: 20px !important;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px !important;
+}
+
+.add-icon {
+    font-size: 3rem !important;
+    margin: 0;
+    padding: 0;
+}
+
+.list-icon {
+    font-size: 2.5rem !important;
+}
+
+.list-option-icon {
+    font-size: 2.25rem !important;
+}
+
+.main-body 
+{
+    height: 100% !important;
+}
+
+.dialog-footer {
+    padding: 0.5rem !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+@media screen and (max-width: 1280px) {
+    .ellipsis {
+        width: 300px;
+    }
+
+    .add-icon {
+        font-size: 2.5rem !important;
+        margin: 0;
+        padding: 0;
+    }
+
+    .add-wrapper {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    .list-icon {
+        font-size: 2rem !important;
+    }
+
+    .list-option-icon {
+        font-size: 1.75rem !important;
+    }
+
+}
+
+@media screen and (max-width: 600px) {
+
+    .ellipsis {
+        width: auto;
+    }
+
+    .add-icon {
+        font-size: 2rem !important;
+        margin: 0;
+        padding: 0;
+    }
+
+    .add-wrapper {
+        width: 2.5rem;
+        height: 2.5rem;
+        margin-bottom: 60px !important;
+    }
+
+    .list-icon {
+        font-size: 1.75rem !important;
+    }
+
+    .list-option-icon {
+        font-size: 1.5rem !important;
+    }
+
+    .main-body {
+        padding-top: 0 !important;
+    }
+
+    .flex-list-justify {
+        justify-content: flex-start;
+    }
+
+    .dialog-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        display:flex;
+        align-items: center;
+        justify-content: space-evenly;
+    }
 }

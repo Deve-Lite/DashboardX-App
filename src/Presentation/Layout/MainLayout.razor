@@ -1,0 +1,104 @@
+@using Presentation.Utils;
+@using Presentation.Extensions;
+@using Presentation.Layout.Navigation;
+
+@inject AuthenticationStateProvider _authenticationStateProvider
+@inject IStringLocalizer<MainLayout> _localizer
+@inject ILocalStorageService _localStorage
+@inject IPrefrenceService _preferenceService
+@inject IClientService _clientService
+
+@inherits LayoutComponentBase
+
+<MudLayout Class="p-0 m-0 w-100 h-100">
+    <MudThemeProvider IsDarkMode="@IsDarkMode" @ref="_mudThemeProvider" Theme="@AppTheme" />
+    <MudSnackbarProvider />
+    <MudDialogProvider />
+
+    <CascadingValue Value="@AppTheme">
+        <CascadingValue Value="@IsDarkMode">
+            <AuthorizeView Roles="@($"{RolesConstraints.User}, {RolesConstraints.Admin}")">
+                <Authorized>
+                    <MudHidden Breakpoint="Breakpoint.Xs" Invert="true">
+                        <MobileNavigation />
+                    </MudHidden>
+
+                    <MudHidden Breakpoint="Breakpoint.MdAndDown">
+                        <DesktopNavigation />
+                    </MudHidden>
+
+                    <MudHidden Breakpoint="Breakpoint.Xs">
+                        <MudHidden Breakpoint="Breakpoint.LgAndUp">
+                            <TabletNavigation />
+                        </MudHidden>
+                    </MudHidden>
+
+                    <MudMainContent Class="main-body">
+                        @Body
+                    </MudMainContent>
+                </Authorized>
+                <NotAuthorized>
+                    <MudItem Class="image-in-background main-body">
+                        <MudContainer MaxWidth="MaxWidth.Small" 
+                                      Class="d-flex align-items-center bg-transparent main-body">
+                            @Body
+                        </MudContainer>
+                    </MudItem>
+                </NotAuthorized>
+            </AuthorizeView>
+        </CascadingValue>
+    </CascadingValue>
+</MudLayout>
+
+@code 
+{
+    private Theme ThemeType = Theme.Inherit;
+    private MudThemeProvider _mudThemeProvider = new();
+
+    public MudTheme AppTheme { get; set; } = ThemeColors.AppTheme;
+    public bool IsDarkMode { get; set; } = false;
+    public int _width { get; set; } = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _preferenceService.OnPreferenceChange = async (preferences) =>
+        {
+            try
+            {
+                ThemeType = preferences.Theme;
+
+                if (Theme.Inherit == preferences.Theme)
+                {
+                    var deviceMode = await _mudThemeProvider!.GetSystemPreference();
+                    IsDarkMode = deviceMode;
+                }
+                else if (Theme.Light == preferences.Theme)
+                    IsDarkMode = false;
+                else
+                    IsDarkMode = true;
+
+                await InvokeAsync(StateHasChanged);
+            }
+            catch
+            {
+                IsDarkMode = false;
+            }
+        };
+
+        //_loadingService.SetRefreshAction(RefreshAsync);
+
+        await _preferenceService.LoadPreferences();
+        await _mudThemeProvider!.WatchSystemPreference(OnSystemPreferenceChanged);
+    }
+
+    private async Task OnSystemPreferenceChanged(bool newValue)
+    {
+        if (ThemeType == Theme.Inherit)
+        {
+            IsDarkMode = newValue;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task RefreshAsync() => await InvokeAsync(StateHasChanged);
+}

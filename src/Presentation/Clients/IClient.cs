@@ -8,7 +8,8 @@ public interface IClient
     bool IsConnected { get; }
     ITopicService TopicService { get; }
 
-    Func<Task> RerenderPage { get; set; }
+    public void SetOnMessageReceivedEventHandler(Func<Task> refreshAction);
+    public void ClearOnMessageReceivedEventHandler();
 
     Broker GetBroker();
     Task UpdateBroker(Broker broker);
@@ -17,6 +18,7 @@ public interface IClient
     Task<IResult> RemoveControl(string controlId);
     Task<IResult> UpdateControl(Control control);
     IList<Control> GetControls(string deviceId);
+    IList<Control> GetControls();
 
     IList<Device> GetDevices();
     IResult AddDevice(Device device);

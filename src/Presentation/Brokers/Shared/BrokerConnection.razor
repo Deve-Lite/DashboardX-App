@@ -1,0 +1,33 @@
+﻿@inject IStringLocalizer<BrokerConnectionSwitch> _localizer
+
+@inherits MudComponentBase
+
+@if (Client!.IsConnected)
+{
+    <MudIconButton Variant="Variant.Filled"
+               OnClick="Client!.DisconnectAsync"
+               Icon="@Icons.Material.Outlined.Cloud"
+               Color="Color.Success" />
+}
+else
+{
+    <MudIconButton Variant="Variant.Filled"
+               OnClick="() => ConnectAsync(Client!)"
+               Icon="@Icons.Material.Outlined.CloudOff"
+               Color="Color.Error" />
+
+}
+
+@code
+{
+    [Parameter]
+    public IClient? Client { get; set; }
+
+    private async Task ConnectAsync(IClient client)
+    {
+        var result = await client.ConnectAsync();
+
+        if (result.Succeeded && result.ShowToast)
+            _snackbar.Add(result.Messages.First(), Severity.Error);
+    }
+}

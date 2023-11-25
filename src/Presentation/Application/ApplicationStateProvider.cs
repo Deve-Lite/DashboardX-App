@@ -14,7 +14,10 @@ public class ApplicationStateProvider : AuthenticationStateProvider
     public string AccessToken { get; private set; }
     public string RefreshToken { get; private set; }
 
-    public ApplicationStateProvider(HttpClient httpClient, ILocalStorageService localStorage, ISessionStorageService sessionStorage, ILogger<ApplicationStateProvider> logger)
+    public ApplicationStateProvider(HttpClient httpClient, 
+        ILocalStorageService localStorage, 
+        ISessionStorageService sessionStorage, 
+        ILogger<ApplicationStateProvider> logger)
     {
         _httpClient = httpClient;
         _localStorage = localStorage;
@@ -61,6 +64,10 @@ public class ApplicationStateProvider : AuthenticationStateProvider
 
         await _localStorage.RemoveItemAsync(AuthConstraints.AccessToken);
         await _localStorage.RemoveItemAsync(AuthConstraints.RefreshToken);
+
+        await _localStorage!.RemoveItemAsync(BrokerConstraints.BrokerListName);
+        await _localStorage!.RemoveItemAsync(DeviceConstants.DevicesListName);
+        await _localStorage!.RemoveItemAsync(UserConstraints.PreferencesStorage);
 
         AccessToken = string.Empty;
         RefreshToken = string.Empty;
@@ -114,7 +121,6 @@ public class ApplicationStateProvider : AuthenticationStateProvider
 #if DEBUG
             _logger.LogError("Authentication error Message:", ex.Message);
 #endif
-
             _logger.LogError("Couldn't authenticate user.", nameof(ex));
             return new AuthenticationState(new ClaimsPrincipal());
         }

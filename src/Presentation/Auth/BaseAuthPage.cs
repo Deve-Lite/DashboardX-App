@@ -10,8 +10,6 @@ public class BaseAuthPage : BasePage
     [Inject]
     protected IAuthenticationService AuthenticationService { get; set; } = default!;
     [Inject]
-    protected ILoadingService LoadingService { get; set; } = default!;
-    [Inject]
     protected ISnackbar Snackbar { get; set; } = default!;
     [Inject]
     protected IUserService UserService { get; set; } = default!;
@@ -37,16 +35,10 @@ public class BaseAuthPage : BasePage
     #endif
         await base.OnInitializedAsync();
 
-        if (LoadingService.IsLoading)
-            return;
+        var result = await LoadingService.InvokeAsync(CheckAuthenticationState);
 
-        LoadingService.ShowLoading();
-
-        var result = await CheckAuthenticationState();
-
-        await RequestHelpers.InvokeAfterRequest(Snackbar, result, OnSuccessfullLogin);
-
-        LoadingService.HideLoading();
+        if (result.Succeeded)
+            await OnSuccessfullLogin();
     }
 
     protected async Task OnSuccessfullLogin()
@@ -57,8 +49,6 @@ public class BaseAuthPage : BasePage
             Snackbar.Add(AuthLocalizer["Couldn't load user settings."], Severity.Warning);
 
         Snackbar.Add(AuthLocalizer["Hello there!"], Severity.Success);
-
-        LoadingService.HideLoading();
 
         NavigationManager.NavigateTo("/brokers");
     }
@@ -75,7 +65,6 @@ public class BaseAuthPage : BasePage
         if (string.IsNullOrEmpty(refreshToken))
             return Result.Fail();
 
-        LoadingService.HideLoading();
         var resp = await AuthenticationService.ReAuthenticate(refreshToken);
 
         return resp;

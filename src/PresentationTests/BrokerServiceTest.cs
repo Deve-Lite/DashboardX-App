@@ -1,8 +1,7 @@
-﻿using Common.Brokers.Models;
-using Presentation.Brokers;
+﻿using Presentation.Brokers;
 using Presentation.Brokers.Interfaces;
 
-namespace PresentationTests.ServicesTests;
+namespace PresentationTests;
 
 internal class BrokerServiceTest : BaseServiceTest
 {
@@ -20,7 +19,7 @@ internal class BrokerServiceTest : BaseServiceTest
     }
 
     [TearDown]
-    public void TearDown() 
+    public void TearDown()
     {
         base.TearDownTest();
         BrokerService = new BrokerService(FetchBrokerService, ClientManager);

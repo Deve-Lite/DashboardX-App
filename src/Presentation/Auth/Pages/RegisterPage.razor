@@ -57,14 +57,10 @@
                                            HelperText="@_localizer["Provide password for your account."]" />
                     </MudItem>
                     <MudItem xs="12">
-                        <MudTextField @bind-Value="Model.ConfirmPassword"
-                                      T="string"
-                                      For="@(() => Model.ConfirmPassword)"
-                                      Variant="Variant.Filled"
-                                      Clearable="true"
-                                      InputType="InputType.Password"
-                                      Label="@_localizer["Confirm Password"]"
-                                      HelperText="@_localizer["Please repeat password."]" />
+                        <PasswordTextField @bind-Value="Model.ConfirmPassword"
+                                           For="@(() => Model.ConfirmPassword)"
+                                           Label="@_localizer["Confirm Password"]"
+                                           HelperText="@_localizer["Please repeat password."]" />
                     </MudItem>
 
                     <MudItem xs="12"
@@ -98,42 +94,39 @@
 
 @code
 {
-
     private RegisterModel Model = new();
     private RegisterValidator Validator = new();
-
 
     private bool ResendButtonVisible { get; set; } = false;
 
     private async Task RegisterAsync()
     {
-        if (_loadingService.IsLoading)
-            return;
+        var result = await _loadingService.InvokeAsync(RegisterAction);
 
+        if (result.Succeeded)
+        {
+            _snackbar.Add(_localizer["Registered successfully!"], MudBlazor.Severity.Success);
+            _navigationManager.NavigateTo("/auth/login");
+            return;
+        }
+    }
+
+    private async Task<IResult> RegisterAction()
+    {
         await Form!.Validate();
 
         if (!Form.IsValid)
-            return;
-
-        _loadingService.ShowLoading();
+            return Result.Fail();
 
         var result = await AuthenticationService.Register(Model);
 
-        await RequestHelpers.InvokeAfterRequest(_snackbar, result, OnRegisteredSuccessfully);
+        RequestHelpers.InvokeAfterRequest(_snackbar, result);
 
-        _loadingService.HideLoading();
+        return result;
     }
 
     private void BackToLoginPage()
     {
         _navigationManager.NavigateTo("/auth/login");
-    }
-
-    private Task OnRegisteredSuccessfully()
-    {
-        _snackbar.Add(_localizer["Registered successfully!"], MudBlazor.Severity.Success);
-        _loadingService.HideLoading();
-        _navigationManager.NavigateTo("/auth/login");
-        return Task.CompletedTask;
     }
 }

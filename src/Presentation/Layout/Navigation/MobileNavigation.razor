@@ -1,0 +1,50 @@
+﻿<MudAppBar DisableGutters="true" 
+           Bottom="true"
+           Elevation="1" 
+           Dense="@true" 
+           Color="Color.Primary"
+           Style="padding-left: 16px; padding-right: 16px; margin-left: 0px; margin-right: 0px;">
+
+    <MudSpacer />
+    <MudIconButton Icon="@CommonLayoutSettings.DevicesIcon"
+                   Color="Color.Secondary"
+                   OnClick="@NavigateToDevices" />
+    <MudSpacer />
+    <MudIconButton Icon="@CommonLayoutSettings.BrokersIcon"
+                   Color="Color.Secondary"
+                   OnClick="@NavigateToBrokers" />
+    <MudSpacer />
+    <MudIconButton Icon="@CommonLayoutSettings.StatisticsIcon"
+                   Color="Color.Secondary"
+                   OnClick="@NavigateToStatistics" />
+    <MudSpacer />
+    <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                   Color="Color.Secondary"
+                   
+                   OnClick="@OpenDrawer" />
+    <MudSpacer />
+</MudAppBar>
+<MudDrawer @bind-Open="IsOpen"
+           Anchor="Anchor.Right" 
+           PreserveOpenState="false">
+    <CommonDrawer OnSelected="CloseDrawer" />
+</MudDrawer>
+
+@code {
+    public bool IsOpen { get; set; } = false;
+
+    protected void NavigateToBrokers() => _navigationManager!.NavigateTo("/brokers");
+    protected void NavigateToDevices() => _navigationManager!.NavigateTo("/devices");
+    protected void NavigateToStatistics() => _navigationManager!.NavigateTo("/statistics/subscribtions");
+
+    private void OpenDrawer()
+    {
+        IsOpen = true;
+    }
+
+    private void CloseDrawer()
+    {
+        IsOpen = false;
+        StateHasChanged();
+    }
+}

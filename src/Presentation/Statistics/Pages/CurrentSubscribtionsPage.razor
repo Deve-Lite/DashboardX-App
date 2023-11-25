@@ -1,0 +1,109 @@
+﻿@page "/statistics/subscribtions"
+@using Presentation.Statistics.Models;
+
+@inject IClientService _clientService
+@inject IStringLocalizer<CurrentSubscribtionsPage> _localizer
+@inherits BasePage
+
+<PageLoading FailedToLoad="!LoadedSuccessfully">
+    <FailedToLoadContent>
+        <RefreshPageButton RefreshPage="RefreshPage" />
+    </FailedToLoadContent>
+    <LoadedContent>
+        <MudGrid Class="m-0 p-3 w-100">
+            <MudItem xs="12" Class="p-0 m-0">
+                <Breadcrumbs BreadcrumbItems="@BreadcrumbItems" />
+            </MudItem>
+
+            <MudItem xs="12" Class="m-0 p-0 pt-4 pb-5">
+                <MudTable Hover="true"
+                          Breakpoint="Breakpoint.Xs"  
+                          FixedHeader="true"
+                          Items="@TopicInformations"
+                          GroupBy="@_groupDefinition"
+                          GroupHeaderStyle="background-color:var(--mud-palette-background-grey)"
+                          GroupFooterClass="mb-4"
+                          Dense="true"
+                          @ref="_tableRef">
+                    <ColGroup>
+                        <col style="width: 60px;" />
+                        <col />
+                        <col />
+                    </ColGroup>
+                    <HeaderContent>
+                        <MudTh Class="ellipsis">@_localizer["Topic"]</MudTh>
+                        <MudTh>@_localizer["Value"]</MudTh>
+                    </HeaderContent>
+                    <GroupHeaderTemplate>
+                        <MudTh colspan="2"> @($"{context.GroupName}: {context.Key}")</MudTh>
+                    </GroupHeaderTemplate>
+                    <RowTemplate>
+                            <MudTd Class="ellipsis" DataLabel="@_localizer["Topic"]">@context.Topic</MudTd>
+                            <MudTd DataLabel="@_localizer["Value"]">@context.Value</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudItem>
+        </MudGrid>
+    </LoadedContent>
+</PageLoading>
+
+    @code {
+
+    private MudTable<SubscribedTopicInformation> _tableRef;
+    private IList<SubscribedTopicInformation> TopicInformations { get; set; } = new List<SubscribedTopicInformation>();
+
+    public CurrentSubscribtionsPage()
+    {
+        BreadcrumbItems = new()
+        {
+            new BreadcrumbItem("Subscribtions", href: "/statistics/subscribtions"),
+        };
+    }
+
+    private TableGroupDefinition<SubscribedTopicInformation> _groupDefinition = new()
+        {
+            GroupName="Device",
+            Indentation = false,
+            Expandable = true,
+            IsInitiallyExpanded = false,
+            Selector = (e) => $"{e.BrokerName} - {e.DeviceName}"
+        };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await _loadingService.InvokeAsync(LoadPage);
+    }
+
+    protected async Task RefreshPage()
+    {
+        await _loadingService.InvokeAsync(LoadPage);
+    }
+
+    protected async Task<IResult> LoadPage()
+    {
+        var result = await _clientService.GetClients();
+        if (result.Succeeded)
+        {
+            foreach (var client in result.Data)
+                foreach (var device in client.GetDevices())
+                {
+                    var controls = client.GetControls(device.Id);
+
+                    foreach (var control in controls)
+                        TopicInformations.Add(new SubscribedTopicInformation(
+                            client.GetBroker().Name,
+                            device.Name,
+                            control.GetTopic(device),
+                            client.TopicService.LastMessageOnTopic(client.Id, device, control)));
+                }
+            LoadedSuccessfully = true;
+        }
+
+        if (result.ShowToast)
+            foreach (var message in result.Messages)
+                _snackbar.Add(message, result.Severity);
+
+        return result;
+    }
+}

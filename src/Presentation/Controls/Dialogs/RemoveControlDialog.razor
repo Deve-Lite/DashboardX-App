@@ -1,4 +1,6 @@
 ﻿@using Presentation.Utils;
+@using Presentation.Shared.Dialogs;
+
 @inject IStringLocalizer<RemoveControlDialog> _localizer;
 @inject IControlService _controlService;
 
@@ -6,22 +8,29 @@
 
 <MudDialog>
     <DialogContent>
-        <DialogLoading IsLoading="IsLoading">
-            <LoadedContent>
+        <LoadingDialog>
+            <Title>
+                <MudText Align="Align.Start"
+                         Class="m-0 mt-2 mb-2"
+                         Typo="Typo.h6">
+                    @_localizer["Remove Control"]
+                </MudText>
+            </Title>
+            <Content>
                 <MudText>@_localizer["Are you sure you want to remove following control?"]</MudText>
-            </LoadedContent>
-        </DialogLoading>
+            </Content>
+            <Actions>
+                <MudButton OnClick="Cancel">
+                    @_localizer["Cancel"]
+                </MudButton>
+                <MudButton OnClick="RemoveAsync"
+                           Variant="Variant.Filled"
+                           Color="Color.Error">
+                    @_localizer["Remove"]
+                </MudButton>
+            </Actions>
+        </LoadingDialog>
     </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="Cancel"
-                   Disabled="IsLoading">
-                   @_localizer["Cancel"]
-        </MudButton>
-        <MudButton OnClick="RemoveAsync"
-                   Disabled="IsLoading"
-                   Variant="Variant.Filled"
-                   Color="Color.Error">@_localizer["Remove"] </MudButton>
-    </DialogActions>
 </MudDialog>
 
 @code
@@ -33,25 +42,23 @@
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
 
-    private async Task RemoveAsync()
+    protected async Task RemoveAsync()
+    {
+        var result = await _loadingService.InvokeDialogAsync(RemoveAction);
+
+        if (result.Succeeded)
+            Dialog!.Close(DialogResult.Ok(result));
+    }
+
+    private async Task<IResult> RemoveAction()
     {
         if (string.IsNullOrEmpty(DeviceId) || string.IsNullOrEmpty(ClientId))
-            return;
-
-        if (IsLoading)
-            return;
-
-        IsLoading = true;
+            return Result.Fail();
 
         var result = await _controlService.RemoveControl(ClientId, Control);
 
-        var success = RequestHelpers.InvokeAfterRequest(_snackbar, result, _localizer["Successfully removed device."]);
+        RequestHelpers.InvokeAfterRequest(_snackbar, result, _localizer["Successfully removed device."]);
 
-        IsLoading = false;
-
-        if (!success)
-            return;
-
-        Dialog!.Close(DialogResult.Ok(result));
+        return result;
     }
 }

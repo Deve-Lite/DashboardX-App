@@ -2,8 +2,11 @@
 
 public interface ILoadingService
 {
-    Func<bool, Task> OnLoadingChanged { get; set; }
     bool IsLoading { get; }
-    void ShowLoading();
-    void HideLoading();
+    bool IsDialogLoading { get; }
+
+    Task<IResult> InvokeAsync(Func<Task<IResult>> action);
+    Task<IResult> InvokeDialogAsync(Func<Task<IResult>> action);
+    void SetRefreshAction(Func<Task> refreshAction);
+    void RemoveRefreshAction();
 }

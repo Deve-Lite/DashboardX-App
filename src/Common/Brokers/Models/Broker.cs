@@ -1,27 +1,28 @@
 ﻿namespace Common.Brokers.Models;
 
-//TODO: Create DTO for broker
 public class Broker : BaseModel
 {
-    [JsonPropertyName("icon")]
     public Icon Icon { get; set; } = new();
-    [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
-    [JsonPropertyName("port")]
     public int Port { get; set; }
-    [JsonPropertyName("server")]
     public string Server { get; set; } = string.Empty;
-
-    [JsonPropertyName("isSsl")]
     public bool SSL { get; set; }
-
-    [JsonPropertyName("clientId")]
     public string ClientId { get; set; } = string.Empty;
-    [JsonPropertyName("keepAlive")]
     public int KeepAlive { get; set; } = 90;
-
-    [JsonPropertyName("updatedAt")]
     public DateTime EditedAt { get; set; }
+
+    public static Broker FromDto(BrokerDTO dto) => new()
+    {
+        ClientId = dto.ClientId,
+        EditedAt = dto.EditedAt,
+        Icon = dto.Icon.Copy(),
+        Id = dto.Id,
+        SSL = dto.IsSSL,
+        KeepAlive = dto.KeepAlive,
+        Name = dto.Name,
+        Port = dto.Port,
+        Server = dto.Server,
+    };
 
     public BrokerDTO Dto() => new()
     {

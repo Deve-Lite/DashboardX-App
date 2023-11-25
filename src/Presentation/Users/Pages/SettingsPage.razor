@@ -9,10 +9,14 @@
 
 <PageLoading FailedToLoad="!LoadedSuccessfully">
     <FailedToLoadContent>
-        <RefreshPageButton RefreshPage="LoadPage" />
+        <RefreshPageButton RefreshPage="RefreshPage" />
     </FailedToLoadContent>
     <LoadedContent>
         <MudGrid Class="m-0 p-3 w-100">
+            <MudItem xs="12" Class="p-0 m-0">
+                <Breadcrumbs BreadcrumbItems="@BreadcrumbItems" />
+            </MudItem>
+
             <MudItem xs="12" Class="d-flex p-0 m-0 justify-content-center">
                 <MudCard Elevation="5" Class="p-3" Style="display: inline-block;">
                     <MudCardContent>
@@ -110,26 +114,32 @@
     </LoadedContent>
 </PageLoading>
 
-
-
 @code {
 
     public User User { get; set; } = new();
     private Preferences Preferences = new();
 
+    public SettingsPage()
+    {
+        BreadcrumbItems = new()
+        {
+            new BreadcrumbItem("Settings", href: "/user/settings"),
+        };
+    }
+
     protected override async Task OnInitializedAsync()
     {
-        await LoadPage();
+        await _loadingService.InvokeAsync(LoadPage);
         await base.OnInitializedAsync();
     }
 
-    public async Task LoadPage()
+    protected async Task RefreshPage()
     {
-        if (_loadingService.IsLoading)
-            return;
+        await _loadingService.InvokeAsync(LoadPage);
+    }
 
-        _loadingService.ShowLoading();
-
+    protected async Task<IResult> LoadPage()
+    {
         var result = await _userService.GetUser();
 
         if (result.Succeeded)
@@ -137,38 +147,41 @@
             User = result.Data;
             Preferences = User.GetPreferences();
             LoadedSuccessfully = true;
-
         }
 
-        _loadingService.HideLoading();
-
-        StateHasChanged();
+        return result;
     }
 
-
-    public async Task UpdateSettings()
+    protected async Task UpdateSettings()
     {
-        if (_loadingService.IsLoading)
-            return;
+        await _loadingService.InvokeAsync(async() =>
+        {
+            var result = await _userService.UpdatePreferences(Preferences);
 
-        _loadingService.ShowLoading();
+            RequestHelpers.InvokeAfterRequest(_snackbar, result, _localizer["Changed your settings."]);
 
-        var result = await _userService.UpdatePreferences(Preferences);
-
-        RequestHelpers.InvokeAfterRequest(_snackbar, result, _localizer["Changed your settings."]);
-
-        _loadingService.HideLoading();
+            return result;
+        });
     }
 
     public async Task ChangePassword()
     {
-        var dialog = await _dialogService.ShowAsync<ChangePasswordDialog>(_localizer["Change password"]);
+        var options = new DialogOptions()
+            {
+                NoHeader = true,
+            };
+
+        var dialog = await _dialogService.ShowAsync<ChangePasswordDialog>(_localizer["Change password"], options);
         var result = await dialog.Result;
     }
 
     public async Task RemoveAccount()
     {
-        var dialog = await _dialogService.ShowAsync<RemoveAccountDialog>(_localizer["Delete Account"]);
+        var options = new DialogOptions()
+            {
+                NoHeader = true,
+            };
+        var dialog = await _dialogService.ShowAsync<RemoveAccountDialog>(_localizer["Delete Account"], options);
         var result = await dialog.Result;
     }
 }

@@ -1,5 +1,4 @@
 ﻿using Blazored.LocalStorage;
-using Core.App;
 using Microsoft.Extensions.Logging;
 
 namespace Core.App;
@@ -45,7 +44,7 @@ public sealed class PreferenceService : IPrefrenceService
 
     public async Task RestroreDefaultPreferences()
     {
-        var preferences = new Preferences();
+        Preferences preferences = new();
         await _localStorage.SetItemAsync(PreferenceConstraints.Preferences, preferences);
         await OnPreferenceChange(preferences);
     }

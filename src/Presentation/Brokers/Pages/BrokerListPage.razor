@@ -1,5 +1,6 @@
 @page "/brokers"
 @using Presentation.Utils;
+@using Presentation.Brokers.Shared;
 
 @inject IClientService _clientService
 @inject IStringLocalizer<BrokerListPage> _localizer
@@ -11,133 +12,78 @@
         <RefreshPageButton RefreshPage="LoadPage" />
     </FailedToLoadContent>
     <LoadedContent>
+
+        <AddButton OnClick="() => BrokerPagesUtils.AddBroker(_dialogService, StateHasChanged, _localizer)"
+                   Class="add-wrapper" />
+
         <MudGrid Class="m-0 p-3 w-100">
 
-            <MudItem xs="7"> </MudItem>
-            <MudItem xs="5" Class="d-flex justify-content-end">
-
-                <MudButton OnClick="() => BrokerPagesUtils.AddBroker(_dialogService, StateHasChanged, _localizer)"
-                           Color="Color.Primary"
-                           Variant="Variant.Filled"
-                           StartIcon="@Icons.Material.Filled.AddToQueue">
-                    @_localizer["Add Broker"]
-                </MudButton>
-
-
+            <MudItem xs="12" Class="p-0 m-0">
+                <Breadcrumbs BreadcrumbItems="@BreadcrumbItems" />
             </MudItem>
 
-            <MudItem Class="p-0" xs="12">
-                <MudList Class="p-0 m-0"
-                         Dense="true"
-                         Clickable="true">
-                    <MudListSubheader Class="d-flex p-0 m-0">
-                        <MudGrid Class="p-0 m-0">
-                            <MudItem xs="1" Class="p-1 m-0">
+            @foreach (var client in Clients)
+            {
+                <MudItem xs=12 sm="6" md="4" lg="3" xl="2" xxl="1" Class="m-0 p-1 w-100">
+                    <BrokerElement Client="@client" />
+                </MudItem>
+            }
 
-                            </MudItem>
-                            <MudItem xs="2" Class="d-flex p-1 m-0 align-items-center justify-content-start">
-                                <MudText Typo="Typo.h6">
-                                    @_localizer["Name"]
-                                </MudText>
-                            </MudItem>
-                            <MudItem xs="4" Class="d-flex p-1 m-0 align-items-center justify-content-start">
-                                <MudText Typo="Typo.h6">
-                                    @_localizer["Server"]
-                                </MudText>
-                            </MudItem>
-                            <MudItem xs="1" Class="d-flex p-1 m-0 align-items-center justify-content-start">
-                                <MudText Typo="Typo.h6">
-                                    @_localizer["Port"]
-                                </MudText>
-                            </MudItem>
-                            <MudItem xs="2" Class="d-flex p-1 m-0 align-items-center justify-content-center">
-                                <MudText Typo="Typo.h6">
-                                    @_localizer["Status"]
-                                </MudText>
-                            </MudItem>
-                            <MudItem xs="2" Class="p-1 m-0"> </MudItem>
-                        </MudGrid>
-
-                    </MudListSubheader>
-
-                    <MudProgressLinear Size="Size.Small" Color="Color.Primary" Rounded="true" Value="100" />
-
-                    @foreach (var client in Clients)
-                    {
-                        <MudListItem Class="d-flex m-0 p-0 pt-1 pb-1"
-                                     Href="@($"/brokers/{client.Id}")">
-                            <MudGrid Class="w-100 p-0 m-0">
-                                <MudItem xs="1" Class="d-flex m-0 p-0 align-items-center justify-content-center">
-                                    <IconForList Icon="@client!.GetBroker().Icon"
-                                                 IconSize="Size.Medium" />
-                                </MudItem>
-                                <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-start">
-                                    <MudText>
-                                        @client.GetBroker().Name
-                                    </MudText>
-                                </MudItem>
-
-                                <MudItem xs="4" Class="d-flex m-0 p-0 align-items-center justify-content-start">
-                                    <MudText Class="hide-overlapping-text">
-                                        @client.GetBroker().Server
-                                    </MudText>
-                                </MudItem>
-
-                                <MudItem xs="1" Class="d-flex m-0 p-0 align-items-center justify-content-start">
-                                    <MudText>
-                                        @client.GetBroker().Port
-                                    </MudText>
-                                </MudItem>
-
-                                <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-center">
-                                    <BrokerConnectionSwitch Client="client" />
-                                </MudItem>
-                                <MudItem xs="2" Class="d-flex m-0 p-0 align-items-center justify-content-evenly">
-                                    <MudIconButton Class="z-10"
-                                                   Icon="@IconUtils.DefaultEditIcon"
-                                                   OnClick="() => BrokerPagesUtils.UpdateBroker(client, _dialogService, StateHasChanged, _localizer)">
-
-                                    </MudIconButton>
-
-                                    <MudIconButton Class="z-10"
-                                                   Icon="@IconUtils.DefaultRemoveIcon"
-                                                   OnClick="() => BrokerPagesUtils.RemoveBroker(client, _dialogService, StateHasChanged, _localizer)">
-
-                                    </MudIconButton>
-                                </MudItem>
-                            </MudGrid>
-
-                        </MudListItem>
-
-                        <MudProgressLinear Size="Size.Small" Color="Color.Primary" Rounded="true" Value="0" />
-                    }
-                </MudList>
-            </MudItem>
         </MudGrid>
     </LoadedContent>
 </PageLoading>
 
-@code 
+@code
 {
     private IList<IClient> Clients { get; set; } = new List<IClient>();
 
-    protected override async Task OnInitializedAsync()
+    public BrokerListPage()
     {
-        await LoadPage();
-        await base.OnInitializedAsync();
+        BreadcrumbItems = new()
+        {
+            new BreadcrumbItem("Brokers", href: "/brokers"),
+        };
     }
 
-    public async Task LoadPage()
+    protected override async Task OnInitializedAsync()
     {
-        if (_loadingService.IsLoading)
-            return;
+        await base.OnInitializedAsync();
+        _loadingService.SetRefreshAction(SilentRefreshPage);
+        await _loadingService.InvokeAsync(LoadPage);
+    }
 
-        _loadingService.ShowLoading();
+    protected async Task SilentRefreshPage()
+    {
+        var result = await _clientService.GetClients(false);
 
+        if (result.Succeeded)
+        {
+            Clients = result.Data;
+
+            StateHasChanged();
+
+            foreach (var client in Clients)
+                client.SetOnMessageReceivedEventHandler(RerenderPage);
+        }
+
+        await RerenderPage();
+    }
+
+    protected async Task RefreshPage()
+    {
+        await _loadingService.InvokeAsync(LoadPage);
+    }
+
+    public async Task<IResult> LoadPage()
+    {
         var result = await _clientService.GetClients();
         if (result.Succeeded)
         {
             Clients = result.Data;
+
+            foreach (var client in Clients)
+                client.SetOnMessageReceivedEventHandler(RerenderPage);
+
             LoadedSuccessfully = true;
         }
         else
@@ -149,9 +95,13 @@
             foreach (var message in result.Messages)
                 _snackbar.Add(message, result.Severity);
 
-        _loadingService.HideLoading();
+        return result;
+    }
 
-        StateHasChanged();
+    public void Dispose()
+    {
+        foreach (var client in Clients)
+            client?.ClearOnMessageReceivedEventHandler();
     }
 
     private async Task ConnectAsync(Client client)
@@ -160,10 +110,5 @@
 
         if (result.Succeeded && result.ShowToast)
             _snackbar.Add(result.Messages.First(), Severity.Error);
-    }
-
-    private void NavigateToBroker(Client clinet)
-    {
-        _navigationManager.NavigateTo($"/brokers/{clinet.Id}");
     }
 }

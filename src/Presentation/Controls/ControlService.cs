@@ -1,6 +1,4 @@
-﻿using Presentation.Controls.Interfaces;
-
-namespace Presentation.Controls;
+﻿namespace Presentation.Controls;
 
 public class ControlService : IControlService
 {
@@ -27,9 +25,9 @@ public class ControlService : IControlService
         return await clientResult.Data.RemoveControl(control.Id);
     }
 
-    public async Task<IResult> CreateControl(string clientId, Control control)
+    public async Task<IResult> CreateControl(string clientId, ControlDTO dto)
     {
-        var result = await _deviceService.CreateControl(control);
+        var result = await _deviceService.CreateControl(dto);
 
         if (!result.Succeeded)
             return Result.Fail(result.Messages, result.StatusCode);
@@ -39,12 +37,12 @@ public class ControlService : IControlService
         if (!clientResult.Succeeded)
             return Result.Fail();
 
-        return await clientResult.Data.AddControl(control);
+        return await clientResult.Data.AddControl(result.Data);
     }
 
-    public async Task<IResult> UpdateControl(string clientId, Control control)
+    public async Task<IResult> UpdateControl(string clientId, ControlDTO dto)
     {
-        var result = await _deviceService.UpdateControl(control);
+        var result = await _deviceService.UpdateControl(dto);
 
         if (!result.Succeeded)
             return Result.Fail(result.Messages, result.StatusCode);
@@ -54,6 +52,6 @@ public class ControlService : IControlService
         if (!clientResult.Succeeded)
             return Result.Fail();
 
-        return await clientResult.Data.UpdateControl(control);
+        return await clientResult.Data.UpdateControl(result.Data);
     }
 }

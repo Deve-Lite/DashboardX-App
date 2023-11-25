@@ -1,46 +1,47 @@
-﻿@inject IStringLocalizer<ConfirmDialog> _localizer
+﻿@using Presentation.Shared.Dialogs;
+
+@inject IStringLocalizer<ConfirmDialog> _localizer
 @inject IUserService _userService
 
 @inherits BaseFormDialog
 
 <MudDialog>
     <DialogContent>
-        <DialogLoading IsLoading="IsLoading">
-            <LoadedContent>
+        <LoadingDialog>
+            <Title>
+                <MudText Align="Align.Start"
+                         Class="m-0 mt-2 mb-2"
+                         Typo="Typo.h6">
+                    @Title()
+                </MudText>
+            </Title>
+            <Content>
                 <MudForm @ref="@Form"
                          Model="@Model"
                          Validation="@(Validator.ValidateValue)"
                          ValidationDelay="0">
                     <MudGrid Class="p-0 m-0 w-100">
                         <MudItem xs="12">
-                            <MudTextField @bind-Value="Model.Password"
-                                          T="string"
+                            <PasswordTextField @bind-Value="Model.Password"
                                           For="@(() => Model.Password)"
-                                          InputType="@_passwordInput"
-                                          Variant="Variant.Filled"
-                                          Adornment="Adornment.End"
-                                          OnlyValidateIfDirty="true"
-                                          Clearable="true"
-                                          AdornmentIcon="@_passwordInputIcon"
-                                          OnAdornmentClick="TogglePasswordVisibility"
                                           Label="@_localizer["Password"]"
                                           HelperText="@_localizer["Provide password for your account."]" />
                         </MudItem>
                     </MudGrid>
                 </MudForm>
-            </LoadedContent>
-        </DialogLoading>
+            </Content>
+            <Actions>
+                <MudButton OnClick="Cancel" k>
+                    @_localizer["Cancel"]
+                </MudButton>
+                <MudButton OnClick="RemoveAsync"
+                           Variant="Variant.Filled"
+                           Color="Color.Error">
+                    @_localizer["Remove"]
+                </MudButton>
+            </Actions>
+        </LoadingDialog>
     </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="Cancel"
-                   Disabled="IsLoading">
-            @_localizer["Cancel"]
-        </MudButton>
-        <MudButton OnClick="RemoveAsync"
-                   Disabled="IsLoading"
-                   Variant="Variant.Filled"
-                   Color="Color.Error">@_localizer["Remove"] </MudButton>
-    </DialogActions>
 </MudDialog>
 
 @code
@@ -48,19 +49,11 @@
     private PasswordConfirm Model = new();
     private PasswordConfirmValidator Validator = new();
 
+    protected override string Title() => _localizer["Remove Account"];
+
     private async Task RemoveAsync()
     {
-        if (IsLoading)
-            return;
-
-        await Form!.Validate();
-
-        if (!Form.IsValid)
-            return;
-
-        IsLoading = true;
-
-        var result = await _userService.RemoveAccount(Model);
+        var result = await _loadingService.InvokeDialogAsync(RemoveAction);
 
         if (result.Succeeded)
         {
@@ -68,37 +61,21 @@
 
             _snackbar.Add(_localizer["Thanks for using our app."], Severity.Info);
 
-            IsLoading = false;
-
             _navigationManager.NavigateTo("/");
         }
 
         _snackbar.Add(_localizer["Failed to remove your account."], Severity.Error);
-
-        IsLoading = false;
     }
 
-    #region Form
-
-    private bool _passwordVisibility;
-    private InputType _passwordInput = InputType.Password;
-    private string _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
-
-    private void TogglePasswordVisibility()
+    private async Task<IResult> RemoveAction()
     {
-        if (_passwordVisibility)
-        {
-            _passwordVisibility = false;
-            _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
-            _passwordInput = InputType.Password;
-        }
-        else
-        {
-            _passwordVisibility = true;
-            _passwordInputIcon = Icons.Material.Filled.Visibility;
-            _passwordInput = InputType.Text;
-        }
-    }
+        await Form!.Validate();
 
-    #endregion
+        if (!Form.IsValid)
+            return Result.Fail();
+
+        var result = await _userService.RemoveAccount(Model);
+
+        return result;
+    }
 }

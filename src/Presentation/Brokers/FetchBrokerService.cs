@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
-using System.Net;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using System.Text.Json;
 using Presentation.Application.Interfaces;
 
@@ -9,11 +7,9 @@ namespace Presentation.Brokers;
 public class FetchBrokerService : AuthorizedService, IFetchBrokerService
 {
     public FetchBrokerService(HttpClient httpClient,
-                         ILogger<FetchBrokerService> logger,
-                         ILoadingService loadingService,    
-                         NavigationManager navigationManager,
-                         AuthenticationStateProvider authenticationState)
-        : base(httpClient, loadingService, logger, navigationManager, authenticationState)
+                              ILogger<FetchBrokerService> logger,
+                              IAuthenticationManager authenticationManager)
+        : base(httpClient, logger, authenticationManager)
     {
     }
 
@@ -25,9 +21,15 @@ public class FetchBrokerService : AuthorizedService, IFetchBrokerService
             Route = "api/v1/brokers"
         };
 
-        var response = await SendAsync<List<Broker>>(request);
+        var response = await SendAsync<List<BrokerDTO>>(request);
 
-        return response;
+        if(response.Succeeded)
+        {
+            var brokers = response.Data.Select(x => Broker.FromDto(x)).ToList();
+            return Result<List<Broker>>.Success(brokers, response.StatusCode);
+        }
+
+        return Result<List<Broker>>.Fail(response.StatusCode, response.Messages[0]);
     }
 
     public async Task<IResult<Broker>> GetBroker(string id)
@@ -38,9 +40,15 @@ public class FetchBrokerService : AuthorizedService, IFetchBrokerService
             Route = $"api/v1/brokers/{id}"
         };
 
-        var response = await SendAsync<Broker>(request);
+        var response = await SendAsync<BrokerDTO>(request);
 
-        return response;
+        if (response.Succeeded)
+        {
+            var broker = Broker.FromDto(response.Data);
+            return Result<Broker>.Success(broker, response.StatusCode);
+        }
+
+        return Result<Broker>.Fail(response.StatusCode, response.Messages[0]);
     }
 
     public async Task<IResult<Broker>> CreateBroker(BrokerDTO dto)

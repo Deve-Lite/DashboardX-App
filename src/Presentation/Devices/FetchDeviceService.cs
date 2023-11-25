@@ -9,10 +9,8 @@ public class FetchDeviceService : AuthorizedService, IFetchDeviceService
 {
     public FetchDeviceService(HttpClient httpClient, 
                          ILogger<FetchDeviceService> logger,
-                         ILoadingService loadingService,
-                         NavigationManager navigationManager, 
-                         AuthenticationStateProvider authenticationState)
-        : base(httpClient, loadingService, logger, navigationManager, authenticationState)
+                               IAuthenticationManager authenticationManager)
+        : base(httpClient, logger, authenticationManager)
     {
     }
 
@@ -24,9 +22,15 @@ public class FetchDeviceService : AuthorizedService, IFetchDeviceService
             Route = $"api/v1/devices?brokerId={brokerId}"
         };
 
-        var response = await SendAsync<List<Device>>(request);
-        
-        return response;
+        var response = await SendAsync<List<DeviceDTO>>(request);
+
+        if (response.Succeeded)
+        {
+            var brokers = response.Data.Select(x => Device.FromDto(x)).ToList();
+            return Result<List<Device>>.Success(brokers, response.StatusCode);
+        }
+
+        return Result<List<Device>>.Fail(response.StatusCode, response.Messages[0]);
     }
 
     public async Task<IResult<Device>> GetDevice(string id)
@@ -37,9 +41,15 @@ public class FetchDeviceService : AuthorizedService, IFetchDeviceService
             Route = $"api/v1/devices/{id}"
         };
 
-        var response = await SendAsync<Device>(request);
+        var response = await SendAsync<DeviceDTO>(request);
 
-        return response;
+        if (response.Succeeded)
+        {
+            var broker = Device.FromDto(response.Data);
+            return Result<Device>.Success(broker, response.StatusCode);
+        }
+
+        return Result<Device>.Fail(response.StatusCode, response.Messages[0]);
     }
 
     public async Task<IResult<List<Device>>> GetDevices()
@@ -50,9 +60,15 @@ public class FetchDeviceService : AuthorizedService, IFetchDeviceService
             Route = "api/v1/devices"
         };
 
-        var response = await SendAsync<List<Device>>(request);
+        var response = await SendAsync<List<DeviceDTO>>(request);
 
-        return response;
+        if (response.Succeeded)
+        {
+            var brokers = response.Data.Select(x => Device.FromDto(x)).ToList();
+            return Result<List<Device>>.Success(brokers, response.StatusCode);
+        }
+
+        return Result<List<Device>>.Fail(response.StatusCode, response.Messages[0]);
     }
 
     public async Task<IResult<Device>> CreateDevice(DeviceDTO dto)
@@ -70,8 +86,6 @@ public class FetchDeviceService : AuthorizedService, IFetchDeviceService
             return Result<Device>.Fail(response.Messages, response.StatusCode);
 
         var itemResponse = await GetDevice(response.Data.Id);
-
-        //TODO: Fail to get however added
 
         if (!itemResponse.Succeeded)
             return Result<Device>.Fail(itemResponse.Messages, itemResponse.StatusCode);

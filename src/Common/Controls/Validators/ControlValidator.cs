@@ -1,9 +1,8 @@
 ﻿using Common.Controls.Models;
-using FluentValidation;
 
 namespace Common.Controls.Validators;
 
-public class ControlValidator : BaseValidator<Control>
+public class ControlValidator : BaseValidator<ControlDTO>
 {
 
     public ControlValidator() : base()

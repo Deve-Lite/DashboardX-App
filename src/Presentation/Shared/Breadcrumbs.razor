@@ -1,0 +1,12 @@
+﻿<MudBreadcrumbs Items="BreadcrumbItems" MaxItems="3" Class="p-0 pt-1 pb-1 m-0">
+    <ItemTemplate Context="item">
+        <MudLink Typo="Typo.body2" Href="@item.Href">@item.Text.ToUpper()</MudLink>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+@code {
+    [Parameter]
+    public List<BreadcrumbItem> BreadcrumbItems { get; set; } = new();
+
+    public string GetFiexedName(string name) => name.Length > 15 ? name.Take(12).ToString() + "..." : name;
+}

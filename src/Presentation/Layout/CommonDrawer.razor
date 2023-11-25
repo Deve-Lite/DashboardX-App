@@ -1,0 +1,54 @@
+﻿@using Presentation.Layout.Navigation;
+
+@inject IStringLocalizer<CommonDrawer> _localizer
+@inject IAuthenticationManager _authenticationManager
+
+<MudNavMenu Class="pt-2">
+    <MudNavLink Icon="@CommonLayoutSettings.BrokersIcon"
+                OnClick="NavigateToBrokers">
+        @_localizer["Brokers"]
+    </MudNavLink>
+
+    <MudNavLink Icon="@CommonLayoutSettings.DevicesIcon"
+                OnClick="NavigateToDevices">
+        @_localizer["Devices"]
+    </MudNavLink>
+
+    <MudNavLink Icon="@CommonLayoutSettings.StatisticsIcon"
+                OnClick="NavigateToStatistics">
+        @_localizer["Subscribtions"]
+    </MudNavLink>
+
+    <MudNavLink Icon="@CommonLayoutSettings.SettingsIcon"
+                OnClick="NavigateToProfile">
+        @_localizer["Settings"]
+    </MudNavLink>
+
+    <MudNavLink Icon="@CommonLayoutSettings.LogoutIcon"
+                OnClick="Logout">
+        @_localizer["Logout"]
+    </MudNavLink>
+</MudNavMenu>
+
+@code {
+    [Parameter]
+    public Action? OnSelected { get; set; }
+
+    protected void NavigateToBrokers() => OnNavigateClick("/brokers");
+    protected void NavigateToDevices() => OnNavigateClick("/devices");
+    protected void NavigateToStatistics() => OnNavigateClick("/statistics/subscribtions");
+    protected void NavigateToProfile() => OnNavigateClick("/user/settings");
+
+    protected void OnNavigateClick(string route)
+    {
+        _navigationManager!.NavigateTo(route);
+        OnSelected?.Invoke();
+    }
+
+    protected async Task Logout()
+    {
+        //TODO: Dialog confirm logout
+
+        await _authenticationManager.Logout();
+    }
+}

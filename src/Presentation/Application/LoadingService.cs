@@ -4,27 +4,83 @@ namespace Presentation.Application;
 
 public class LoadingService : ILoadingService
 {
-    public Func<bool, Task> OnLoadingChanged { get; set; }
+    private bool isLoadingDialog;
+    private bool isLoading;
+    private Func<Task> refreshTask;
 
-    private bool isLoading = false;
+    public bool IsLoading => isLoading;
+    public bool IsDialogLoading => isLoadingDialog;
 
     public LoadingService()
     {
         isLoading = false;
-        OnLoadingChanged = default!;
     }
 
-    public bool IsLoading => isLoading;
+    public async Task<IResult> InvokeAsync(Func<Task<IResult>> action)
+    {
+        if(isLoading || isLoadingDialog)  
+            return Result.Fail(message: "Loading in progress");
+        
+        try
+        {
+            isLoading = true;
+            //await refreshTask?.Invoke()!;
+
+            var result = await action.Invoke();
+
+            isLoading = false;
+            await refreshTask?.Invoke()!;
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            //TODO: Locliazer
+            return Result.Fail(message:"Unknown exception occured");
+        }
+    }
+
+    public async Task<IResult> InvokeDialogAsync(Func<Task<IResult>> action)
+    {
+        if (isLoading || isLoadingDialog)
+            return Result.Fail(message: "Loading in progress");
+
+        try
+        {
+            isLoadingDialog = true;
+            //await refreshTask?.Invoke()!;
+
+            var result = await action.Invoke();
+
+            isLoadingDialog = false;
+            await refreshTask?.Invoke()!;
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            //TODO: Locliazer
+            return Result.Fail(message: "Unknown exception occured");
+        }
+    }
+
+    public void SetRefreshAction(Func<Task> refreshAction) 
+    {
+        refreshTask = refreshAction;
+    }
+
+    public void RemoveRefreshAction()
+    {
+        refreshTask = default!;
+    }
+
     public void ShowLoading()
     {
         isLoading = true;
-        OnLoadingChanged?.Invoke(IsLoading);
     }
 
     public void HideLoading()
     {
         isLoading = false;
-        OnLoadingChanged?.Invoke(IsLoading);
     }
-
 }

@@ -1,8 +1,8 @@
-﻿@page "/devices/{DeviceId}/{ClientId}"
+﻿@page "/devices/{DeviceId}/client/{ClientId}"
 @using Presentation.Brokers
 @using Presentation.Controls.Dialogs
-@using Presentation.Controls;
-@using Presentation.Controls.Implementations.StateComponents
+@using Presentation.Controls
+@using Presentation.Devices.Shared.DeviceStates
 
 @inject IClientService _clientService
 @inject NavigationManager _navigationManager
@@ -14,37 +14,24 @@
 
 <PageLoading FailedToLoad="!LoadedSuccessfully">
     <FailedToLoadContent>
-        <RefreshPageButton RefreshPage="LoadPage" />
+        <RefreshPageButton RefreshPage="RefreshPage" />
     </FailedToLoadContent>
     <LoadedContent>
+
+        <AddButton OnClick="AddControl"
+                   Class="add-wrapper" />
+
         <MudGrid Class="m-0 p-3 w-100">
-            <MudItem xs="6" Class="p-0 pt-3 pb-3 m-0">
-                <MudButton OnClick="async() => await _runtime.GoBack()"
-                           Color="Color.Dark"
-                           Variant="Variant.Filled"
-                           StartIcon="@Icons.Material.Filled.ArrowBackIos">
-                    @_localizer["Back"]
-                </MudButton>
+            <MudItem xs="12" Class="p-0 m-0">
+                <Breadcrumbs BreadcrumbItems="@BreadcrumbItems" />
             </MudItem>
 
-            <MudItem xs="6" Class="d-flex p-0 pt-3 pb-3 m-0 justify-content-end">
-
-                <MudButton OnClick="AddControl"
-                           Color="Color.Primary"
-                           Variant="Variant.Filled"
-                           StartIcon="@Icons.Material.Filled.AddToQueue">
-                    @_localizer["Add Control"]
-                </MudButton>
-
-            </MudItem>
-
-            <MudItem xs="12" sm="12" md="9" lg="7" xl="5" xxl="4"
-                     Class="p-0 m-0 pt-4 pb-5 mud-w-auto">
+            <MudItem xs="12" 
+                Class="p-0 m-0 pt-4 pb-5 mud-w-auto">
                 <MudCard Elevation="5"
                          Class="m-0 p-4 rounded-2">
                     <MudCardContent Class="p-0 m-0">
                         <MudGrid Class="m-0 p-0 w-100">
-
                             <MudItem xs="12">
                                 <MudText Typo="Typo.h6" Align="Align.Center"> @Device.Name</MudText>
                             </MudItem>
@@ -96,7 +83,7 @@
                         <MudButton Class="z-10 m-0"
                                    Variant="Variant.Filled"
                                    Color="Color.Primary"
-                                   OnClick="() => DevicePagesUtils.UpdateDevice(Device, _dialogService, StateHasChanged, _localizer)">
+                                   OnClick="() => DevicePagesUtils.UpdateDevice(Device, _dialogService, _localizer)">
                             @_localizer["Edit"]
                         </MudButton>
 
@@ -116,13 +103,13 @@
 
                         <BrokerConnectionSwitch Client="Client" />
 
-                        <StateControl @ref="StateControl" Class="z-10 m-0 ml-2"
-                                      Client="@Client"
-                                      Device="@Device" 
-                                      RerenderPage="StateHasChanged" />
+                        <DeviceState @ref="State" 
+                                     Class="z-10 m-0 ml-2"
+                                     Client="@Client"
+                                     Device="@Device" 
+                                     RerenderPage="StateHasChanged" />
 
                     </MudCardActions>
-
                 </MudCard>
             </MudItem>
 
@@ -133,7 +120,7 @@
             <MudItem xs="12" Class="p-0 pt-4 pb-4 m-0 d-flex">
 
                 <MudElement Class="p-1 m-0 d-flex w-100 flex-animate flex-list-justify">
-                    @foreach (var control in Client!.GetControls(DeviceId))
+                    @foreach (var control in Client!.GetControls(DeviceId).Where(x => x.Type != ControlType.State))
                     {
                         <MudItem Class="p-1 m-0">
                             <ControlFactory Client="@Client"
@@ -148,37 +135,37 @@
     </LoadedContent>
 </PageLoading>
 
-@code {
-
+@code 
+{
     [Parameter]
     public string DeviceId { get; set; } = string.Empty;
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
 
-    public IClient? Client { get; set; }
-    public Device Device { get; set; } = new();
-
-    private StateControl? StateControl;
+    private IClient? Client { get; set; }
+    private Device Device { get; set; } = new();
+    private DeviceState? State;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadPage();
         await base.OnInitializedAsync();
+
+        await _loadingService.InvokeAsync(LoadPage);
     }
 
-    public async Task LoadPage()
+    protected async Task RefreshPage()
     {
-        if (_loadingService.IsLoading)
-            return;
+        await _loadingService.InvokeAsync(LoadPage);
+    }
 
-        _loadingService.ShowLoading();
-
+    protected async Task<IResult> LoadPage()
+    {
         var result = await _clientService.GetClient(ClientId);
 
         if (result.Succeeded)
         {
             Client = result.Data;
-            Client.RerenderPage += Rerender;
+            Client.SetOnMessageReceivedEventHandler(RerenderPage);
             LoadedSuccessfully = true;
             Device = Client.GetDevices().FirstOrDefault(x => x.Id == DeviceId)!;
         }
@@ -191,27 +178,25 @@
             foreach (var message in result.Messages)
                 _snackbar.Add(message, result.Severity);
 
-        _loadingService.HideLoading();
+        BreadcrumbItems = new()
+        {
+            new BreadcrumbItem("Brokers", href: "/brokers"),
+            new BreadcrumbItem($"{Client!.GetBroker().Name}", href: $"/brokers/{Client!.GetBroker().Id}"),
+            new BreadcrumbItem($"{Device.Name}", href: $"devices/{Device.Id}/client/{Client!.GetBroker().Id}", true),
+        };
 
-        StateHasChanged();
+        return result;
     }
 
-    public async Task AddControl()
+    protected async Task AddControl()
     {
         await ControlPagesUtils.AddControl(_dialogService, DeviceId, StateHasChanged, _localizer, ClientId);
 
-        StateControl!.Update();
+        State!.Update();
     }
 
     public void Dispose()
     {
-#pragma warning disable CS8601
-        Client!.RerenderPage -= Rerender!;
-    }
-
-    private Task Rerender()
-    {
-        StateHasChanged();
-        return Task.CompletedTask;
+        Client!.ClearOnMessageReceivedEventHandler();
     }
 }

@@ -10,17 +10,13 @@ public abstract class AuthorizedService : BaseService
 {
     protected readonly ApplicationStateProvider _applicationStateProvider;
     protected readonly NavigationManager _navigationManager;
-    protected readonly ILoadingService _loadingService;
+    protected readonly IAuthenticationManager _authenticationManager;
     
     protected AuthorizedService(HttpClient httpClient,
-        ILoadingService loadingService,
         ILogger<AuthorizedService> logger,
-        NavigationManager navigationManager,
-        AuthenticationStateProvider authenticationState) : base(httpClient, logger)
+        IAuthenticationManager authenticationManager) : base(httpClient, logger)
     {
-        _loadingService = loadingService;
-        _navigationManager = navigationManager;
-        _applicationStateProvider = (ApplicationStateProvider)authenticationState;
+        _authenticationManager = authenticationManager;
     }
 
     protected virtual async Task<Result> SendAsync(Request request)
@@ -95,7 +91,7 @@ public abstract class AuthorizedService : BaseService
             Route = "api/v1/users/me/tokens"
         };
 
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _applicationStateProvider.RefreshToken);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _authenticationManager.GetRefreshToken());
 
         var response = await SendAsync<Tokens>(request);
 
@@ -103,15 +99,11 @@ public abstract class AuthorizedService : BaseService
         {
             var accessToken = response.Data!.AccessToken;
             var refreshToken = response.Data!.RefreshToken;
-            await _applicationStateProvider.ExtendSession(accessToken, refreshToken);
+            await _authenticationManager.ExtendSession(accessToken, refreshToken);
             return true;
         }
 
-        _applicationStateProvider?.Logout();
-        //TODO: Create new service that will work as navigation
-        //manager and loading service to handle such situations
-        _loadingService.HideLoading();
-        _navigationManager.NavigateTo("/auth/login");
+        _authenticationManager?.Logout();
 
         return false;
     }

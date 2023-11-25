@@ -12,7 +12,6 @@ public class LoginValidator : BaseValidator<LoginModel>
             .EmailAddress();
 
         RuleFor(x => x.Password)
-            .NotEmpty()
             .MinimumLength(6)
             .MaximumLength(30);
     }

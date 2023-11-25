@@ -24,7 +24,16 @@ public class ClientMockup : IClient
     public bool IsConnected => _isConnected;
 
     public ITopicService TopicService { get; set; }
-    public Func<Task> RerenderPage { get; set; }
+
+    public void ClearOnMessageReceivedEventHandler()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void SetOnMessageReceivedEventHandler(Func<Task> refreshAction)
+    {
+        throw new NotImplementedException();
+    }
 
     public Task<IResult> AddControl(Control control)
     {
@@ -69,6 +78,8 @@ public class ClientMockup : IClient
     {
         return Controls.Where(x => x.DeviceId == deviceId).ToList();
     }
+
+    public IList<Control> GetControls() => Controls;
 
     public IList<Device> GetDevices()
     {

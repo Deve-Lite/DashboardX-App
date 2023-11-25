@@ -1,4 +1,6 @@
 ﻿@using Presentation.Utils;
+@using Presentation.Shared.Dialogs;
+
 @inject IStringLocalizer<UpsertDeviceDialog> _localizer;
 @inject IDeviceService _deviceService
 @inject IFetchBrokerService _brokerService
@@ -7,8 +9,15 @@
 
 <MudDialog>
     <DialogContent>
-        <DialogLoading IsLoading="IsLoading">
-            <LoadedContent>
+        <LoadingDialog>
+            <Title>
+                <MudText Align="Align.Start"
+                         Class="m-0 mt-2 mb-2"
+                         Typo="Typo.h6">
+                    @Title()
+                </MudText>
+            </Title>
+            <Content>
                 <MudForm @ref="@Form"
                          Model="@Model"
                          Validation="@(DeviceValidator.ValidateValue)"
@@ -89,19 +98,19 @@
                         </MudItem>
                     </MudGrid>
                 </MudForm>
-            </LoadedContent>
-        </DialogLoading>
+            </Content>
+            <Actions>
+                <MudButton OnClick="Cancel">
+                    @_localizer["Cancel"]
+                </MudButton>
+                <MudButton OnClick="SubmitAsync"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary">
+                    @_localizer["Submit"]
+                </MudButton>
+            </Actions>
+        </LoadingDialog>
     </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="Cancel"
-                   Disabled="IsLoading">
-                   @_localizer["Cancel"]
-        </MudButton>
-        <MudButton OnClick="SubmitAsync"
-                   Disabled="IsLoading"
-                   Variant="Variant.Filled"
-                   Color="Color.Primary">@_localizer["Submit"] </MudButton>
-    </DialogActions>
 </MudDialog>
 
 @code
@@ -138,19 +147,26 @@
         return base.OnAfterRenderAsync(firstRender);
     }
 
+    protected override string Title() 
+        => !string.IsNullOrWhiteSpace(Model.Id) ? _localizer["Update Device"] : _localizer["Add Device"];
+
     private async Task SubmitAsync()
     {
-        if (IsLoading)
-            return;
+
+        var result = await _loadingService.InvokeDialogAsync(SubmitAction);
+
+        if (result.Succeeded)
+            Dialog!.Close(DialogResult.Ok(result));
+    }
+
+    private async Task<IResult> SubmitAction()
+    {
+        IResult result = Result.Fail();
 
         await Form!.Validate();
 
         if (!Form.IsValid)
-            return;
-
-        IsLoading = true;
-
-        IResult result = Result.Fail();
+            return result;
 
         if (string.IsNullOrEmpty(Model.Id))
             result = await _deviceService.CreateDevice(Model);
@@ -159,14 +175,9 @@
 
         var success = RequestHelpers.InvokeAfterRequest(_snackbar, result, OnAdded);
 
-        IsLoading = false;
-
-        if (!success)
-            return;
-
-        Dialog!.Close(DialogResult.Ok(result));
+        return result;
     }
 
-    private void OnAdded() 
+    private void OnAdded()
         => _snackbar.Add(_localizer["Success"], MudBlazor.Severity.Success);
 }

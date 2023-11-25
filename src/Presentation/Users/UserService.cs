@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
-using Presentation.Application.Interfaces;
-using System.Net;
+﻿using Presentation.Application.Interfaces;
 
 namespace Presentation.Users;
 
@@ -9,12 +7,10 @@ public class UserService : AuthorizedService, IUserService
     private readonly IPrefrenceService _prefrenceService;
 
     public UserService(HttpClient httpClient,
-        ILogger<UserService> logger,
-        ILoadingService loadingService,
-        IPrefrenceService preferenceService,
-        NavigationManager navigationManager,
-        AuthenticationStateProvider authenticationState)
-        : base(httpClient, loadingService, logger, navigationManager, authenticationState)
+                       ILogger<UserService> logger,
+                       IPrefrenceService preferenceService,
+                       IAuthenticationManager authenticationManager)
+        : base(httpClient, logger, authenticationManager)
     {
         _prefrenceService = preferenceService;
     }

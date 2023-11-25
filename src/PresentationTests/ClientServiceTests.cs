@@ -1,4 +1,4 @@
-namespace PresentationTests.ServicesTests;
+namespace PresentationTests;
 
 public class ClientServiceTests : BaseServiceTest
 {
@@ -6,13 +6,13 @@ public class ClientServiceTests : BaseServiceTest
     [SetUp]
     public override async Task SetUpTest()
     {
-       await base.SetUpTest();
+        await base.SetUpTest();
     }
 
     [TearDown]
     public override void TearDownTest()
     {
-       base.TearDownTest();
+        base.TearDownTest();
     }
 
     [Test]

@@ -1,0 +1,117 @@
+﻿@using Presentation.Utils;
+
+@inject IStringLocalizer<BrokerElement> _localizer
+@inject IClientService _clientService
+@inject ILogger<BrokerElement> _logger
+
+<MudPaper Class="m-0 p-0 rounded-4 animate-simple" Elevation="1">
+    <MudGrid Class="m-0 p-0 w-100">
+        <MudItem xs="12" Class="m-0 p-0" @onclick="HandleBrokerClick">
+            <MudPaper Elevation="2" Class="m-0 p-1 rounded-4 d-flex">
+                <MudGrid Class="m-0 p-0 w-100">
+                    <MudItem xs="2" sm="3" Class="m-0 p-2 d-flex justify-content-center align-items-center">
+                        <MudPaper Elevation="5"
+                                  Class="m-0 p-1 rounded-5"
+                                  Style="@($"background-color: {GetBackgroundColor()};")">
+                            <MudIcon Class="list-icon"
+                                     Icon="@IconUtils.GetIcon(Broker.Icon?.Name!)" />
+                        </MudPaper>
+                    </MudItem>
+
+                    <MudItem xs="10" sm="9" Class="m-0 p-2">
+                        <MudGrid Class="m-0 p-0 w-100">
+                            <MudItem xs="12" Class="m-0 p-0">
+                                <MudText Typo="Typo.h6" Class="hide-overlapping-text text-600" Style="font-weight: 500;">
+                                    @Broker.Name
+                                </MudText>
+                            </MudItem>
+
+                            <MudElement Class="p-0 m-0" @onclick:stopPropagation="true">
+                                <MudItem xs="12"
+                                         Class="m-0 p-0"
+                                         Style="z-index:10;"
+                                @onclick="HandleExpand">
+                                    <MudText Typo="Typo.body2" Color="Color.Tertiary">
+                                        @UnderNameText
+                                    </MudText>
+                                </MudItem>
+                            </MudElement>
+                        </MudGrid>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        </MudItem>
+
+        @if (IsExpanded)
+        {
+            <MudItem xs="12" Class="m-0 p-0 pt-2 pb-2">
+                <MudGrid Class="m-0 p-0">
+                    <MudItem Class="p-2 pb-0 pt-0 m-0">
+                        <BrokerConnection Client="@Client" />
+                    </MudItem>
+
+                    <MudItem Class="p-2 pb-0 pt-0 m-0">
+                        <MudIconButton Class="z-10"
+                                       Icon="@IconUtils.DefaultEditIcon"
+                                       Variant="Variant.Filled"
+                                       OnClick="() => BrokerPagesUtils.UpdateBroker(Client, _dialogService, StateHasChanged, _localizer)" />
+
+                    </MudItem>
+
+                    <MudItem Class="p-2 pb-0 pt-0  m-0">
+                        <MudIconButton Class="z-10"
+                                       Icon="@IconUtils.DefaultRemoveIcon"
+                                       Variant="Variant.Filled"
+                                       OnClick="() => BrokerPagesUtils.RemoveBroker(Client, _dialogService, StateHasChanged, _localizer, _navigationManager, _runtime)" />
+
+                    </MudItem>
+                </MudGrid>
+            </MudItem>
+        }
+    </MudGrid>
+</MudPaper>
+
+
+
+@code {
+    [Parameter]
+    public IClient Client { get; set; } = default!;
+
+    private bool IsExpanded { get; set; } = false;
+    private Broker Broker { get; set; } = default!;
+    private string UnderNameText { get; set; } = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        Broker = Client.GetBroker();
+
+        UnderNameText = _localizer["Show Actions"];
+    }
+
+    protected override void OnParametersSet()
+    {
+        Broker = Client.GetBroker();
+    }
+
+    public string GetBackgroundColor() => string.IsNullOrEmpty(Broker.Icon.BackgroundHex) ? ThemeColors.ColorPrimary : Broker.Icon.BackgroundHex;
+
+    public void HandleBrokerClick()
+    {
+        _navigationManager.NavigateTo($"/brokers/{Client.Id}");
+    }
+
+    public void HandleExpand()
+    {
+
+        if (IsExpanded)
+        {
+            IsExpanded = false;
+            UnderNameText = _localizer["Show Actions"];
+        }
+        else
+        {
+            UnderNameText = _localizer["Hide Actions"];
+            IsExpanded = true;
+        }
+    }
+}

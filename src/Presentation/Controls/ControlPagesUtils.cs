@@ -11,8 +11,12 @@ public static class ControlPagesUtils
             {  x => x.DeviceId, DeviceId },
             {  x => x.ClientId, ClientId }
         };
+        var options = new DialogOptions()
+        {
+            NoHeader = true,
+        };
 
-        var dialog = await dialogService.ShowAsync<UpsertControlDialog>(localizer["Create Control"], parameters);
+        var dialog = await dialogService.ShowAsync<UpsertControlDialog>(localizer["Create Control"], parameters, options);
         var result = await dialog.Result;
 
         if (result.Canceled)
@@ -32,8 +36,12 @@ public static class ControlPagesUtils
             {  x => x.ClientId, DeviceId },
             {  x => x.Control, control }
         };
+        var options = new DialogOptions()
+        {
+            NoHeader = true,
+        };
 
-        var dialog = await dialogService.ShowAsync<UpsertControlDialog>(localizer["Edit Control"], parameters);
+        var dialog = await dialogService.ShowAsync<UpsertControlDialog>(localizer["Edit Control"], parameters, options);
         var result = await dialog.Result;
 
         if (result.Canceled)
@@ -53,8 +61,12 @@ public static class ControlPagesUtils
             {  x => x.ClientId, ClientId },
             {  x => x.Control, control }
         };
+        var options = new DialogOptions()
+        {
+            NoHeader = true,
+        };
 
-        var dialog = await dialogService.ShowAsync<RemoveControlDialog>(localizer["Remove Control"], parameters);
+        var dialog = await dialogService.ShowAsync<RemoveControlDialog>(localizer["Remove Control"], parameters, options);
         var result = await dialog.Result;
 
         if (result.Canceled)

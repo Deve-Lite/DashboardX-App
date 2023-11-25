@@ -8,8 +8,7 @@ public class DevicePagesUtils
 {
 
     public static async Task UpdateDevice(Device device, 
-        IDialogService dialogService, 
-        Action refreshUI, 
+        IDialogService dialogService,  
         IStringLocalizer<object> localizer)
     {
         var parameters = new DialogParameters<UpsertDeviceDialog>
@@ -17,24 +16,24 @@ public class DevicePagesUtils
             { x => x.Model, device.Dto() }
         };
 
-        var dialog = await dialogService.ShowAsync<UpsertDeviceDialog>(localizer["Edit Device"], parameters);
+        var options = new DialogOptions()
+        {
+            NoHeader = true,
+        };
+
+        var dialog = await dialogService.ShowAsync<UpsertDeviceDialog>(localizer["Edit Device"], parameters, options);
         var result = await dialog.Result;
 
         if (result.Canceled)
             return;
 
         var x = result.Data as Result<Client> ?? Result<Client>.Fail(message: localizer["Couldn't parse response."]);
-
-        if (x.Succeeded)
-        {
-            refreshUI.Invoke();
-        }
     }
 
     public static async Task RemoveDevice(Device device, 
         IDialogService dialogService, 
         IStringLocalizer<object> localizer, 
-        NavigationManager _navigationManager, 
+        NavigationManager NavigationManager, 
         IJSRuntime runtime)
     {
         var parameters = new DialogParameters<RemoveDeviceDialog>
@@ -43,17 +42,22 @@ public class DevicePagesUtils
             { x => x.ClientId, device.BrokerId }
         };
 
-        var dialog = await dialogService.ShowAsync<RemoveDeviceDialog>(localizer["Remove Device"], parameters);
+        var options = new DialogOptions()
+        {
+            NoHeader = true,
+        };
+
+        var dialog = await dialogService.ShowAsync<RemoveDeviceDialog>(localizer["Remove Device"], parameters, options);
         var result = await dialog.Result;
 
         if (result.Canceled)
             return;
 
         var x = result.Data as Result ?? Result.Fail(message: localizer["Couldn't parse response."]);
-
+        //TODO: Fix 
         if (x.Succeeded)
         {
-            var currentPage = _navigationManager.Uri;
+            var currentPage = NavigationManager.Uri;
             string deviceListPagePattern = @".*/devices$";
             string brokerPagePattern = @".*/brokers/.*";
 
@@ -74,7 +78,12 @@ public class DevicePagesUtils
             { x => x.Model, new DeviceDTO{ BrokerId = clientId ?? string.Empty } }
         };
 
-        var dialog = await dialogService.ShowAsync<UpsertDeviceDialog>(localizer["Create Device"], parameters);
+        var options = new DialogOptions()
+        {
+            NoHeader = true,
+        };
+
+        var dialog = await dialogService.ShowAsync<UpsertDeviceDialog>(localizer["Create Device"], parameters, options);
         var result = await dialog.Result;
 
         if (result.Canceled)
