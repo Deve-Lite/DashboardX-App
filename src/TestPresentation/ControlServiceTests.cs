@@ -3,34 +3,39 @@ using Presentation.Controls;
 
 namespace PresentationTests;
 
-public class ControlServiceTests : IClassFixture<BaseTest>
+public class ControlServiceTests : BaseTest, IAsyncLifetime
 {
-    public IControlService ControlService { get; private set; }
-    private BaseTest _fixture;
+    public IControlService? ControlService { get; private set; }
 
-    public ControlServiceTests(BaseTest fixture) : base()
+    public async Task InitializeAsync()
     {
-        _fixture = fixture;
-        ControlService = new ControlService(_fixture.ClientManager, _fixture.FetchControlService);
+        ControlService = new ControlService(ClientManager, FetchControlService);
+        await Setup();
+    }
+
+    public Task DisposeAsync()
+    {
+        TearDown();
+        return Task.CompletedTask;
     }
 
     [Fact]
     public async Task CreateControlTest()
     {
-        var clients = await _fixture.ClientService.GetClientsWithDevices();
+        var clients = await ClientService.GetClientsWithDevices();
 
         Assert.Equal(2, clients!.Data.Count);
 
-        var devices = await _fixture.FetchDeviceService.GetDevices();
+        var devices = await FetchDeviceService.GetDevices();
         var controlDto = ControlGenerator.GenerateControl();
         controlDto.DeviceId = devices.Data[0].Id;
 
-        var result = await ControlService.CreateControl(devices.Data[0].BrokerId, controlDto);
+        var result = await ControlService!.CreateControl(devices.Data[0].BrokerId, controlDto);
 
         Assert.NotNull(result);
         Assert.True(result.Succeeded);
 
-        clients = await _fixture.ClientService.GetClientsWithDevices();
+        clients = await ClientService.GetClientsWithDevices();
 
         var totalControls = clients.Data.SelectMany(x => x.GetControls()).ToList();
 
@@ -40,7 +45,7 @@ public class ControlServiceTests : IClassFixture<BaseTest>
     [Fact]
     public async Task UpdateControlTest()
     {
-        var clients = await _fixture.ClientService.GetClientsWithDevices();
+        var clients = await ClientService.GetClientsWithDevices();
 
         Assert.Equal(2, clients!.Data.Count);
 
@@ -51,12 +56,12 @@ public class ControlServiceTests : IClassFixture<BaseTest>
 
         control.Name = newDisplayName;
 
-        var result = await ControlService.UpdateControl(device.BrokerId, control.Dto());
+        var result = await ControlService!.UpdateControl(device.BrokerId, control.Dto());
 
         Assert.NotNull(result);
         Assert.True(result.Succeeded);
 
-        clients = await _fixture.ClientService.GetClientsWithDevices();
+        clients = await ClientService.GetClientsWithDevices();
 
         var totalControls = clients.Data.SelectMany(x => x.GetControls()).ToList();
 
@@ -67,19 +72,19 @@ public class ControlServiceTests : IClassFixture<BaseTest>
     [Fact]
     public async Task RemoveControlTest()
     {
-        var clients = await _fixture.ClientService.GetClientsWithDevices();
+        var clients = await ClientService.GetClientsWithDevices();
 
         Assert.Equal(2, clients!.Data.Count);
 
         var device = clients.Data[0].GetDevices()[0];
         var control = clients.Data[0].GetControls(device.Id)[0];
 
-        var result = await ControlService.RemoveControl(device.BrokerId, control);
+        var result = await ControlService!.RemoveControl(device.BrokerId, control);
 
         Assert.NotNull(result);
         Assert.True(result.Succeeded);
 
-        clients = await _fixture.ClientService.GetClientsWithDevices();
+        clients = await ClientService.GetClientsWithDevices();
 
         var totalControls = clients.Data.SelectMany(x => x.GetControls()).ToList();
 

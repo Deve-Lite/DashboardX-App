@@ -1,21 +1,26 @@
 namespace PresentationTests;
 
-public class ClientServiceTests : IClassFixture<BaseTest>
+public class ClientServiceTests : BaseTest, IAsyncLifetime
 {
-    private BaseTest _fixture;
-    public ClientServiceTests(BaseTest fixture)
+    public async Task InitializeAsync()
     {
-        this._fixture = fixture;
+        await Setup();
+    }
+
+    public Task DisposeAsync()
+    {
+        TearDown();
+        return Task.CompletedTask;
     }
 
     [Fact]
     public async Task GetClientsTest()
     {
-        var clients = await _fixture.ClientService.GetClients();
+        var clients = await ClientService.GetClients();
 
         Assert.Equal(2, clients!.Data.Count);
 
-        var brokers = await _fixture.FetchBrokerService.GetBrokers();
+        var brokers = await FetchBrokerService.GetBrokers();
         var brokersInClients = clients.Data.Select(x => x.GetBroker()).ToList();
 
         foreach (var broker in brokers.Data)
@@ -25,15 +30,15 @@ public class ClientServiceTests : IClassFixture<BaseTest>
     [Fact]
     public async Task GetClientTest()
     {
-        var clients = await _fixture.ClientService.GetClients();
+        var clients = await ClientService.GetClients();
 
         Assert.Equal(2, clients.Data.Count);
 
-        var brokers = await _fixture.FetchBrokerService.GetBrokers();
+        var brokers = await FetchBrokerService.GetBrokers();
 
         foreach (var broker in brokers.Data)
         {
-            var result = await _fixture.ClientService.GetClient(broker.Id);
+            var result = await ClientService.GetClient(broker.Id);
 
             Assert.NotNull(result);
             Assert.True(result.Succeeded);
@@ -45,17 +50,17 @@ public class ClientServiceTests : IClassFixture<BaseTest>
     [Fact]
     public async Task GetFullClientsTest()
     {
-        var clients = await _fixture.ClientService.GetClientsWithDevices();
+        var clients = await ClientService.GetClientsWithDevices();
 
         Assert.Equal(2, clients!.Data.Count);
 
-        var brokers = await _fixture.FetchBrokerService.GetBrokers();
+        var brokers = await FetchBrokerService.GetBrokers();
         var brokersInClients = clients.Data.Select(x => x.GetBroker()).ToList();
 
         Assert.Contains(brokers.Data[0], brokersInClients);
         Assert.Contains(brokers.Data[1], brokersInClients);
 
-        var devices = await _fixture.FetchDeviceService.GetDevices();
+        var devices = await FetchDeviceService.GetDevices();
         var devicesInClients = clients.Data.SelectMany(x => x.GetDevices()).ToList();
 
         Assert.Equal(2, devicesInClients.Count);
@@ -66,17 +71,17 @@ public class ClientServiceTests : IClassFixture<BaseTest>
     [Fact]
     public async Task NewClientAddedInBackgroundTest()
     {
-        var clients = await _fixture.ClientService.GetClients();
+        var clients = await ClientService.GetClients();
 
         Assert.Equal(2, clients.Data.Count);
 
-        var result = await _fixture.FetchBrokerService.CreateBroker(BrokerDtoGenerator.GenerateBrokerDto());
+        var result = await FetchBrokerService.CreateBroker(BrokerDtoGenerator.GenerateBrokerDto());
 
         Assert.NotNull(result);
         Assert.True(result.Succeeded);
 
-        var resultClients = await _fixture.ClientService.GetClients();
-        var brokers = await _fixture.FetchBrokerService.GetBrokers();
+        var resultClients = await ClientService.GetClients();
+        var brokers = await FetchBrokerService.GetBrokers();
 
         Assert.Equal(3, resultClients.Data.Count);
 
@@ -89,29 +94,29 @@ public class ClientServiceTests : IClassFixture<BaseTest>
     [Fact]
     public async Task RemovedClientInBackgroundTest()
     {
-        var brokers = await _fixture.FetchBrokerService.GetBrokers();
+        var brokers = await FetchBrokerService.GetBrokers();
 
         var firstToRemove = brokers.Data[0];
         var secondToRemove = brokers.Data[1];
 
-        var clients = await _fixture.ClientService.GetClients();
+        var clients = await ClientService.GetClients();
         Assert.Equal(2, clients.Data.Count);
 
-        var result = await _fixture.FetchBrokerService.RemoveBroker(firstToRemove.Id);
+        var result = await FetchBrokerService.RemoveBroker(firstToRemove.Id);
 
         Assert.NotNull(result);
         Assert.True(result.Succeeded);
 
-        var resultClients = await _fixture.ClientService.GetClients();
+        var resultClients = await ClientService.GetClients();
 
         Assert.Equal(1, resultClients.Data.Count);
 
-        result = await _fixture.FetchBrokerService.RemoveBroker(secondToRemove.Id);
+        result = await FetchBrokerService.RemoveBroker(secondToRemove.Id);
 
         Assert.NotNull(result);
         Assert.True(result.Succeeded);
 
-        resultClients = await _fixture.ClientService.GetClients();
+        resultClients = await ClientService.GetClients();
 
         Assert.Empty(resultClients.Data);
     }
@@ -119,11 +124,11 @@ public class ClientServiceTests : IClassFixture<BaseTest>
     [Fact]
     public async Task UpdatedClientInBackgroundTest()
     {
-        var clients = await _fixture.ClientService.GetClients();
+        var clients = await ClientService.GetClients();
 
         Assert.Equal(2, clients.Data.Count);
 
-        var result = await _fixture.FetchBrokerService.GetBroker(clients.Data[0].Id);
+        var result = await FetchBrokerService.GetBroker(clients.Data[0].Id);
 
         Assert.True(result.Succeeded);
 
@@ -133,11 +138,11 @@ public class ClientServiceTests : IClassFixture<BaseTest>
         updatedDto.Port = result.Data.Port;
         updatedDto.KeepAlive = result.Data.KeepAlive;
 
-        var updateResult = await _fixture.FetchBrokerService.UpdateBroker(updatedDto);
+        var updateResult = await FetchBrokerService.UpdateBroker(updatedDto);
 
         Assert.True(updateResult.Succeeded);
 
-        clients = await _fixture.ClientService.GetClients();
+        clients = await ClientService.GetClients();
 
         Assert.Equal(2, clients.Data.Count);
 
@@ -155,17 +160,17 @@ public class ClientServiceTests : IClassFixture<BaseTest>
     [Fact]
     public async Task LogoutTest()
     {
-        var clients = await _fixture.ClientService.GetClients();
+        var clients = await ClientService.GetClients();
 
         Assert.Equal(2, clients!.Data.Count);
 
-        await _fixture.ClientService.Logout();
+        await ClientService.Logout();
 
-        var emptyClients = _fixture.ClientManager.GetClients();
+        var emptyClients = ClientManager.GetClients();
 
         Assert.Empty(emptyClients.Data);
 
-        clients = await _fixture.ClientService.GetClients();
+        clients = await ClientService.GetClients();
 
         Assert.Equal(2, clients!.Data.Count);
     }

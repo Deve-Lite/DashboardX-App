@@ -5,9 +5,9 @@ namespace PresentationTests;
 
 public class BrokerServiceTest : BaseTest, IAsyncLifetime
 {
-    private IBrokerService BrokerService { get; set; }
+    private IBrokerService? BrokerService { get; set; }
 
-    public  async Task InitializeAsync()
+    public async Task InitializeAsync()
     {
         BrokerService = new BrokerService(FetchBrokerService, ClientManager);
         await Setup();
@@ -28,7 +28,7 @@ public class BrokerServiceTest : BaseTest, IAsyncLifetime
         Assert.True(clients!.Data.Count == 2);
 
         var newBroker = BrokerDtoGenerator.GenerateBrokerDto();
-        var result = await BrokerService.CreateBroker(newBroker, BrokerDtoGenerator.GenerateBrokerCredentialsDto());
+        var result = await BrokerService!.CreateBroker(newBroker, BrokerDtoGenerator.GenerateBrokerCredentialsDto());
 
         Assert.NotNull(result);
         Assert.True(result.Succeeded);
@@ -48,7 +48,7 @@ public class BrokerServiceTest : BaseTest, IAsyncLifetime
         var brokers = await FetchBrokerService.GetBrokers();
         var broker = brokers.Data[0];
         broker.Server = "google.com";
-        var result = await BrokerService.UpdateBroker(broker.Dto(), BrokerDtoGenerator.GenerateBrokerCredentialsDto());
+        var result = await BrokerService!.UpdateBroker(broker.Dto(), BrokerDtoGenerator.GenerateBrokerCredentialsDto());
 
         Assert.NotNull(result);
         Assert.True(result.Succeeded);
@@ -69,7 +69,7 @@ public class BrokerServiceTest : BaseTest, IAsyncLifetime
         var brokers = await FetchBrokerService.GetBrokers();
         var brokerToRemove = brokers.Data[0];
 
-        var result = await BrokerService.RemoveBroker(brokerToRemove.Id);
+        var result = await BrokerService!.RemoveBroker(brokerToRemove.Id);
 
         Assert.NotNull(result);
         Assert.True(result.Succeeded);

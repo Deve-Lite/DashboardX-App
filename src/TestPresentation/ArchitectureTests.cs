@@ -16,11 +16,13 @@ public class ArchitectureTests
         //{
         //    Presentation,
         //};
+        Assert.True(false);
     }
 
     [Fact]
     public void CommonIsNotDependentOnCore()
-    { 
+    {
+        Assert.True(false);
 
     }
 
@@ -28,6 +30,7 @@ public class ArchitectureTests
     public void CoreIsNotDependentOnPresentation()
     {
 
+        Assert.True(false);
     }
 
 }
