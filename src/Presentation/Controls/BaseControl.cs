@@ -61,7 +61,10 @@ public partial class BaseControl : ComponentBase
             {
                 { x => x.Description, question }
             };
-            var dialog = await DialogService!.ShowAsync<ConfirmDialog>(title, parameters);
+
+            var options = new DialogOptions { NoHeader = true };
+
+            var dialog = await DialogService!.ShowAsync<ConfirmDialog>(title, parameters, options);
             var result = await dialog.Result;
 
             if (result.Canceled)

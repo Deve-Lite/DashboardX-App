@@ -1,46 +1,74 @@
 ﻿@using Presentation.Controls;
+@using Presentation.Shared.Dialogs
 @inject IStringLocalizer<StateDialog> _localizer;
 @inject IClientService _clientService;
 
 @inherits BaseDialog
 
-<MudDialog>
+<MudDialog ClassContent="my-mud-dialog-content">
     <DialogContent>
-        <MudGrid Class="p-0 m-0 w-100">
+        <LoadingDialog>
+            <Title>
+                <MudText Align="Align.Start"
+                         Typo="Typo.h6">
+                    @_localizer["Device State"]
+                </MudText>
+            </Title>
+            <Content>
+                <MudGrid Class="p-0 m-0 w-100 d-flex justify-content-center aligin-items-center">
 
-            <MudItem xs="6">
-                <MudButton Color="Color.Error"
+                    <MudItem xs="12" sm="6">
+                        <MudGrid>
+                            <MudItem Class="d-flex justify-content-center aligin-items-center" xs="12">
+                                <MudIconButton Color="Color.Error"
+                                               Variant="Variant.Outlined"
+                                               Style="height: 100px; width: 100px;"
+                                               Icon="@Icons.Material.Filled.TvOff"
+                                               OnClick="() => SubmitState(false)" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudText Align="Align.Center">
+                                    @_localizer["Off"]
+                                </MudText>
+                            </MudItem>
+                        </MudGrid>
+
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6">
+                        <MudGrid>
+                            <MudItem Class="d-flex justify-content-center aligin-items-center" xs="12">
+                                <MudIconButton Color="Color.Success"
+                                               Variant="Variant.Outlined"
+                                               Style="height: 100px; width: 100px;"
+                                               Icon="@Icons.Material.Filled.LiveTv"
+                                               OnClick="() => SubmitState(true)" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudText Align="Align.Center" >
+                                    @_localizer["On"]
+                                </MudText>
+                            </MudItem>
+                        </MudGrid>
+                    </MudItem>
+
+                </MudGrid>
+            </Content>
+            <Actions>
+                <MudButton OnClick="Cancel"
                            Variant="Variant.Filled"
-                           StartIcon="@Icons.Material.Filled.TvOff"
-                           OnClick="() => SubmitState(false)">
-                    @_localizer["Off"]
-                </MudButton>
-            </MudItem>
+                           Color="Color.Warning">@_localizer["Cancel"]</MudButton>
 
-            <MudItem xs="6">
-                <MudButton Color="Color.Success"
+                <MudButton OnClick="RemoveStateControl"
                            Variant="Variant.Filled"
-                           StartIcon="@Icons.Material.Filled.LiveTv"
-                           OnClick="() => SubmitState(true)">
-                    @_localizer["On"]
-                </MudButton>
-            </MudItem>
+                           Color="Color.Error">@_localizer["Remove"]</MudButton>
 
-        </MudGrid>
+                <MudButton OnClick="async() => await ControlPagesUtils.UpdateControl(_dialogService, Control!, Client!.Id)"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary">@_localizer["Edit"] </MudButton>
+            </Actions>
+        </LoadingDialog>
     </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="Cancel"
-                   Variant="Variant.Filled"
-                   Color="Color.Warning">@_localizer["Cancel"]</MudButton>
-
-        <MudButton OnClick="RemoveStateControl"
-                   Variant="Variant.Filled"
-                   Color="Color.Error">@_localizer["Remove"]</MudButton>
-
-        <MudButton OnClick="async() => await ControlPagesUtils.UpdateControl(_dialogService, Control!, Client!.Id)"
-                   Variant="Variant.Filled"
-                   Color="Color.Primary">@_localizer["Edit"] </MudButton>
-    </DialogActions>
 </MudDialog>
 
 @code
