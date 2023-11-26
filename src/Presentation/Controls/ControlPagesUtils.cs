@@ -4,11 +4,11 @@ namespace Presentation.Controls;
 
 public static class ControlPagesUtils
 {
-    public static async Task AddControl(IDialogService dialogService, string DeviceId, Action refreshUI, IStringLocalizer<object> localizer, string ClientId)
+    public static async Task AddControl(IDialogService dialogService, string DeviceId, string ClientId)
     {
         var parameters = new DialogParameters<UpsertControlDialog>
         {
-            {  x => x.DeviceId, DeviceId },
+            {  x => x.Model, new ControlDTO { DeviceId = DeviceId } },
             {  x => x.ClientId, ClientId }
         };
         var options = new DialogOptions()
@@ -16,44 +16,31 @@ public static class ControlPagesUtils
             NoHeader = true,
         };
 
-        var dialog = await dialogService.ShowAsync<UpsertControlDialog>(localizer["Create Control"], parameters, options);
+        var dialog = await dialogService.ShowAsync<UpsertControlDialog>("", parameters, options);
         var result = await dialog.Result;
-
-        if (result.Canceled)
-            return;
-
-        var x = result.Data as Result<Client> ?? Result<Client>.Fail(message: localizer["Couldn't parse response."]);
-
-        if (x.Succeeded)
-            refreshUI.Invoke();
     }
 
-    public static async Task UpdateControl(IDialogService dialogService, Control control, string DeviceId, Action refreshUI, IStringLocalizer<object> localizer)
+    public static async Task UpdateControl(IDialogService dialogService, Control control, string DeviceId)
     {
         var parameters = new DialogParameters<UpsertControlDialog>
         {
-            {  x => x.DeviceId, control.DeviceId },
             {  x => x.ClientId, DeviceId },
-            {  x => x.Control, control }
+            {  x => x.Model, control.Dto() }
         };
+
         var options = new DialogOptions()
         {
             NoHeader = true,
         };
 
-        var dialog = await dialogService.ShowAsync<UpsertControlDialog>(localizer["Edit Control"], parameters, options);
+        var dialog = await dialogService.ShowAsync<UpsertControlDialog>("", parameters, options);
         var result = await dialog.Result;
 
         if (result.Canceled)
             return;
-
-        var x = result.Data as Result<Client> ?? Result<Client>.Fail(message: localizer["Couldn't parse response."]);
-
-        if (x.Succeeded)
-            refreshUI.Invoke();
     }
 
-    public static async Task<bool> RemoveControl(IDialogService dialogService, Control control, string ClientId, IStringLocalizer<object> localizer, Action? refreshList = null)
+    public static async Task<bool> RemoveControl(IDialogService dialogService, Control control, string ClientId)
     {
         var parameters = new DialogParameters<RemoveControlDialog>
         {
@@ -66,18 +53,17 @@ public static class ControlPagesUtils
             NoHeader = true,
         };
 
-        var dialog = await dialogService.ShowAsync<RemoveControlDialog>(localizer["Remove Control"], parameters, options);
+        var dialog = await dialogService.ShowAsync<RemoveControlDialog>("", parameters, options);
         var result = await dialog.Result;
 
         if (result.Canceled)
             return false;
 
-        var x = result.Data as Result ?? Result.Fail(message: localizer["Couldn't parse response."]);
+        var x = result.Data as Result ?? Result.Fail();
 
         if (!x.Succeeded)
             return false;
 
-        refreshList?.Invoke();
         return true;
     }
 }

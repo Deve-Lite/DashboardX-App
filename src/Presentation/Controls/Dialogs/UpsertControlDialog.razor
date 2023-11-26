@@ -429,36 +429,15 @@
 
 @code
 {
-    //TODO: Split dialog into 2 page dialog
-        //TODO: Change ControlDTO dialog
-
     [Parameter]
-    public Control Control { get; set; } = new();
-    [Parameter]
-    public string DeviceId { get; set; } = string.Empty;
+    public ControlDTO Model { get; set; } = default;
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
 
-    public ControlDTO Model { get; set; } = new();
     public ControlValidator Validator = new();
     public MudForm RadioForm = new();
     public RadioOption RadioOptions = new();
     public RadioOptionValidator RadioValidator = new();
-
-    protected override void OnInitialized()
-    {
-        if (!string.IsNullOrEmpty(Control.Id))
-        {
-            Model = Control.Dto();
-            StateHasChanged();
-        }
-        else
-        {
-            Model = new ControlDTO(DeviceId);
-        }
-
-        base.OnInitialized();
-    }
 
     protected override string Title()
         => !string.IsNullOrWhiteSpace(Model.Id) ? _localizer["Update Control"] : _localizer["Add Control"];

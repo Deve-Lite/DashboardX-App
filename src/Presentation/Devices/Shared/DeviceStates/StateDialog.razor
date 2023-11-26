@@ -37,7 +37,7 @@
                    Variant="Variant.Filled"
                    Color="Color.Error">@_localizer["Remove"]</MudButton>
 
-        <MudButton OnClick="async() => await ControlPagesUtils.UpdateControl(_dialogService, Control!, Client!.Id, StateHasChanged, _localizer)"
+        <MudButton OnClick="async() => await ControlPagesUtils.UpdateControl(_dialogService, Control!, Client!.Id)"
                    Variant="Variant.Filled"
                    Color="Color.Primary">@_localizer["Edit"] </MudButton>
     </DialogActions>
@@ -58,7 +58,7 @@
 
     public async Task RemoveStateControl()
     {
-        var removed = await ControlPagesUtils.RemoveControl(_dialogService, Control!, Client!.Id, _localizer);
+        var removed = await ControlPagesUtils.RemoveControl(_dialogService, Control!, Client!.Id);
 
         if (removed)
         {

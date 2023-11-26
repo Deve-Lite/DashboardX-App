@@ -22,13 +22,13 @@
         <AddButton OnClick="AddControl"
                    Class="add-wrapper" />
 
-        <MudGrid Class="m-0 p-2 w-100">
+        <MudGrid Class="m-0 p-3 w-100">
             <MudItem xs="12" Class="p-0 m-0">
                 <Breadcrumbs BreadcrumbItems="@BreadcrumbItems" />
             </MudItem>
 
             <MudItem xs="12"
-                     Class="p-0 m-0 pt-4 pb-5 mud-w-auto">
+                     Class="p-0 m-0 pt-3 pb-3 mud-w-auto">
                 <MudCard Elevation="5"
                          Class="m-0 p-4 rounded-2">
                     <MudCardContent Class="p-0 m-0">
@@ -187,7 +187,7 @@
 
     protected async Task AddControl()
     {
-        await ControlPagesUtils.AddControl(_dialogService, DeviceId, StateHasChanged, _localizer, ClientId);
+        await ControlPagesUtils.AddControl(_dialogService, DeviceId, ClientId);
 
         State!.Update();
     }

@@ -16,12 +16,12 @@
             <MudIconButton Size="Size.Medium"
                            Icon="@IconUtils.DefaultEditIcon"
                            Class="m-0"
-                           OnClick="async() => await ControlPagesUtils.UpdateControl(_dialogService, Control!, Client!.Id, StateHasChanged, _localizer)" />
+                           OnClick="async() => await ControlPagesUtils.UpdateControl(_dialogService, Control!, Client!.Id)" />
 
             <MudIconButton Size="Size.Medium"
                            Icon="@IconUtils.DefaultRemoveIcon"
                            Class="m-0"
-                           OnClick="async() => await ControlPagesUtils.RemoveControl(_dialogService, Control!, Client!.Id, _localizer, RefreshList!)" />
+                           OnClick="async() => await ControlPagesUtils.RemoveControl(_dialogService, Control!, Client!.Id)" />
 
         </MudElement>
 

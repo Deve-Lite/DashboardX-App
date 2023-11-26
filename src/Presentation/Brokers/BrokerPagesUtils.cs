@@ -11,7 +11,10 @@ public class BrokerPagesUtils
                                           Action refreshUI,
                                           IStringLocalizer<object> localizer)
     {
-        var parameters = new DialogParameters<UpsertBrokerDialog> { { x => x.Model, client.GetBroker().Dto() } };
+        var parameters = new DialogParameters<UpsertBrokerDialog> 
+        { 
+            { x => x.Model, client.GetBroker().Dto() } 
+        };
         var options = new DialogOptions()
         {
             NoHeader = true,
@@ -46,7 +49,6 @@ public class BrokerPagesUtils
             return;
 
         var x = result.Data as Result ?? Result.Fail(message: localizer["Couldn't parse response."]);
-        //TODO: Fix 
 
         if (x.Succeeded)
         {
@@ -55,7 +57,7 @@ public class BrokerPagesUtils
 
             if (new Regex(brokerPagePattern).IsMatch(currentPage))
             {
-                //await runtime.GoBack();
+                navigationManager.NavigateTo("/brokers");
             }
             else
             {

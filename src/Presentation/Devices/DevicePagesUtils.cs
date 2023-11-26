@@ -54,7 +54,7 @@ public class DevicePagesUtils
             return;
 
         var x = result.Data as Result ?? Result.Fail(message: localizer["Couldn't parse response."]);
-        //TODO: Fix 
+
         if (x.Succeeded)
         {
             var currentPage = NavigationManager.Uri;
@@ -64,7 +64,7 @@ public class DevicePagesUtils
             if (new Regex(brokerPagePattern).IsMatch(currentPage) || new Regex(deviceListPagePattern).IsMatch(currentPage))
                 return;
 
-            await runtime.GoBack();
+            NavigationManager.NavigateTo("/devices");
         }
     }
 

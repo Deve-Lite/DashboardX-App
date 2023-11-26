@@ -2,16 +2,11 @@
     color: #9C27B0;
 }
 
-.flex-animate {
-    display: flex;
-    justify-content: space-between;
-    transition: transform 0.5s ease;
-}
-
 .flex-list-justify {
     display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap; 
+    justify-content: start!important;
+    flex-wrap: wrap;
+    transition: transform 0.5s ease;
 }
 
 .dim-background::before {
@@ -157,7 +152,7 @@
     }
 
     .flex-list-justify {
-        justify-content: flex-start;
+        justify-content: space-evenly;
     }
 
     .dialog-footer {
