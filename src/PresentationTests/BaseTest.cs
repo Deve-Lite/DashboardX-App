@@ -2,7 +2,7 @@
 
 using Microsoft.Extensions.Logging;
 
-public class BaseServiceTest
+public class BaseTest
 {
     public IFetchBrokerService FetchBrokerService { get; private set; }
     public IFetchDeviceService FetchDeviceService { get; private set; }
@@ -11,7 +11,7 @@ public class BaseServiceTest
     public IClientManager ClientManager { get; private set; }
     public ILogger<ClientService> Logger { get; private set; }
 
-    public BaseServiceTest()
+    public BaseTest()
     {
         FetchBrokerService = new FetchBrokerServiceMockup();
         FetchDeviceService = new FetchDeviceServiceMockup();
@@ -22,8 +22,7 @@ public class BaseServiceTest
         ClientService = new ClientService(FetchBrokerService, FetchDeviceService, FetchControlService, ClientManager, Logger);
     }
 
-    [SetUp]
-    public virtual async Task SetUpTest()
+    public async Task Setup()
     {
         await FetchBrokerService.CreateBroker(BrokerDtoGenerator.FirstBroker());
         await FetchBrokerService.CreateBroker(BrokerDtoGenerator.SecondBroker());
@@ -52,7 +51,7 @@ public class BaseServiceTest
                 await FetchControlService.CreateControl(control);
     }
 
-    public virtual void TearDownTest()
+    public void TearDown()
     {
         FetchBrokerService = new FetchBrokerServiceMockup();
         FetchDeviceService = new FetchDeviceServiceMockup();
@@ -60,5 +59,6 @@ public class BaseServiceTest
         ClientManager = new ClientManagerMockup();
         Logger = new Logger<ClientService>(new LoggerFactory());
         ClientService = new ClientService(FetchBrokerService, FetchDeviceService, FetchControlService, ClientManager, Logger);
+
     }
 }

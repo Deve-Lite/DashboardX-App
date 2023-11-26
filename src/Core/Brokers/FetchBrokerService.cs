@@ -1,17 +1,15 @@
-﻿using System.Text.Json.Serialization;
+﻿using Core.App.Interfaces;
+using Microsoft.Extensions.Logging;
 using System.Text.Json;
-using Presentation.Application.Interfaces;
 
-namespace Presentation.Brokers;
+namespace Core.Brokers;
 
 public class FetchBrokerService : AuthorizedService, IFetchBrokerService
 {
     public FetchBrokerService(HttpClient httpClient,
                               ILogger<FetchBrokerService> logger,
-                              IAuthenticationManager authenticationManager)
-        : base(httpClient, logger, authenticationManager)
-    {
-    }
+                              IAuthorizationManager authorizationManager)
+        : base(httpClient, logger, authorizationManager) { }
 
     public async Task<IResult<List<Broker>>> GetBrokers()
     {

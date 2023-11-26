@@ -107,7 +107,7 @@
             return;
         }
 
-        await DevicePagesUtils.AddDevice(StateHasChanged, _dialogService, _localizer);
+        await DevicePagesUtils.AddDevice(_dialogService);
     }
 
     public void Dispose()

@@ -9,7 +9,7 @@
 
 @inherits BaseFormDialog
 
-<MudDialog>
+<MudDialog ClassContent="my-mud-dialog-content">
     <DialogContent>
         <LoadingDialog>
             <Title>
@@ -24,7 +24,7 @@
                          Model="@Model"
                          Validation="@(Validator.ValidateValue)"
                          ValidationDelay="0"
-                         Class="m-0 p-0 w-100">
+                         Class="m-0 p-2 pt-0 pb-0 w-100">
 
                     <MudGrid Class="m-0 p-3 w-100">
 
@@ -429,36 +429,15 @@
 
 @code
 {
-    //TODO: Split dialog into 2 page dialog
-        //TODO: Change ControlDTO dialog
-
     [Parameter]
-    public Control Control { get; set; } = new();
-    [Parameter]
-    public string DeviceId { get; set; } = string.Empty;
+    public ControlDTO Model { get; set; } = default;
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
 
-    public ControlDTO Model { get; set; } = new();
     public ControlValidator Validator = new();
     public MudForm RadioForm = new();
     public RadioOption RadioOptions = new();
     public RadioOptionValidator RadioValidator = new();
-
-    protected override void OnInitialized()
-    {
-        if (!string.IsNullOrEmpty(Control.Id))
-        {
-            Model = Control.Dto();
-            StateHasChanged();
-        }
-        else
-        {
-            Model = new ControlDTO(DeviceId);
-        }
-
-        base.OnInitialized();
-    }
 
     protected override string Title()
         => !string.IsNullOrWhiteSpace(Model.Id) ? _localizer["Update Control"] : _localizer["Add Control"];

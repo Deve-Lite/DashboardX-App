@@ -1,4 +1,5 @@
 ﻿using Blazored.LocalStorage;
+using Core.App.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace Core.App;

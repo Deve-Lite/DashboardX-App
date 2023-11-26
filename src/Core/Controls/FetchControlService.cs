@@ -1,16 +1,15 @@
-﻿using System.Text.Json.Serialization;
+﻿using Core.App.Interfaces;
+using Microsoft.Extensions.Logging;
 using System.Text.Json;
-using Presentation.Application.Interfaces;
 
-namespace Presentation.Controls;
-
+namespace Core.Controls;
 
 public class FetchControlService : AuthorizedService, IFetchControlService
 {
     public FetchControlService(HttpClient httpClient,
                                ILogger<AuthorizedService> logger,
-                               IAuthenticationManager authenticationManager)
-        : base(httpClient, logger, authenticationManager) { }
+                               IAuthorizationManager authorizationManager)
+        : base(httpClient, logger, authorizationManager) { }
 
     public async Task<IResult<List<Control>>> GetControls(string deviceId)
     {

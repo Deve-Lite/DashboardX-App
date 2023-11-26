@@ -3,58 +3,51 @@ using Presentation.Controls;
 
 namespace PresentationTests;
 
-internal class ControlServiceTests : BaseServiceTest
+public class ControlServiceTests : BaseTest, IAsyncLifetime
 {
-    public IControlService ControlService { get; private set; }
+    public IControlService? ControlService { get; private set; }
 
-    public ControlServiceTests() : base()
+    public async Task InitializeAsync()
     {
         ControlService = new ControlService(ClientManager, FetchControlService);
+        await Setup();
     }
 
-    [SetUp]
-    public override async Task SetUpTest()
+    public Task DisposeAsync()
     {
-        await base.SetUpTest();
+        TearDown();
+        return Task.CompletedTask;
     }
 
-    [TearDown]
-    public void TearDown()
-    {
-        base.TearDownTest();
-        ControlService = new ControlService(ClientManager, FetchControlService);
-    }
-
-    [Test]
+    [Fact]
     public async Task CreateControlTest()
     {
         var clients = await ClientService.GetClientsWithDevices();
 
-        Assert.That(clients!.Data, Has.Count.EqualTo(2));
+        Assert.Equal(2, clients!.Data.Count);
 
         var devices = await FetchDeviceService.GetDevices();
         var controlDto = ControlGenerator.GenerateControl();
-        controlDto.DeviceId = devices.Data[0].Id;
+        controlDto.DeviceId = "1";
 
-        var result = await ControlService.CreateControl(devices.Data[0].BrokerId, controlDto);
+        var result = await ControlService!.CreateControl(devices.Data[0].BrokerId, controlDto);
 
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Succeeded);
+        Assert.NotNull(result);
+        Assert.True(result.Succeeded);
 
         clients = await ClientService.GetClientsWithDevices();
 
-        var totalControls = clients.Data.SelectMany(x => x.GetControls())
-            .ToList();
+        var totalControls = clients.Data.SelectMany(x => x.GetControls()).ToList();
 
-        Assert.That(totalControls, Has.Count.EqualTo(7));
+        Assert.Equal(7, totalControls.Count);
     }
 
-    [Test]
+    [Fact]
     public async Task UpdateControlTest()
     {
         var clients = await ClientService.GetClientsWithDevices();
 
-        Assert.That(clients!.Data, Has.Count.EqualTo(2));
+        Assert.Equal(2, clients!.Data.Count);
 
         var device = clients.Data[0].GetDevices()[0];
         var control = clients.Data[0].GetControls(device.Id)[0];
@@ -63,40 +56,40 @@ internal class ControlServiceTests : BaseServiceTest
 
         control.Name = newDisplayName;
 
-        var result = await ControlService.UpdateControl(device.BrokerId, control.Dto());
+        var result = await ControlService!.UpdateControl(device.BrokerId, control.Dto());
 
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Succeeded);
+        Assert.NotNull(result);
+        Assert.True(result.Succeeded);
 
         clients = await ClientService.GetClientsWithDevices();
 
-        var totalDevices = clients.Data.SelectMany(x => x.GetControls())
-            .ToList();
+        var totalControls = clients.Data.SelectMany(x => x.GetControls()).ToList();
 
-        Assert.That(totalDevices, Has.Count.EqualTo(6));
-        Assert.That(totalDevices.Any(x => x.Name == newDisplayName), Is.True);
+        Assert.Equal(6, totalControls.Count);
+        Assert.Contains(totalControls, x => x.Name == newDisplayName);
     }
 
-    [Test]
+    [Fact]
     public async Task RemoveControlTest()
     {
         var clients = await ClientService.GetClientsWithDevices();
 
-        Assert.That(clients!.Data, Has.Count.EqualTo(2));
+        Assert.Equal(2, clients!.Data.Count);
 
         var device = clients.Data[0].GetDevices()[0];
         var control = clients.Data[0].GetControls(device.Id)[0];
 
-        var result = await ControlService.RemoveControl(device.BrokerId, control);
+        var result = await ControlService!.RemoveControl(device.BrokerId, control);
 
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Succeeded);
+        Assert.NotNull(result);
+        Assert.True(result.Succeeded);
 
         clients = await ClientService.GetClientsWithDevices();
 
         var totalControls = clients.Data.SelectMany(x => x.GetControls())
-            .ToList();
+            .ToList()
+            .Select(x => x.Id);
 
-        Assert.That(totalControls, Has.Count.EqualTo(5));
+        Assert.DoesNotContain(control.Id, totalControls);
     }
 }

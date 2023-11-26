@@ -1,4 +1,5 @@
 ﻿using Blazored.LocalStorage;
+using Core.App.Interfaces;
 
 namespace Core.App;
 

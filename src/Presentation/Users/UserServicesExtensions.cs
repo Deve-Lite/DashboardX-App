@@ -1,4 +1,6 @@
-﻿namespace Presentation.Users;
+﻿using Core.App.Interfaces;
+
+namespace Presentation.Users;
 
 public static class UserServicesExtensions
 {

@@ -1,7 +1,4 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Components;
-using Presentation.Application.Interfaces;
-using Presentation.Utils;
+﻿using Microsoft.AspNetCore.Components;
 
 namespace Presentation.Auth;
 

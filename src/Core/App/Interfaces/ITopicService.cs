@@ -1,4 +1,4 @@
-﻿namespace Core.App;
+﻿namespace Core.App.Interfaces;
 
 public interface ITopicService
 {

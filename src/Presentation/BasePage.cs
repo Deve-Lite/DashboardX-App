@@ -5,6 +5,8 @@ namespace Presentation;
 
 public class BasePage : ComponentBase
 {
+    private const int RefreshInterval = 500;
+
     [Inject]
     protected ILogger<BasePage> Logger { get; set; } = default!;
     [Inject]
@@ -33,7 +35,7 @@ public class BasePage : ComponentBase
 
         awaitingRefresh = true;
 
-        var timer = new System.Timers.Timer(1000);
+        var timer = new System.Timers.Timer(RefreshInterval);
         timer.Elapsed += async (sender, e) =>
         {
             await InvokeAsync(StateHasChanged);

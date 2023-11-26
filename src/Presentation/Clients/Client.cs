@@ -1,4 +1,5 @@
-﻿using MQTTnet.Adapter;
+﻿using Core.App.Interfaces;
+using MQTTnet.Adapter;
 using MQTTnet.Client;
 using MQTTnet.Exceptions;
 using MQTTnet.Protocol;
@@ -255,7 +256,8 @@ public class Client : IClient, IAsyncDisposable
         }
         catch (Exception ex)
         {
-            return Result.Fail();
+            //TODO: Locliazer
+            return Result.Fail(message: $"Unknown exception occured {nameof(ex)}");
         }
     }
     public async Task<IResult> UpdateDevice(Device device, List<Control> controls)

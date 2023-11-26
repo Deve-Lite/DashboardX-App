@@ -3,59 +3,52 @@ using Presentation.Devices.Interfaces;
 
 namespace PresentationTests;
 
-internal class DeviceServiceTests : BaseServiceTest
+public class DeviceServiceTests : BaseTest, IAsyncLifetime
 {
-    public IDeviceService DeviceService { get; private set; }
+    public IDeviceService? DeviceService { get; private set; }
 
-    public DeviceServiceTests() : base()
+    public async Task InitializeAsync()
     {
         DeviceService = new DeviceService(FetchDeviceService, ClientManager);
+        await Setup();
     }
 
-    [SetUp]
-    public override async Task SetUpTest()
+    public Task DisposeAsync()
     {
-        await base.SetUpTest();
+        TearDown();
+        return Task.CompletedTask;
     }
 
-    [TearDown]
-    public void TearDown()
-    {
-        base.TearDownTest();
-        DeviceService = new DeviceService(FetchDeviceService, ClientManager);
-    }
-
-    [Test]
+    [Fact]
     public async Task CreateDeviceTest()
     {
         var clients = await ClientService.GetClientsWithDevices();
 
-        Assert.That(clients!.Data, Has.Count.EqualTo(2));
+        Assert.Equal(2, clients!.Data.Count);
 
         var brokers = await FetchBrokerService.GetBrokers();
 
         var deviceDto = DeviceDtoGenerator.GenerateDeviceDto();
         deviceDto.BrokerId = brokers.Data[0].Id;
 
-        var result = await DeviceService.CreateDevice(deviceDto);
+        var result = await DeviceService!.CreateDevice(deviceDto);
 
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Succeeded);
+        Assert.NotNull(result);
+        Assert.True(result.Succeeded);
 
         var client = await ClientService.GetClient(brokers.Data[0].Id);
 
-        var totalDevices = clients.Data.SelectMany(x => x.GetDevices())
-            .ToList();
+        var totalDevices = clients.Data.SelectMany(x => x.GetDevices()).ToList();
 
-        Assert.That(totalDevices, Has.Count.EqualTo(3));
+        Assert.Equal(3, totalDevices.Count);
     }
 
-    [Test]
+    [Fact]
     public async Task UpdateDeviceTest()
     {
         var clients = await ClientService.GetClientsWithDevices();
 
-        Assert.That(clients!.Data, Has.Count.EqualTo(2));
+        Assert.Equal(2, clients!.Data.Count);
 
         var device = await FetchDeviceService.GetDevices();
 
@@ -72,40 +65,40 @@ internal class DeviceServiceTests : BaseServiceTest
             Placing = "NewPlacing"
         };
 
-        var result = await DeviceService.UpdateDevice(updatedDevice);
+        var result = await DeviceService!.UpdateDevice(updatedDevice);
 
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Succeeded);
+        Assert.NotNull(result);
+        Assert.True(result.Succeeded);
 
         clients = await ClientService.GetClientsWithDevices();
 
-        var totalDevices = clients.Data.SelectMany(x => x.GetDevices())
-            .ToList();
+        var totalDevices = clients.Data.SelectMany(x => x.GetDevices()).ToList();
 
-        Assert.That(clients.Data, Has.Count.EqualTo(2));
-        Assert.That(totalDevices.Any(x => x.Name == newNickname && x.Placing == newPlacing), Is.True);
+        Assert.Equal(2, clients.Data.Count);
+        Assert.Contains(totalDevices, x => x.Name == newNickname && x.Placing == newPlacing);
     }
 
-    [Test]
+    [Fact]
     public async Task RemoveDeviceTest()
     {
         var clients = await ClientService.GetClientsWithDevices();
 
-        Assert.That(clients!.Data, Has.Count.EqualTo(2));
+        Assert.Equal(2, clients!.Data.Count);
 
         var devices = await FetchDeviceService.GetDevices();
         var deviceToRemove = devices.Data[0];
 
-        var result = await DeviceService.RemoveDevice(deviceToRemove.BrokerId, deviceToRemove.Id);
+        var result = await DeviceService!.RemoveDevice(deviceToRemove.BrokerId, deviceToRemove.Id);
 
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Succeeded);
+        Assert.NotNull(result);
+        Assert.True(result.Succeeded);
 
         clients = await ClientService.GetClientsWithDevices();
 
         var totalDevices = clients.Data.SelectMany(x => x.GetDevices())
-            .ToList();
+            .ToList()
+            .Select(x => x.Id);
 
-        Assert.That(totalDevices, Has.Count.EqualTo(1));
+        Assert.DoesNotContain(deviceToRemove.Id, totalDevices);
     }
 }

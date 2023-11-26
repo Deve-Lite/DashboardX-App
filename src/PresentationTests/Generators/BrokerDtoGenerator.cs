@@ -14,15 +14,21 @@ internal class BrokerDtoGenerator
     public static BrokerDTO FirstBroker()
     {
         if(firstBroker == null)
+        {
             firstBroker = GenerateBrokerDto();
+            firstBroker.Id = "1";
+        }
         return firstBroker;
     }
 
     private static BrokerDTO? secondBroker;
     public static BrokerDTO SecondBroker()
     {
-        if(secondBroker == null)
+        if (secondBroker == null) 
+        {
             secondBroker = GenerateBrokerDto();
+            secondBroker.Id = "2";
+        }
         return secondBroker;
     }
 
@@ -40,7 +46,7 @@ internal class BrokerDtoGenerator
             .RuleFor(b => b.Server, f => f.Internet.Url())
             .RuleFor(b => b.IsSSL, true)
             .RuleFor(b => b.Icon, iconFaker.Generate())
-            .RuleFor(b => b.Icon, iconFaker.Generate()).RuleFor(b => b.Id, Guid.NewGuid().ToString())
+            .RuleFor(b => b.Icon, iconFaker.Generate())
             .Generate();
     }
 

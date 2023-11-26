@@ -1,4 +1,5 @@
-﻿using MQTTnet.Protocol;
+﻿using Core.App.Interfaces;
+using MQTTnet.Protocol;
 
 namespace Presentation.Clients;
 

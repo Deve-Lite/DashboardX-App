@@ -1,42 +1,38 @@
 namespace PresentationTests;
 
-public class ClientServiceTests : BaseServiceTest
+public class ClientServiceTests : BaseTest, IAsyncLifetime
 {
-
-    [SetUp]
-    public override async Task SetUpTest()
+    public async Task InitializeAsync()
     {
-        await base.SetUpTest();
+        await Setup();
     }
 
-    [TearDown]
-    public override void TearDownTest()
+    public Task DisposeAsync()
     {
-        base.TearDownTest();
+        TearDown();
+        return Task.CompletedTask;
     }
 
-    [Test]
+    [Fact]
     public async Task GetClientsTest()
     {
         var clients = await ClientService.GetClients();
 
-        Assert.That(clients!.Data, Has.Count.EqualTo(2));
+        Assert.Equal(2, clients!.Data.Count);
 
         var brokers = await FetchBrokerService.GetBrokers();
-        var brokersInClients = clients.Data
-                                     .Select(x => x.GetBroker())
-                                     .ToList();
+        var brokersInClients = clients.Data.Select(x => x.GetBroker()).ToList();
 
         foreach (var broker in brokers.Data)
-            Assert.That(brokersInClients, Does.Contain(broker));
+            Assert.Contains(broker, brokersInClients);
     }
 
-    [Test]
+    [Fact]
     public async Task GetClientTest()
     {
         var clients = await ClientService.GetClients();
 
-        Assert.That(clients.Data, Has.Count.EqualTo(2));
+        Assert.Equal(2, clients.Data.Count);
 
         var brokers = await FetchBrokerService.GetBrokers();
 
@@ -44,64 +40,58 @@ public class ClientServiceTests : BaseServiceTest
         {
             var result = await ClientService.GetClient(broker.Id);
 
-            Assert.That(result, Is.Not.Null);
-            Assert.That(result.Succeeded, Is.True);
-            Assert.That(result.Data, Is.Not.Null);
-            Assert.That(result.Data.GetBroker().Id, Is.EqualTo(broker.Id));
+            Assert.NotNull(result);
+            Assert.True(result.Succeeded);
+            Assert.NotNull(result.Data);
+            Assert.Equal(broker.Id, result.Data.GetBroker().Id);
         }
     }
 
-    [Test]
+    [Fact]
     public async Task GetFullClientsTest()
     {
         var clients = await ClientService.GetClientsWithDevices();
 
-        Assert.That(clients!.Data, Has.Count.EqualTo(2));
+        Assert.Equal(2, clients!.Data.Count);
 
         var brokers = await FetchBrokerService.GetBrokers();
-        var brokersInClients = clients.Data
-                                      .Select(x => x.GetBroker())
-                                      .ToList();
+        var brokersInClients = clients.Data.Select(x => x.GetBroker()).ToList();
 
-        Assert.That(brokersInClients, Does.Contain(brokers.Data[0]));
-        Assert.That(brokersInClients, Does.Contain(brokers.Data[1]));
+        Assert.Contains(brokers.Data[0], brokersInClients);
+        Assert.Contains(brokers.Data[1], brokersInClients);
 
         var devices = await FetchDeviceService.GetDevices();
-        var devicesInClients = clients.Data
-                                      .SelectMany(x => x.GetDevices())
-                                      .ToList();
+        var devicesInClients = clients.Data.SelectMany(x => x.GetDevices()).ToList();
 
-        Assert.That(devicesInClients, Has.Count.EqualTo(2));
-        Assert.That(devicesInClients, Does.Contain(devices.Data[0]));
-        Assert.That(devicesInClients, Does.Contain(devices.Data[1]));
+        Assert.Equal(2, devicesInClients.Count);
+        Assert.Contains(devices.Data[0], devicesInClients);
+        Assert.Contains(devices.Data[1], devicesInClients);
     }
 
-    [Test]
+    [Fact]
     public async Task NewClientAddedInBackgroundTest()
     {
         var clients = await ClientService.GetClients();
 
-        Assert.That(clients.Data.Count, Is.EqualTo(2));
+        Assert.Equal(2, clients.Data.Count);
 
         var result = await FetchBrokerService.CreateBroker(BrokerDtoGenerator.GenerateBrokerDto());
 
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Succeeded, Is.True);
+        Assert.NotNull(result);
+        Assert.True(result.Succeeded);
 
         var resultClients = await ClientService.GetClients();
         var brokers = await FetchBrokerService.GetBrokers();
 
-        Assert.That(resultClients.Data.Count, Is.EqualTo(3));
+        Assert.Equal(3, resultClients.Data.Count);
 
-        var brokersInClients = clients.Data
-                             .Select(x => x.GetBroker())
-                             .ToList();
+        var brokersInClients = clients.Data.Select(x => x.GetBroker()).ToList();
 
         foreach (var broker in brokers.Data)
-            Assert.That(brokersInClients, Does.Contain(broker));
+            Assert.Contains(broker, brokersInClients);
     }
 
-    [Test]
+    [Fact]
     public async Task RemovedClientInBackgroundTest()
     {
         var brokers = await FetchBrokerService.GetBrokers();
@@ -110,37 +100,37 @@ public class ClientServiceTests : BaseServiceTest
         var secondToRemove = brokers.Data[1];
 
         var clients = await ClientService.GetClients();
-        Assert.That(clients.Data, Has.Count.EqualTo(2));
+        Assert.Equal(2, clients.Data.Count);
 
         var result = await FetchBrokerService.RemoveBroker(firstToRemove.Id);
 
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Succeeded, Is.True);
+        Assert.NotNull(result);
+        Assert.True(result.Succeeded);
 
         var resultClients = await ClientService.GetClients();
 
-        Assert.That(resultClients.Data, Has.Count.EqualTo(1));
+        Assert.Equal(1, resultClients.Data.Count);
 
         result = await FetchBrokerService.RemoveBroker(secondToRemove.Id);
 
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Succeeded, Is.True);
+        Assert.NotNull(result);
+        Assert.True(result.Succeeded);
 
         resultClients = await ClientService.GetClients();
 
-        Assert.That(resultClients.Data, Is.Empty);
+        Assert.Empty(resultClients.Data);
     }
 
-    [Test]
+    [Fact]
     public async Task UpdatedClientInBackgroundTest()
     {
         var clients = await ClientService.GetClients();
 
-        Assert.That(clients.Data.Count, Is.EqualTo(2));
+        Assert.Equal(2, clients.Data.Count);
 
         var result = await FetchBrokerService.GetBroker(clients.Data[0].Id);
 
-        Assert.That(result.Succeeded, Is.True);
+        Assert.True(result.Succeeded);
 
         var updatedDto = BrokerDtoGenerator.GenerateBrokerDto();
 
@@ -150,38 +140,38 @@ public class ClientServiceTests : BaseServiceTest
 
         var updateResult = await FetchBrokerService.UpdateBroker(updatedDto);
 
-        Assert.That(updateResult.Succeeded, Is.True);
+        Assert.True(updateResult.Succeeded);
 
         clients = await ClientService.GetClients();
 
-        Assert.That(clients.Data.Count, Is.EqualTo(2));
+        Assert.Equal(2, clients.Data.Count);
 
         var updatedClient = clients.Data
             .Where(x => x.GetBroker().Id == result.Data.Id)
             .FirstOrDefault();
 
-        Assert.That(updatedClient, Is.Not.Null);
-        Assert.That(updatedClient.GetBroker().Id, Is.EqualTo(updateResult.Data.Id));
-        Assert.That(updatedClient.GetBroker().Port, Is.EqualTo(updateResult.Data.Port));
-        Assert.That(updatedClient.GetBroker().KeepAlive, Is.EqualTo(updateResult.Data.KeepAlive));
-        Assert.That(updatedClient.GetBroker().Server, Is.EqualTo(updateResult.Data.Server));
+        Assert.NotNull(updatedClient);
+        Assert.Equal(updateResult.Data.Id, updatedClient.GetBroker().Id);
+        Assert.Equal(updateResult.Data.Port, updatedClient.GetBroker().Port);
+        Assert.Equal(updateResult.Data.KeepAlive, updatedClient.GetBroker().KeepAlive);
+        Assert.Equal(updateResult.Data.Server, updatedClient.GetBroker().Server);
     }
 
-    [Test]
+    [Fact]
     public async Task LogoutTest()
     {
         var clients = await ClientService.GetClients();
 
-        Assert.That(clients!.Data, Has.Count.EqualTo(2));
+        Assert.Equal(2, clients!.Data.Count);
 
         await ClientService.Logout();
 
         var emptyClients = ClientManager.GetClients();
 
-        Assert.That(emptyClients!.Data, Is.Empty);
+        Assert.Empty(emptyClients.Data);
 
         clients = await ClientService.GetClients();
 
-        Assert.That(clients!.Data, Has.Count.EqualTo(2));
+        Assert.Equal(2, clients!.Data.Count);
     }
 }

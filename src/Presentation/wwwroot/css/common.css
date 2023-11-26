@@ -2,16 +2,11 @@
     color: #9C27B0;
 }
 
-.flex-animate {
-    display: flex;
-    justify-content: space-between;
-    transition: transform 0.5s ease;
-}
-
 .flex-list-justify {
     display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap; 
+    justify-content: start!important;
+    flex-wrap: wrap;
+    transition: transform 0.5s ease;
 }
 
 .dim-background::before {
@@ -90,6 +85,23 @@
     padding-right: 0 !important;
 }
 
+.settings-page-actions {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+}
+
+.dialog-content {
+
+}
+
+.my-mud-dialog-content {
+
+}
+
+.dialog-title {
+}
+
 @media screen and (max-width: 1280px) {
     .ellipsis {
         width: 300px;
@@ -114,6 +126,13 @@
         font-size: 1.75rem !important;
     }
 
+    .settings-page-actions {
+        justify-content: space-between!important;
+    }
+
+    .flex-list-justify {
+        justify-content: space-evenly !important;
+    }
 }
 
 @media screen and (max-width: 600px) {
@@ -144,10 +163,7 @@
 
     .main-body {
         padding-top: 0 !important;
-    }
-
-    .flex-list-justify {
-        justify-content: flex-start;
+        padding-bottom: 70px !important;
     }
 
     .dialog-footer {
@@ -155,8 +171,24 @@
         bottom: 0;
         left: 0;
         width: 100%;
-        display:flex;
+        display: flex;
         align-items: center;
         justify-content: space-evenly;
+        padding: 0.75rem !important;
+        box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+    }
+
+    .dialog-content {
+        max-height: calc(100vh - 132.5px);
+        overflow-y: scroll !important;
+        padding: 0px !important;
+    }
+
+    .my-mud-dialog-content {
+        padding-left: 0!important;
+        padding-right: 0 !important;
+    }
+    .dialog-title{
+        text-align-last: center;
     }
 }

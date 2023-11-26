@@ -14,6 +14,8 @@ public class LoadingService : ILoadingService
     public LoadingService()
     {
         isLoading = false;
+        isLoadingDialog = false;
+        refreshTask = default!;
     }
 
     public async Task<IResult> InvokeAsync(Func<Task<IResult>> action)
@@ -36,7 +38,7 @@ public class LoadingService : ILoadingService
         catch (Exception ex)
         {
             //TODO: Locliazer
-            return Result.Fail(message:"Unknown exception occured");
+            return Result.Fail(message: $"Unknown exception occured {nameof(ex)}");
         }
     }
 
@@ -60,7 +62,7 @@ public class LoadingService : ILoadingService
         catch (Exception ex)
         {
             //TODO: Locliazer
-            return Result.Fail(message: "Unknown exception occured");
+            return Result.Fail(message: $"Unknown exception occured {nameof(ex)}");
         }
     }
 

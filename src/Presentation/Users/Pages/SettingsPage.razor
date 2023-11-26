@@ -50,7 +50,7 @@
                     <MudCard Elevation="5" Class="p-3 m-0">
                         <MudCardContent Class="p-0 m-0">
                             <MudGrid Class="p-0 m-0 w-100">
-                                <MudItem Class="p-0 m-0 d-flex justify-content-center" xs="6" md="4">
+                                <MudItem Class="p-0 m-0 d-flex justify-content-center" xs="12" sm="6" md="4">
                                     <MudSelect @bind-Value="Preferences.Theme"
                                                T="Theme"
                                                Label="Theme"
@@ -67,8 +67,8 @@
                                 </MudItem>
 
 
-                                <MudItem Class="p-0 m-0 d-flex justify-content-center" xs="6" md="4">
-                                    <MudSelect @bind-Value="Preferences .Language"
+                                <MudItem Class="p-0 m-0 d-flex justify-content-center" xs="12" sm="6" md="4">
+                                    <MudSelect @bind-Value="Preferences.Language"
                                                T="Language"
                                                Label="Language"
                                                Style="display: inline-block;"
@@ -84,28 +84,35 @@
                             </MudGrid>
                         </MudCardContent>
                         <MudCardActions>
-
-
-                            <MudButton Variant="Variant.Filled"
-                                       Color="Color.Primary"
-                                       Class="m-0"
-                                       OnClick="UpdateSettings">
-                                @_localizer["Update Settings"]
-                            </MudButton>
-
-                            <MudButton Variant="Variant.Filled"
-                                       Color="Color.Primary"
-                                       Class="ml-2 m-0"
-                                       OnClick="ChangePassword">
-                                @_localizer["Change Password"]
-                            </MudButton>
-
-                            <MudButton Variant="Variant.Filled"
-                                       Color="Color.Error"
-                                       Class="ml-2 m-0"
-                                       OnClick="RemoveAccount">
-                                @_localizer["Remove Account"]
-                            </MudButton>
+                            <MudGrid Class="p-0 m-0 w-100 settings-page-actions">
+                                <MudItem Class="p-1 m-0" xs="12" sm="6" md="4"
+                                         Style="flex: 0 1 auto;">
+                                    <MudButton Variant="Variant.Filled"
+                                               Color="Color.Primary"
+                                               Class="m-0"
+                                               OnClick="UpdateSettings">
+                                        @_localizer["Save Settings"]
+                                    </MudButton>
+                                </MudItem>
+                                <MudItem Class="p-1 m-0" xs="12" sm="6" md="4"
+                                         Style="flex: 0 1 auto;">
+                                    <MudButton Variant="Variant.Filled"
+                                               Color="Color.Primary"
+                                               Class="m-0"
+                                               OnClick="ChangePassword">
+                                        @_localizer["Change Password"]
+                                    </MudButton>
+                                </MudItem>
+                                <MudItem Class="p-1 m-0" xs="12" sm="6" md="4"
+                                         Style="flex: 0 1 auto;">
+                                    <MudButton Variant="Variant.Filled"
+                                               Color="Color.Error"
+                                               Class="m-0"
+                                               OnClick="RemoveAccount">
+                                        @_localizer["Remove Account"]
+                                    </MudButton>
+                                </MudItem>
+                            </MudGrid>
                         </MudCardActions>
                     </MudCard>
                 </MudForm>
@@ -154,7 +161,7 @@
 
     protected async Task UpdateSettings()
     {
-        await _loadingService.InvokeAsync(async() =>
+        await _loadingService.InvokeAsync(async () =>
         {
             var result = await _userService.UpdatePreferences(Preferences);
 

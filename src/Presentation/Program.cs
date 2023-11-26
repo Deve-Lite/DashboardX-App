@@ -17,4 +17,8 @@ builder.AddClientServices();
 builder.AddUserServices();
 builder.AddApplicationServices();
 
-await builder.Build().RunAsync();
+var host = builder.Build();
+
+host.ObserveLogout();
+
+await host.RunAsync();

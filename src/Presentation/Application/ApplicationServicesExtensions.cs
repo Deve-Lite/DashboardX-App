@@ -6,9 +6,8 @@ public static class ApplicationServicesExtensions
 {
     public static WebAssemblyHostBuilder AddApplicationServices(this WebAssemblyHostBuilder builder)
     {
-
-        builder.Services.AddScoped<AuthenticationStateProvider, ApplicationStateProvider>();
-        builder.Services.AddScoped<IAuthenticationManager, AuthenticationManager>();
+        builder.Services.AddSingleton<AuthenticationStateProvider, ApplicationStateProvider>();
+        builder.Services.AddSingleton<IAuthorizationManager, AuthorizationManager>();
 
         builder.Services.AddBlazoredLocalStorageAsSingleton();
         builder.Services.AddBlazoredSessionStorageAsSingleton();
