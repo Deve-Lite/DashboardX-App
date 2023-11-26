@@ -97,7 +97,7 @@
                                 <MudIconButton Class="z-10"
                                                Icon="@IconUtils.DefaultEditIcon"
                                                Variant="Variant.Filled"
-                                               OnClick="() => BrokerPagesUtils.UpdateBroker(Client!, _dialogService, StateHasChanged, _localizer)" />
+                                               OnClick="() => BrokerPagesUtils.UpdateBroker(Client!, _dialogService)" />
 
                             </MudItem>
 
@@ -105,7 +105,7 @@
                                 <MudIconButton Class="z-10"
                                                Icon="@IconUtils.DefaultRemoveIcon"
                                                Variant="Variant.Filled"
-                                               OnClick="() => BrokerPagesUtils.RemoveBroker(Client!, _dialogService, StateHasChanged, _localizer, _navigationManager, _runtime)" />
+                                               OnClick="() => BrokerPagesUtils.RemoveBroker(Client!, _dialogService, _navigationManager)" />
 
                             </MudItem>
                         </MudGrid>
