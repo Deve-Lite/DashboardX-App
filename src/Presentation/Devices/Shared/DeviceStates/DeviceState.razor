@@ -157,7 +157,9 @@ else
             { x => x.RerenderPage, RerenderPage}
         };
 
-        var dialog = await _dialogService!.ShowAsync<StateDialog>(_localizer["Device state"], parameters);
+        var options = new DialogOptions { NoHeader = true };
+
+        var dialog = await _dialogService!.ShowAsync<StateDialog>("", parameters, options);
         var result = await dialog.Result;
 
         if (result.Canceled)
@@ -174,8 +176,6 @@ else
             {
                 { x => x.Description, _localizer["Sending this message requires confirmation."] }
             };
-
-            var options = new DialogOptions { NoHeader = true };
 
             var confirmationDialog = await _dialogService!.ShowAsync<ConfirmDialog>(_localizer["Confirmation Required"], confirmationParameters, options);
             var confirmationResult = await confirmationDialog.Result;
