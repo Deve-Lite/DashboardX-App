@@ -28,7 +28,9 @@
             { x => x.Control, Control }
         };
 
-        _dialogService.ShowAsync<TextControlDialog>(_localizer["Last Message"], parameters);
+        var options = new DialogOptions { NoHeader=true };
+
+        _dialogService.ShowAsync<TextControlDialog>(_localizer["Last Message"], parameters, options);
 
         return Task.CompletedTask;
     }

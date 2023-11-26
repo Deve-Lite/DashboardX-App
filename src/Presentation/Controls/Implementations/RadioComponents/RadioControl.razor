@@ -53,7 +53,9 @@
             { x => x.CurrentName, currentName}
         };
 
-        var dialog = await DialogService!.ShowAsync<RadioControlDialog>("Select option", parameters);
+        var options = new DialogOptions { NoHeader=true };
+
+        var dialog = await DialogService!.ShowAsync<RadioControlDialog>("Select option", parameters, options);
         var result = await dialog.Result;
 
         if (result.Canceled)
