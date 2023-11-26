@@ -9,9 +9,8 @@ internal class ControlGenerator
     {
         if (firstDeviceControl1 == null)
         {
-            var device = DeviceDtoGenerator.FirstDevice();
             firstDeviceControl1 = GenerateControl();
-            firstDeviceControl1.DeviceId = device.Id;
+            firstDeviceControl1.DeviceId = "1";
         }
         return firstDeviceControl1;
     }
@@ -21,9 +20,8 @@ internal class ControlGenerator
     {
         if (firstDeviceControl2 == null)
         {
-            var device = DeviceDtoGenerator.FirstDevice();
             firstDeviceControl2 = GenerateControl();
-            firstDeviceControl2.DeviceId = device.Id;
+            firstDeviceControl2.DeviceId = "1";
         }
         return firstDeviceControl2;
     }
@@ -33,9 +31,8 @@ internal class ControlGenerator
     {
         if (firstDeviceControl3 == null)
         {
-            var device = DeviceDtoGenerator.FirstDevice();
             firstDeviceControl3 = GenerateControl();
-            firstDeviceControl3.DeviceId = device.Id;
+            firstDeviceControl3.DeviceId = "1";
         }
         return firstDeviceControl3;
     }
@@ -46,9 +43,8 @@ internal class ControlGenerator
     {
         if (secondDeviceControl1 == null)
         {
-            var device = DeviceDtoGenerator.SecondDevice();
             secondDeviceControl1 = GenerateControl();
-            secondDeviceControl1.DeviceId = device.Id;
+            secondDeviceControl1.DeviceId = "2";
         }
         return secondDeviceControl1;
     }
@@ -58,9 +54,8 @@ internal class ControlGenerator
     {
         if (secondDeviceControl2 == null)
         {
-            var device = DeviceDtoGenerator.SecondDevice();
             secondDeviceControl2 = GenerateControl();
-            secondDeviceControl2.DeviceId = device.Id;
+            secondDeviceControl2.DeviceId = "2";
         }
         return secondDeviceControl2;
     }
@@ -70,9 +65,8 @@ internal class ControlGenerator
     {
         if (secondDeviceControl3 == null)
         {
-            var device = DeviceDtoGenerator.SecondDevice();
             secondDeviceControl3 = GenerateControl();
-            secondDeviceControl3.DeviceId = device.Id;
+            secondDeviceControl3.DeviceId = "2";
         }
         return secondDeviceControl3;
     }

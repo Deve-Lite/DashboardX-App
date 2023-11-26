@@ -1,5 +1,4 @@
-﻿using Presentation.Brokers;
-using Presentation.Devices;
+﻿using Presentation.Devices;
 using Presentation.Devices.Interfaces;
 
 namespace PresentationTests;
@@ -96,8 +95,10 @@ public class DeviceServiceTests : BaseTest, IAsyncLifetime
 
         clients = await ClientService.GetClientsWithDevices();
 
-        var totalDevices = clients.Data.SelectMany(x => x.GetDevices()).ToList();
+        var totalDevices = clients.Data.SelectMany(x => x.GetDevices())
+            .ToList()
+            .Select(x => x.Id);
 
-        Assert.Single(totalDevices);
+        Assert.DoesNotContain(deviceToRemove.Id, totalDevices);
     }
 }

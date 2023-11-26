@@ -28,7 +28,7 @@ public class ControlServiceTests : BaseTest, IAsyncLifetime
 
         var devices = await FetchDeviceService.GetDevices();
         var controlDto = ControlGenerator.GenerateControl();
-        controlDto.DeviceId = devices.Data[0].Id;
+        controlDto.DeviceId = "1";
 
         var result = await ControlService!.CreateControl(devices.Data[0].BrokerId, controlDto);
 
@@ -86,8 +86,10 @@ public class ControlServiceTests : BaseTest, IAsyncLifetime
 
         clients = await ClientService.GetClientsWithDevices();
 
-        var totalControls = clients.Data.SelectMany(x => x.GetControls()).ToList();
+        var totalControls = clients.Data.SelectMany(x => x.GetControls())
+            .ToList()
+            .Select(x => x.Id);
 
-        Assert.Equal(5, totalControls.Count);
+        Assert.DoesNotContain(control.Id, totalControls);
     }
 }

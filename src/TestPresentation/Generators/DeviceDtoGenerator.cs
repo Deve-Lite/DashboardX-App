@@ -10,9 +10,9 @@ internal class DeviceDtoGenerator
     {
         if (firstDevice == null)
         {
-            var broker = BrokerDtoGenerator.FirstBroker();
             firstDevice = GenerateDeviceDto();
-            firstDevice.BrokerId = broker.Id;
+            firstDevice.BrokerId = "1";
+            firstDevice.Id = "1";
         }
         return firstDevice;
     }
@@ -22,9 +22,9 @@ internal class DeviceDtoGenerator
     {
         if (secondDevice == null)
         {
-            var broker = BrokerDtoGenerator.SecondBroker();
             secondDevice = GenerateDeviceDto();
-            secondDevice.BrokerId = broker.Id;
+            secondDevice.BrokerId = "2";
+            secondDevice.Id = "2";
         }
         return secondDevice;
     }
@@ -39,7 +39,7 @@ internal class DeviceDtoGenerator
             .RuleFor(b => b.Name, f => f.Company.CompanyName())
             .RuleFor(b => b.BaseDevicePath, f => f.Random.String(0, 10))
             .RuleFor(b => b.Placing, f => f.Random.String(15))
-            .RuleFor(b => b.Icon, iconFaker.Generate()).RuleFor(b => b.Id, Guid.NewGuid().ToString())
+            .RuleFor(b => b.Icon, iconFaker.Generate())
             .Generate();
     }
 }

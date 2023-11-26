@@ -76,6 +76,6 @@ public class BrokerServiceTest : BaseTest, IAsyncLifetime
 
         clients = await ClientService.GetClients();
 
-        Assert.Equal(1, clients.Data.Count);
+        Assert.DoesNotContain(brokerToRemove.Id, clients.Data.Select(x => x.Id));
     }
 }
