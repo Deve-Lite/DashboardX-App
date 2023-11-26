@@ -1,6 +1,6 @@
-﻿namespace Presentation.Application.Interfaces;
+﻿namespace Core.App.Interfaces;
 
-public interface IAuthenticationManager
+public interface IAuthorizationManager
 {
     Task ExtendSession(string accessToken, string refreshToken);
     string GetRefreshToken();

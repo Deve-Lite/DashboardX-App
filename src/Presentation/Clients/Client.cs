@@ -1,4 +1,5 @@
-﻿using MQTTnet.Adapter;
+﻿using Core.App.Interfaces;
+using MQTTnet.Adapter;
 using MQTTnet.Client;
 using MQTTnet.Exceptions;
 using MQTTnet.Protocol;

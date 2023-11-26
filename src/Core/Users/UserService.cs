@@ -1,6 +1,7 @@
-﻿using Presentation.Application.Interfaces;
+﻿using Core.App.Interfaces;
+using Microsoft.Extensions.Logging;
 
-namespace Presentation.Users;
+namespace Core.Users;
 
 public class UserService : AuthorizedService, IUserService
 {
@@ -9,8 +10,8 @@ public class UserService : AuthorizedService, IUserService
     public UserService(HttpClient httpClient,
                        ILogger<UserService> logger,
                        IPrefrenceService preferenceService,
-                       IAuthenticationManager authenticationManager)
-        : base(httpClient, logger, authenticationManager)
+                       IAuthorizationManager authorizationManager)
+        : base(httpClient, logger, authorizationManager)
     {
         _prefrenceService = preferenceService;
     }

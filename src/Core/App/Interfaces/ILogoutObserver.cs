@@ -1,4 +1,4 @@
-﻿namespace Presentation.Application.Interfaces;
+﻿namespace Core.App.Interfaces;
 
 public interface ILogoutObserver
 {

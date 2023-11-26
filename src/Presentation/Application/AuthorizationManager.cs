@@ -3,7 +3,7 @@ using Presentation.Application.Interfaces;
 
 namespace Presentation.Application;
 
-public class AuthenticationManager : IAuthenticationManager
+public class AuthorizationManager : IAuthorizationManager
 {
     private readonly IPrefrenceService _preferenceService;
     private readonly ApplicationStateProvider _applicationStateProvider;
@@ -11,7 +11,7 @@ public class AuthenticationManager : IAuthenticationManager
 
     private List<ILogoutObserver> _logoutObservers;
 
-    public AuthenticationManager(AuthenticationStateProvider authenticationStateProvider,
+    public AuthorizationManager(AuthenticationStateProvider authenticationStateProvider,
                                  NavigationManager navigationManager,
                                  IPrefrenceService prefrenceService)
     {

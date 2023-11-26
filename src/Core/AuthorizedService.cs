@@ -1,22 +1,20 @@
-﻿using Microsoft.AspNetCore.Components;
-using Presentation.Application.Interfaces;
+﻿using Core.App.Interfaces;
+using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
 
-namespace Presentation;
+namespace Core;
 
 public abstract class AuthorizedService : BaseService
 {
-    protected readonly ApplicationStateProvider _applicationStateProvider;
-    protected readonly NavigationManager _navigationManager;
-    protected readonly IAuthorizationManager _authenticationManager;
+    protected readonly IAuthorizationManager _authorizationManager;
     
     protected AuthorizedService(HttpClient httpClient,
         ILogger<AuthorizedService> logger,
-        IAuthorizationManager authenticationManager) : base(httpClient, logger)
+        IAuthorizationManager authorizationManager) : base(httpClient, logger)
     {
-        _authenticationManager = authenticationManager;
+        _authorizationManager = authorizationManager;
     }
 
     protected virtual async Task<Result> SendAsync(Request request)
@@ -91,7 +89,7 @@ public abstract class AuthorizedService : BaseService
             Route = "api/v1/users/me/tokens"
         };
 
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _authenticationManager.GetRefreshToken());
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _authorizationManager.GetRefreshToken());
 
         var response = await SendAsync<Tokens>(request);
 
@@ -99,11 +97,11 @@ public abstract class AuthorizedService : BaseService
         {
             var accessToken = response.Data!.AccessToken;
             var refreshToken = response.Data!.RefreshToken;
-            await _authenticationManager.ExtendSession(accessToken, refreshToken);
+            await _authorizationManager.ExtendSession(accessToken, refreshToken);
             return true;
         }
 
-        _authenticationManager?.Logout();
+        _authorizationManager?.Logout();
 
         return false;
     }

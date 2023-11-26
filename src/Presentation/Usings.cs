@@ -6,7 +6,6 @@ global using Blazored.SessionStorage;
 
 global using MQTTnet;
 
-global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 global using Microsoft.AspNetCore.Components.Web;
 global using Microsoft.AspNetCore.Components.Authorization;
@@ -28,6 +27,7 @@ global using Common.Devices.Models;
 
 global using Core;
 global using Core.App;
+global using Core.App.Interfaces;
 global using Core.Auth;
 global using Core.Brokers;
 global using Core.Devices;

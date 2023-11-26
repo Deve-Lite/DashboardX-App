@@ -1,16 +1,15 @@
-﻿using Microsoft.AspNetCore.Components;
-using System.Text.Json.Serialization;
+﻿using Microsoft.Extensions.Logging;
+using Core.App.Interfaces;
 using System.Text.Json;
-using Presentation.Application.Interfaces;
 
-namespace Presentation.Devices;
+namespace Core.Devices;
 
 public class FetchDeviceService : AuthorizedService, IFetchDeviceService
 {
     public FetchDeviceService(HttpClient httpClient, 
                          ILogger<FetchDeviceService> logger,
-                               IAuthenticationManager authenticationManager)
-        : base(httpClient, logger, authenticationManager)
+                               IAuthorizationManager authorizationManager)
+        : base(httpClient, logger, authorizationManager)
     {
     }
 

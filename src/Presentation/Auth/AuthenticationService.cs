@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.WebAssembly.Http;
-using System.Net.Http.Headers;
-using System.Text.Json;
+﻿using System.Net.Http.Headers;
 
 namespace Presentation.Auth;
 

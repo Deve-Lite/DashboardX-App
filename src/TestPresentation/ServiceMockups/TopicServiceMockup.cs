@@ -1,4 +1,6 @@
-﻿namespace PresentationTests.ServiceMockups;
+﻿using Core.App.Interfaces;
+
+namespace PresentationTests.ServiceMockups;
 
 internal class TopicServiceMockup : ITopicService
 {
