@@ -1,42 +1,56 @@
-﻿@inject IStringLocalizer<DateTimeControlDialog> _localizer;
+﻿@using Presentation.Shared.Dialogs
+
+@inject IStringLocalizer<DateTimeControlDialog> _localizer;
 @inject IClientService _clientService;
 
 @inherits BaseControl
 
 <MudDialog>
     <DialogContent>
+        <LoadingDialog>
+            <Title>
+                <MudText Typo="Typo.body1">
+                    @_localizer["Provide date and time"]
+                </MudText>
+            </Title>
+            <Content>
+                <MudCarousel Style="width:400px; height:450px;"
+                             ShowArrows="true"
+                             ShowBullets="true"
+                             EnableSwipeGesture="true"
+                             AutoCycle="false"
+                             TData="object">
+                    <MudCarouselItem Transition="Transition.Fade">
+                        <MudElement Class="m-0 p-0 w-100 d-flex align-items-center justify-content-center">
+                            <MudDatePicker @bind-Date="DateToSend"
+                                           PickerVariant="PickerVariant.Static" />
+                        </MudElement>
+                    </MudCarouselItem>
+                    <MudCarouselItem Transition="Transition.Fade">
+                        <MudElement Class="m-0 p-0 w-100 d-flex align-items-center justify-content-center">
+                            <MudTimePicker @bind-Time="TimeToSend"
+                                           PickerVariant="PickerVariant.Static" />
+                        </MudElement>
+                    </MudCarouselItem>
+                </MudCarousel>
+            </Content>
+            <Actions>
+                <MudButton OnClick="Cancel"
+                           Variant="Variant.Filled"
+                           Color="Color.Error">
+                    @_localizer["Cancel"]
+                </MudButton>
 
-        <MudCarousel Style="width:400px; height:450px;"
-                     ShowArrows="true"
-                     ShowBullets="true"
-                     EnableSwipeGesture="true"
-                     AutoCycle="false"
-                     TData="object">
-            <MudCarouselItem Transition="Transition.Fade">
-                <MudElement Class="m-0 p-0 w-100 d-flex align-items-center justify-content-center">
-                    <MudDatePicker @bind-Date="DateToSend"
-                                   PickerVariant="PickerVariant.Static" />
-                </MudElement>
-            </MudCarouselItem>
-            <MudCarouselItem Transition="Transition.Fade">
-                <MudElement Class="m-0 p-0 w-100 d-flex align-items-center justify-content-center">
-                    <MudTimePicker @bind-Time="TimeToSend"
-                                   PickerVariant="PickerVariant.Static" />
-                </MudElement>
-            </MudCarouselItem>
-        </MudCarousel>
+                <MudButton OnClick="SubmitSliderValue"
+                           ButtonType="ButtonType.Submit"
+                           Variant="Variant.Filled"
+                           Color="Color.Warning">
+                    @_localizer["Submit"]
+                </MudButton>
+            </Actions>
+        </LoadingDialog>
 
     </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="Cancel"
-                   Variant="Variant.Filled"
-                   Color="Color.Error">@_localizer["Cancel"]</MudButton>
-
-        <MudButton OnClick="SubmitSliderValue"
-                   ButtonType="ButtonType.Submit"
-                   Variant="Variant.Filled"
-                   Color="Color.Warning">@_localizer["Submit"] </MudButton>
-    </DialogActions>
 </MudDialog>
 
 @code

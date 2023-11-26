@@ -1,51 +1,64 @@
-﻿@inject IStringLocalizer<SliderControlDialog> _localizer;
+﻿@using Presentation.Shared.Dialogs
+
+@inject IStringLocalizer<SliderControlDialog> _localizer;
 @inject IClientService _clientService;
 
 @inherits BaseControl
 
 <MudDialog>
     <DialogContent>
+        <LoadingDialog>
+            <Title>
+                <MudText Typo="Typo.body1">
+                    @_localizer["Provide numerical value"]
+                </MudText>
+            </Title>
+            <Content>
+                <MudGrid Class="p-0 m-0 w-100">
 
-        <MudGrid Class="p-1 m-0 w-100">
+                    <MudItem xs="12" lg="7">
+                        <MudText>@_localizer["You may slide value or provde it using numerical field."]</MudText>
+                    </MudItem>
 
-            <MudItem xs="12" lg="7">
-                <MudText>@_localizer["You may slide value or provde it using numerical field."]</MudText>
-            </MudItem>
+                    <MudItem xs="12" lg="5">
+                        <MudNumericField @bind-Value="Value"
+                                         Class="p-0 m-0"
+                                         Label="@_localizer["Exact Value"]"
+                                         T="double"
+                                         Variant="Variant.Filled"
+                                         Min="MinSliderValue"
+                                         Max="MaxSliderValue" />
+                    </MudItem>
 
-            <MudItem xs="12" lg="5">
-                <MudNumericField @bind-Value="Value"
-                                 Class="p-0 m-0"
-                                 Label="@_localizer["Exact Vlue"]"
-                                 T="double"
-                                 Variant="Variant.Filled"
-                                 Min="MinSliderValue"
-                                 Max="MaxSliderValue" />
-            </MudItem>
+                    <MudItem xs="12">
+                        <MudSlider @bind-Value="Value"
+                                   Class="p-0 m-0"
+                                   T="double"
+                                   Max="MaxSliderValue"
+                                   Min="MinSliderValue"
+                                   Step="0.01"
+                                   ValueLabel="true"
+                                   Size="Size.Large">
+                        </MudSlider>
+                    </MudItem>
+                </MudGrid>
+            </Content>
+            <Actions>
+                <MudButton OnClick="Cancel"
+                           Variant="Variant.Filled"
+                           Color="Color.Error">
+                    @_localizer["Cancel"]
+                </MudButton>
 
-            <MudItem xs="12">
-                <MudSlider @bind-Value="Value"
-                           Class="p-0 m-0"
-                           T="double"
-                           Max="MaxSliderValue"
-                           Min="MinSliderValue"
-                           Step="0.01"
-                           ValueLabel="true"
-                           Size="Size.Large">
-                </MudSlider>
-            </MudItem>
-        </MudGrid>
-
+                <MudButton OnClick="SubmitSliderValue"
+                           ButtonType="ButtonType.Submit"
+                           Variant="Variant.Filled"
+                           Color="Color.Warning">
+                    @_localizer["Submit"]
+                </MudButton>
+            </Actions>
+        </LoadingDialog>
     </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="Cancel"
-                   Variant="Variant.Filled"
-                   Color="Color.Error">@_localizer["Cancel"]</MudButton>
-
-        <MudButton OnClick="SubmitSliderValue"
-                   ButtonType="ButtonType.Submit"
-                   Variant="Variant.Filled"
-                   Color="Color.Warning">@_localizer["Submit"] </MudButton>
-    </DialogActions>
 </MudDialog>
 
 @code

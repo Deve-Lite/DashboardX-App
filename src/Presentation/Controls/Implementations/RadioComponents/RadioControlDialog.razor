@@ -1,45 +1,57 @@
-﻿@inject IStringLocalizer<RadioControlDialog> _localizer;
+﻿@using Presentation.Shared.Dialogs
+
+@inject IStringLocalizer<RadioControlDialog> _localizer;
 
 @inherits BaseDialog
 
 <MudDialog>
     <DialogContent>
-        <MudGrid Class="m-0 p-1 w-100">
-            <MudItem xs="12" Class="m-1 p-1">
-                <MudText>
-                    @_localizer["Press mode to send information to your device!"]
+        <LoadingDialog>
+            <Title>
+                <MudText Typo="Typo.body1">
+                    @_localizer["Select option"]
                 </MudText>
-            </MudItem>
-            @foreach (var (name, payload) in Control.Attributes.Payloads ?? new Dictionary<string, string>())
-            {
-                <MudItem Class="m-0 p-0">
-                    @if (CurrentName == name)
+            </Title>
+            <Content>
+                <MudGrid Class="p-0 m-0 w-100">
+                    <MudItem xs="12" Class="m-1 p-1">
+                        <MudText>
+                            @_localizer["Press mode to send information to your device!"]
+                        </MudText>
+                    </MudItem>
+                    @foreach (var (name, payload) in Control.Attributes.Payloads ?? new Dictionary<string, string>())
                     {
-                        <MudButton Color="Color.Secondary"
-                                   Class="text-start m-1"
-                                   Variant="Variant.Filled"
-                                   OnClick="(() => ModeSelected(name))">
-                            @name
-                        </MudButton>
+                        <MudItem Class="m-0 p-0">
+                            @if (CurrentName == name)
+                            {
+                                <MudButton Color="Color.Secondary"
+                                           Class="text-start m-1"
+                                           Variant="Variant.Filled"
+                                           OnClick="(() => ModeSelected(name))">
+                                    @name
+                                </MudButton>
+                            }
+                            else
+                            {
+                                <MudButton Color="Color.Primary"
+                                           Variant="Variant.Filled"
+                                           Class="text-start m-1"
+                                           OnClick="(() => ModeSelected(name))">
+                                    @name
+                                </MudButton>
+                            }
+                        </MudItem>
                     }
-                    else
-                    {
-                        <MudButton Color="Color.Primary"
-                                   Variant="Variant.Filled"
-                                   Class="text-start m-1"
-                                   OnClick="(() => ModeSelected(name))">
-                            @name
-                        </MudButton>
-                    }
-                </MudItem>
-            }
-        </MudGrid>
+                </MudGrid>
+            </Content>
+            <Actions>
+                <MudButton OnClick="Cancel"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary">@_localizer["Cancel"] 
+                       </MudButton>
+            </Actions>
+        </LoadingDialog>
     </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="Cancel"
-                   Variant="Variant.Filled"
-                   Color="Color.Primary">@_localizer["Cancel"] </MudButton>
-    </DialogActions>
 </MudDialog>
 @code
 {
