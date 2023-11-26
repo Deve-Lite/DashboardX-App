@@ -5,22 +5,24 @@
 {
     <MudGrid Class="d-flex w-100 p-0 pt-4 pb-4 m-0">
         <MudItem xs="12"
-             Class="p-0 m-0 d-flex justify-content-center align-items-center">
+                 Class="p-0 m-0 d-flex justify-content-center align-items-center">
             <MudProgressCircular Class="p-0 m-0"
-                             Color="Color.Tertiary"
-                             Size="Size.Large"
-                             Indeterminate="true" />
+                                 Color="Color.Tertiary"
+                                 Size="Size.Large"
+                                 Indeterminate="true" />
         </MudItem>
     </MudGrid>
 }
 else
 {
     <MudGrid Class="d-flex w-100 p-0 m-0">
-        <MudItem xs="12" Class="p-0 m-0">
+        <MudItem xs="12" Class="p-0 m-0 dialog-title">
             @Title
         </MudItem>
         <MudItem xs="12" Class="p-0 m-0">
-            @Content
+            <MudItem Class="dialog-content">
+                @Content
+            </MudItem>
         </MudItem>
         <MudItem xs="12" Class="dialog-footer">
             @Actions

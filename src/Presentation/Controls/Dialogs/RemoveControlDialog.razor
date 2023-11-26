@@ -6,7 +6,7 @@
 
 @inherits BaseDialog
 
-<MudDialog>
+<MudDialog ClassContent="my-mud-dialog-content">
     <DialogContent>
         <LoadingDialog>
             <Title>
@@ -17,7 +17,9 @@
                 </MudText>
             </Title>
             <Content>
-                <MudText>@_localizer["Are you sure you want to remove following control?"]</MudText>
+                <MudGrid Class="m-0 p-2 pt-0 pb-0 w-100">
+                    <MudText>@_localizer["Are you sure you want to remove following control?"]</MudText>
+                </MudGrid>
             </Content>
             <Actions>
                 <MudButton OnClick="Cancel">

@@ -5,7 +5,7 @@
 
 @inherits BaseFormDialog
 
-<MudDialog>
+<MudDialog ClassContent="my-mud-dialog-content">
     <DialogContent>
         <LoadingDialog>
             <Title>
@@ -18,6 +18,7 @@
             <Content>
                 <MudForm @ref="@Form"
                          Model="@Model"
+                         Class="p-2 pb-0 pt-0"
                          Validation="@(Validator.ValidateValue)"
                          ValidationDelay="0">
                     <MudGrid Class="p-0 m-0 w-100">
