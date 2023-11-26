@@ -90,6 +90,12 @@
     padding-right: 0 !important;
 }
 
+.settings-page-actions {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+}
+
 @media screen and (max-width: 1280px) {
     .ellipsis {
         width: 300px;
@@ -114,6 +120,9 @@
         font-size: 1.75rem !important;
     }
 
+    .settings-page-actions {
+        justify-content: space-between!important;
+    }
 }
 
 @media screen and (max-width: 600px) {
@@ -144,6 +153,7 @@
 
     .main-body {
         padding-top: 0 !important;
+        padding-bottom: 70px !important;
     }
 
     .flex-list-justify {
