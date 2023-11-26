@@ -118,6 +118,10 @@
     .settings-page-actions {
         justify-content: space-between!important;
     }
+
+    .flex-list-justify {
+        justify-content: space-evenly !important;
+    }
 }
 
 @media screen and (max-width: 600px) {
@@ -149,10 +153,6 @@
     .main-body {
         padding-top: 0 !important;
         padding-bottom: 70px !important;
-    }
-
-    .flex-list-justify {
-        justify-content: space-evenly;
     }
 
     .dialog-footer {

@@ -256,7 +256,8 @@ public class Client : IClient, IAsyncDisposable
         }
         catch (Exception ex)
         {
-            return Result.Fail();
+            //TODO: Locliazer
+            return Result.Fail(message: $"Unknown exception occured {nameof(ex)}");
         }
     }
     public async Task<IResult> UpdateDevice(Device device, List<Control> controls)

@@ -55,7 +55,7 @@
                         <MudIconButton Class="z-10"
                                        Icon="@IconUtils.DefaultEditIcon"
                                        Variant="Variant.Filled"
-                                       OnClick="() => DevicePagesUtils.UpdateDevice(Device, _dialogService, _localizer)" />
+                                       OnClick="() => DevicePagesUtils.UpdateDevice(Device, _dialogService)" />
 
                     </MudItem>
 
@@ -63,7 +63,7 @@
                         <MudIconButton Class="z-10"
                                        Icon="@IconUtils.DefaultRemoveIcon"
                                        Variant="Variant.Filled"
-                                       OnClick="() => DevicePagesUtils.RemoveDevice(Device, _dialogService, _localizer, _navigationManager, _runtime)" />
+                                       OnClick="() => DevicePagesUtils.RemoveDevice(Device, _dialogService, _navigationManager)" />
 
                     </MudItem>
                 </MudGrid>

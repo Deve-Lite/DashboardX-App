@@ -94,7 +94,7 @@
                                 <MudIconButton Class="z-10"
                                                Icon="@IconUtils.DefaultEditIcon"
                                                Variant="Variant.Filled"
-                                               OnClick="() => DevicePagesUtils.UpdateDevice(Device, _dialogService, _localizer)" />
+                                               OnClick="() => DevicePagesUtils.UpdateDevice(Device, _dialogService)" />
 
                             </MudItem>
 
@@ -102,7 +102,7 @@
                                 <MudIconButton Class="z-10"
                                                Icon="@IconUtils.DefaultRemoveIcon"
                                                Variant="Variant.Filled"
-                                               OnClick="() => DevicePagesUtils.RemoveDevice(Device, _dialogService, _localizer, _navigationManager, _runtime)" />
+                                               OnClick="() => DevicePagesUtils.RemoveDevice(Device, _dialogService, _navigationManager)" />
 
                             </MudItem>
                         </MudGrid>
@@ -116,7 +116,7 @@
 
             <MudItem xs="12" Class="p-0 pt-4 pb-4 m-0 d-flex">
 
-                <MudElement Class="p-1 m-0 d-flex w-100 flex-animate flex-list-justify">
+                <MudElement Class="p-1 m-0 w-100 flex-list-justify">
                     @foreach (var control in Client!.GetControls(DeviceId).Where(x => x.Type != ControlType.State))
                     {
                         <MudItem Class="p-1 m-0">

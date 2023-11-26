@@ -20,7 +20,7 @@
     </FailedToLoadContent>
     <LoadedContent>
 
-        <AddButton OnClick="() => DevicePagesUtils.AddDevice(StateHasChanged, _dialogService, _localizer, Client!.Id)"
+        <AddButton OnClick="() => DevicePagesUtils.AddDevice(_dialogService, Client!.Id)"
                    Class="add-wrapper" />
 
         <MudGrid Class="m-0 p-3 w-100">
