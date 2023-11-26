@@ -10,17 +10,14 @@
         <LoadingDialog>
             <Title>
                 <MudText Align="Align.Start"
-                         Class="m-0 mt-2 mb-2"
                          Typo="Typo.h6">
                     @_localizer["Remove Broker"]
                 </MudText>
             </Title>
             <Content>
-                <MudGrid Class="m-0 p-2 pt-0 pb-0 w-100">
                     <MudText>@_localizer["Are you sure you want to remove this device?"]</MudText>
                     <MudText>@_localizer["Name:"] @Device.Name</MudText>
                     <MudText>@_localizer["Placing:"] @Device.Placing</MudText>
-                </MudGrid>
             </Content>
             <Actions>
                 <MudButton OnClick="Cancel" Class="m-1">
