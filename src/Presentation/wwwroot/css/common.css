@@ -44,11 +44,9 @@
 }
 
 .add-wrapper {
-    position: absolute !important;
+    position: fixed !important;
     bottom: 0 !important;
     right: 0 !important;
-    width: 3.5rem;
-    height: 3.5rem;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -102,6 +100,13 @@
 .dialog-title {
 }
 
+.loadable-page {
+    display: flex !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
 @media screen and (max-width: 1280px) {
     .ellipsis {
         width: 300px;
@@ -114,8 +119,6 @@
     }
 
     .add-wrapper {
-        width: 3rem;
-        height: 3rem;
     }
 
     .list-icon {
@@ -137,6 +140,10 @@
 
 @media screen and (max-width: 600px) {
 
+    .loadable-page {
+        padding-bottom: 105px !important;
+    }
+
     .ellipsis {
         width: auto;
     }
@@ -148,8 +155,6 @@
     }
 
     .add-wrapper {
-        width: 2.5rem;
-        height: 2.5rem;
         margin-bottom: 60px !important;
     }
 
@@ -163,7 +168,7 @@
 
     .main-body {
         padding-top: 0 !important;
-        padding-bottom: 70px !important;
+        height: calc(100% - 48px) !important;
     }
 
     .dialog-footer {

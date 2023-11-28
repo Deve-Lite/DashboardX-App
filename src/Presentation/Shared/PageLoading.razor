@@ -15,7 +15,9 @@ else if (FailedToLoad)
 }
 else
 {
-    @LoadedContent
+    <MudElement Class="loadable-page">
+        @LoadedContent
+    </MudElement>
 }
 
 @code 
