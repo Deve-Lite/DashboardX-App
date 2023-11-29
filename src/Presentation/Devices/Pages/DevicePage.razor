@@ -121,9 +121,9 @@
                     {
                         <MudItem Class="p-1 m-0">
                             <ControlFactory Client="@Client"
-                                            Device="@Device"
-                                            Control="@control"
-                                            RefreshList="StateHasChanged" />
+                                        Device="@Device"
+                                        Control="@control"
+                                        RefreshList="StateHasChanged" />
                         </MudItem>
                     }
                 </MudElement>
@@ -165,22 +165,20 @@
             Client.SetOnMessageReceivedEventHandler(RerenderPage);
             LoadedSuccessfully = true;
             Device = Client.GetDevices().FirstOrDefault(x => x.Id == DeviceId)!;
+
+            BreadcrumbItems = new()
+            {
+                new BreadcrumbItem("Brokers", href: "/brokers"),
+                new BreadcrumbItem($"{Client!.GetBroker().Name}", href: $"/brokers/{Client!.GetBroker().Id}"),
+                new BreadcrumbItem($"{Device.Name}", href: $"devices/{Device.Id}/client/{Client!.GetBroker().Id}", true),
+            };
         }
         else
         {
             LoadedSuccessfully = false;
+            if (result.ShowToast)
+                _snackbar.Add(result.Messages[0], result.Severity);
         }
-
-        if (result.ShowToast)
-            foreach (var message in result.Messages)
-                _snackbar.Add(message, result.Severity);
-
-        BreadcrumbItems = new()
-        {
-            new BreadcrumbItem("Brokers", href: "/brokers"),
-            new BreadcrumbItem($"{Client!.GetBroker().Name}", href: $"/brokers/{Client!.GetBroker().Id}"),
-            new BreadcrumbItem($"{Device.Name}", href: $"devices/{Device.Id}/client/{Client!.GetBroker().Id}", true),
-        };
 
         return result;
     }
