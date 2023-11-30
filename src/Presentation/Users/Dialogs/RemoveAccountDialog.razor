@@ -2,6 +2,7 @@
 
 @inject IStringLocalizer<ConfirmDialog> _localizer
 @inject IUserService _userService
+@inject IAuthorizationManager _authManager
 
 @inherits BaseFormDialog
 
@@ -58,11 +59,8 @@
 
         if (result.Succeeded)
         {
-            //TODO: Clear local data
-
             _snackbar.Add(_localizer["Thanks for using our app."], Severity.Info);
-
-            _navigationManager.NavigateTo("/");
+            await _authManager.Logout();
         }
 
         _snackbar.Add(_localizer["Failed to remove your account."], Severity.Error);

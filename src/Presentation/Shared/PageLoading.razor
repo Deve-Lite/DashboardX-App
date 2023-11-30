@@ -1,4 +1,7 @@
-﻿@if (_loadingService.IsLoading)
+﻿
+@inherits MudComponentBase
+
+@if (_loadingService.IsLoading)
 {
     <MudGrid Class="p-0 m-0 w-100 h-100">
         <MudItem xs="12" Class="p-0 m-0 d-flex justify-content-center align-items-center">
@@ -15,9 +18,9 @@ else if (FailedToLoad)
 }
 else
 {
-    <MudElement Class="loadable-page">
+    <MudItem Class="@($"loadable-page {@Class}")">
         @LoadedContent
-    </MudElement>
+    </MudItem>
 }
 
 @code 
