@@ -9,7 +9,7 @@
 
 @implements IDisposable
 
-<PageLoading FailedToLoad="!LoadedSuccessfully">
+<PageLoading  FailedToLoad="!LoadedSuccessfully">
     <FailedToLoadContent>
         <RefreshPageButton RefreshPage="RefreshPage" />
     </FailedToLoadContent>
@@ -18,7 +18,7 @@
         <AddButton OnClick="CreateDevice"
                    Class="add-wrapper"/>
 
-        <MudGrid Class="m-0 p-0 w-100">
+        <MudGrid Class="m-0 p-3 w-100">
 
             <MudItem xs="12" Class="p-0 m-0">
                 <Breadcrumbs BreadcrumbItems="@BreadcrumbItems" />
@@ -26,7 +26,7 @@
 
             @foreach(var client in Clients.Where(x => x.GetDevices().Any()))
             {
-                <MudItem xs="12" lg="6" Class="p-2 m-0">
+                <MudItem xs="12" lg="6" Class="p-0 m-0">
 
                     <MudText Align="Align.Left" Typo="Typo.h5" Class="hide-overlapping-text">
                         @client.GetBroker().Name
