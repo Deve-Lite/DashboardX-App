@@ -1,7 +1,8 @@
 ﻿@using Presentation.Shared.Dialogs;
 
-@inject IStringLocalizer<ConfirmDialog> _localizer
+@inject IStringLocalizer<RemoveAccountDialog> _localizer
 @inject IUserService _userService
+@inject IAuthorizationManager _authManager
 
 @inherits BaseFormDialog
 
@@ -10,7 +11,6 @@
         <LoadingDialog>
             <Title>
                 <MudText Align="Align.Start"
-                         Class="m-0 mt-2 mb-2"
                          Typo="Typo.h6">
                     @Title()
                 </MudText>
@@ -18,7 +18,7 @@
             <Content>
                 <MudForm @ref="@Form"
                          Model="@Model"
-                         Class="p-2 pb-0 pt-0"
+                         Class="p-0 pb-0 pt-0"
                          Validation="@(Validator.ValidateValue)"
                          ValidationDelay="0">
                     <MudGrid Class="p-0 m-0 w-100">
@@ -58,11 +58,8 @@
 
         if (result.Succeeded)
         {
-            //TODO: Clear local data
-
             _snackbar.Add(_localizer["Thanks for using our app."], Severity.Info);
-
-            _navigationManager.NavigateTo("/");
+            await _authManager.Logout();
         }
 
         _snackbar.Add(_localizer["Failed to remove your account."], Severity.Error);

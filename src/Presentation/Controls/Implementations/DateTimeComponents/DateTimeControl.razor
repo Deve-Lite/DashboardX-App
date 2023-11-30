@@ -30,7 +30,9 @@
 
     public async Task ActionAsync()
     {
-        var dialog = await DialogService!.ShowAsync<DateTimeControlDialog>(_localizer["Select date to send."]);
+        var options = new DialogOptions { NoHeader=true };
+
+        var dialog = await DialogService!.ShowAsync<DateTimeControlDialog>("", options);
         var result = await dialog.Result;
 
         if (result.Canceled)

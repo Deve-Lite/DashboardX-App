@@ -3,16 +3,33 @@
 
 <MudDialog>
     <DialogContent>
-        <MudText>@Description</MudText>
+
+        <LoadingDialog>
+            <Title>
+                <MudText Align="Align.Start"
+                         Typo="Typo.h6">
+                    @_localizer["Confirmation Required"]
+                </MudText>
+            </Title>
+            <Content>
+                <MudText>
+                    @Description
+                </MudText>
+            </Content>
+            <Actions>
+                <MudButton OnClick="Cancel"
+                           Variant="Variant.Filled"
+                           Color="Color.Error">
+                    @_localizer["Cancel"]
+                </MudButton>
+                <MudButton OnClick="Remove"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary">
+                    @_localizer["Continue"]
+                </MudButton>
+            </Actions>
+        </LoadingDialog>
     </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="Cancel"
-                   Variant="Variant.Filled"
-                   Color="Color.Error">@_localizer["Cancel"]</MudButton>
-        <MudButton OnClick="Remove"
-                   Variant="Variant.Filled"
-                   Color="Color.Primary">@_localizer["Continue"] </MudButton>
-    </DialogActions>
 </MudDialog>
 
 @code
@@ -25,8 +42,5 @@
 
     private void Cancel() => Dialog!.Cancel();
 
-    private void Remove()
-    {
-        Dialog!.Close(DialogResult.Ok(true));
-    }
+    private void Remove() => Dialog!.Close(DialogResult.Ok(true));
 }

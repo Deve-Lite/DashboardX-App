@@ -12,14 +12,16 @@
 
 @inherits BaseAuthPage
 
-<PageLoading>
+<PageLoading Class="auth-loadable-page">
     <LoadedContent>
-        <MudCard Class="container d-flex container-fit-content p-5" Style="border-radius: 1rem;">
+        <MudCard Class="d-flex container-fit-content auth-page-card">
             <MudForm @ref="@Form"
                      Model="@Model"
                      Validation="@(LoginValidator.ValidateValue)"
-                     ValidationDelay="0">
-                <MudGrid>
+                     ValidationDelay="0"
+                     Class="w-100 m-0 p-0"
+                     Style="height:inherit;">
+                <MudGrid Class="w-100 m-0 p-0">
 
                     <MudItem xs="12">
                         <MudText Class="text-center"
@@ -46,9 +48,9 @@
                     </MudItem>
                     <MudItem xs="12" Class="h">
                         <PasswordTextField @bind-Value="Model.Password"
-                                      Label="@_localizer["Password"]"
-                                      HelperText="@_localizer["Provide password for your account."]"
-                                      For="@(() => Model.Password)" />
+                                           Label="@_localizer["Password"]"
+                                           HelperText="@_localizer["Provide password for your account."]"
+                                           For="@(() => Model.Password)" />
                     </MudItem>
                     <MudItem xs="12" Class="d-flex justify-space-between align-center">
                         <MudLink Href="/auth/forgot">@_localizer["Forgot password?"]</MudLink>
@@ -59,22 +61,8 @@
                                      Color="Color.Primary"
                                      Class="ml-n1" />
                     </MudItem>
-                    <MudItem xs="7">
 
-                        @if (ResendButtonVisible)
-                        {
-                            <MudButton Variant="Variant.Filled"
-                                       OnClick="ResendConfirmEmail"
-                                       Color="Color.Primary"
-                                       Size="Size.Large"
-                                       EndIcon="@Icons.Material.Filled.Email"
-                                       Style="width: 100%;">
-                                @_localizer["Resend confirm email"]
-                            </MudButton>
-                        }
-
-                    </MudItem>
-                    <MudItem xs="5" Class="d-flex justify-end">
+                    <MudItem xs="12" sm="6" Class="d-flex justify-end">
                         <MudButton Variant="Variant.Filled"
                                    OnClick="LoginAsync"
                                    Color="Color.Primary"
@@ -85,17 +73,32 @@
                         </MudButton>
 
                     </MudItem>
+                    <MudItem xs="12" sm="6">
+
+                        @if (ResendButtonVisible)
+                        {
+                            <MudButton Variant="Variant.Filled"
+                                   OnClick="ResendConfirmEmail"
+                                   Color="Color.Primary"
+                                   Size="Size.Large"
+                                   EndIcon="@Icons.Material.Filled.Email"
+                                   Style="width: 100%;">
+                                @_localizer["Resend email"]
+                            </MudButton>
+                        }
+
+                    </MudItem>
 
                     @if (IsDebug)
                     {
-                        <MudItem xs="12">
+                        <MudItem xs="6">
                             <MudButton OnClick="FillAdministratorCredentials">
-                                @_localizer["Fill Administrator Credentials"]
+                                @_localizer["Admin Creds"]
                             </MudButton>
                         </MudItem>
-                        <MudItem xs="12">
+                        <MudItem xs="6">
                             <MudButton OnClick="FillBasicUserCredentials">
-                                @_localizer["Login with user Credentials."]
+                                @_localizer["User Creds"]
                             </MudButton>
                         </MudItem>
                     }

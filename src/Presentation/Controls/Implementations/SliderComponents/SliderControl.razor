@@ -49,8 +49,9 @@
             { x => x.MinSliderValue, min },
             { x => x.MaxSliderValue, max },
         };
+        var options = new DialogOptions { NoHeader=true };
 
-        var dialog = await DialogService!.ShowAsync<SliderControlDialog>(_localizer["Provide Value To Send"], parameters);
+        var dialog = await DialogService!.ShowAsync<SliderControlDialog>(_localizer["Provide Value To Send"], parameters, options);
         var result = await dialog.Result;
 
         if (result.Canceled)

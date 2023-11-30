@@ -16,7 +16,7 @@
 
 <PageLoading FailedToLoad="!LoadedSuccessfully">
     <FailedToLoadContent>
-        <RefreshPageButton RefreshPage="LoadPage" />
+        <RefreshPageButton RefreshPage="RefreshPage" />
     </FailedToLoadContent>
     <LoadedContent>
 
@@ -161,24 +161,22 @@
 
         if (result.Succeeded)
         {
-            Client = result.Data; 
+            Client = result.Data;
             Client?.SetOnMessageReceivedEventHandler(RerenderPage);
             LoadedSuccessfully = true;
+
+            BreadcrumbItems = new()
+            {
+                new BreadcrumbItem("Brokers", href: "/brokers"),
+                new BreadcrumbItem($"{Client!.GetBroker().Name}", href: $"/brokers/{Client!.GetBroker().Id}"),
+            };
         }
         else
         {
             LoadedSuccessfully = false;
+            if (result.ShowToast)
+                _snackbar.Add(result.Messages[0], result.Severity);
         }
-
-        if (result.ShowToast)
-            foreach (var message in result.Messages)
-                _snackbar.Add(message, result.Severity);
-
-        BreadcrumbItems = new()
-        {
-            new BreadcrumbItem("Brokers", href: "/brokers"),
-            new BreadcrumbItem($"{Client!.GetBroker().Name}", href: $"/brokers/{Client!.GetBroker().Id}"),
-        };
 
         return result;
     }

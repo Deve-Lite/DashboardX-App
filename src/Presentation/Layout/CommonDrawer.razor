@@ -50,9 +50,12 @@
     {
         var confirmationParameters = new DialogParameters<ConfirmDialog>
             {
-                { x => x.Description, _localizer["Sending this message requires confirmation."] }
+                { x => x.Description, _localizer["Hey are you sure you want to logout?"] }
             };
-        var confirmationDialog = await _dialogService!.ShowAsync<ConfirmDialog>(_localizer["Confirmation Required"], confirmationParameters);
+
+        var options = new DialogOptions { NoHeader = true };
+
+        var confirmationDialog = await _dialogService!.ShowAsync<ConfirmDialog>(_localizer["Confirmation Required"], confirmationParameters, options);
         var confirmationResult = await confirmationDialog.Result;
 
         if (confirmationResult.Canceled)
