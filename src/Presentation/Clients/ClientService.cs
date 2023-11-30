@@ -142,10 +142,10 @@ public class ClientService : IClientService, ILogoutObserver
         var deviceResult = deviceTask.Result;
 
         if (!brokerResult.Succeeded)
-            return Result<IClient>.Fail(brokerResult.Messages, brokerResult.StatusCode);
+            return Result<IClient>.Fail(brokerResult.StatusCode, brokerResult.Messages[0]);
 
         if (!deviceResult.Succeeded)
-            return Result<IClient>.Fail(deviceResult.Messages, deviceResult.StatusCode);
+            return Result<IClient>.Fail(deviceResult.StatusCode, brokerResult.Messages[0]);
 
         var clientResult = _clientManager.GetClient(brokerId);
 

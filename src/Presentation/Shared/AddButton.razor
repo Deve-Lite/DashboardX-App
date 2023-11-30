@@ -1,13 +1,11 @@
 ﻿@inherits MudBaseButton
 
-<MudButton Class="@Class"
-           OnClick="@OnClick"
-           Variant="Variant.Filled"
-           Color="Color.Primary">
-    <MudIcon Class="add-icon"
-             Color="Color.Secondary"
-             Icon="@AddIcon" />
-</MudButton>
+
+<MudElement Class="@Class">
+    <MudFab StartIcon="@AddIcon"
+            Color="Color.Tertiary"
+            OnClick="@OnClick" />
+</MudElement>
 
 @code {
     [Parameter]

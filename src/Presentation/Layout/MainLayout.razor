@@ -10,7 +10,7 @@
 
 @inherits LayoutComponentBase
 
-<MudLayout Class="p-0 m-0 w-100 h-100">
+<MudLayout Class="main-layout">
     <MudThemeProvider IsDarkMode="@IsDarkMode" @ref="_mudThemeProvider" Theme="@AppTheme" />
     <MudSnackbarProvider />
     <MudDialogProvider />
@@ -34,15 +34,12 @@
                     </MudHidden>
 
                     <MudMainContent Class="main-body">
-                        @Body
+                        @Body 
                     </MudMainContent>
                 </Authorized>
                 <NotAuthorized>
-                    <MudItem Class="image-in-background main-body">
-                        <MudContainer MaxWidth="MaxWidth.Small" 
-                                      Class="d-flex align-items-center bg-transparent main-body">
-                            @Body
-                        </MudContainer>
+                    <MudItem Class="auth-main-body">
+                        @Body
                     </MudItem>
                 </NotAuthorized>
             </AuthorizeView>
@@ -50,7 +47,7 @@
     </CascadingValue>
 </MudLayout>
 
-@code 
+@code
 {
     private Theme ThemeType = Theme.Inherit;
     private MudThemeProvider _mudThemeProvider = new();

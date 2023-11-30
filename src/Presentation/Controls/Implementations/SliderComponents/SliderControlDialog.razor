@@ -3,7 +3,7 @@
 @inject IStringLocalizer<SliderControlDialog> _localizer;
 @inject IClientService _clientService;
 
-@inherits BaseControl
+@inherits BaseDialog
 
 <MudDialog ClassContent="my-mud-dialog-content">
     <DialogContent>
@@ -63,9 +63,6 @@
 
 @code
 {
-    [CascadingParameter]
-    private MudDialogInstance? Dialog { get; set; }
-
     [Parameter]
     public double SliderValue { get; set; }
     [Parameter]
@@ -86,8 +83,6 @@
     {
         Value = value;
     }
-
-    public void Cancel() => Dialog!.Cancel();
 
     private void SubmitSliderValue() => Dialog!.Close(DialogResult.Ok(Value));
 }
