@@ -9,7 +9,7 @@
 
 <PageLoading FailedToLoad="!LoadedSuccessfully">
     <FailedToLoadContent>
-        <RefreshPageButton RefreshPage="LoadPage" />
+        <RefreshPageButton RefreshPage="RefreshPage" />
     </FailedToLoadContent>
     <LoadedContent>
 
@@ -60,8 +60,6 @@
         {
             Clients = result.Data;
 
-            StateHasChanged();
-
             foreach (var client in Clients)
                 client.SetOnMessageReceivedEventHandler(RerenderPage);
         }
@@ -89,11 +87,9 @@
         else
         {
             LoadedSuccessfully = false;
+            if (result.ShowToast)
+                _snackbar.Add(result.Messages[0], result.Severity);
         }
-
-        if (result.ShowToast)
-            foreach (var message in result.Messages)
-                _snackbar.Add(message, result.Severity);
 
         return result;
     }

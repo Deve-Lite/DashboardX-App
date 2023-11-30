@@ -11,14 +11,14 @@
 
 <PageLoading FailedToLoad="!LoadedSuccessfully">
     <FailedToLoadContent>
-        <RefreshPageButton RefreshPage="LoadPage" />
+        <RefreshPageButton RefreshPage="RefreshPage" />
     </FailedToLoadContent>
     <LoadedContent>
 
         <AddButton OnClick="CreateDevice"
                    Class="add-wrapper"/>
 
-        <MudGrid Class="m-0 p-3 w-100">
+        <MudGrid Class="m-0 p-0 w-100">
 
             <MudItem xs="12" Class="p-0 m-0">
                 <Breadcrumbs BreadcrumbItems="@BreadcrumbItems" />
@@ -90,11 +90,9 @@
         else
         {
             LoadedSuccessfully = false;
+            if (result.ShowToast)
+                _snackbar.Add(result.Messages[0], result.Severity);
         }
-
-        if (result.ShowToast)
-            foreach (var message in result.Messages)
-                _snackbar.Add(message, result.Severity);
 
         return result;
     }

@@ -3,7 +3,7 @@
 
 @inject IStringLocalizer<UpsertDeviceDialog> _localizer;
 @inject IDeviceService _deviceService
-@inject IFetchBrokerService _brokerService
+@inject IClientService _clientService
 
 @inherits BaseFormDialog
 
@@ -125,11 +125,13 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var result = await _brokerService.GetBrokers();
+        var result = await _clientService.GetClients(false);
 
         if (result.Succeeded)
         {
-            AvaliableBrokers = result.Data;
+            AvaliableBrokers = result.Data
+                                     .Select(x => x.GetBroker())
+                                     .ToList();
             StateHasChanged();
         }
         else

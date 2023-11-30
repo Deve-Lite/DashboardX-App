@@ -26,7 +26,6 @@ public class LoadingService : ILoadingService
         try
         {
             isLoading = true;
-            //await refreshTask?.Invoke()!;
 
             var result = await action.Invoke();
 
@@ -37,7 +36,9 @@ public class LoadingService : ILoadingService
         }
         catch (Exception ex)
         {
-            //TODO: Locliazer
+            isLoading = false;
+            isLoadingDialog = false;
+            await refreshTask?.Invoke()!;
             return Result.Fail(message: $"Unknown exception occured {nameof(ex)}");
         }
     }
@@ -50,7 +51,6 @@ public class LoadingService : ILoadingService
         try
         {
             isLoadingDialog = true;
-            //await refreshTask?.Invoke()!;
 
             var result = await action.Invoke();
 
@@ -61,7 +61,8 @@ public class LoadingService : ILoadingService
         }
         catch (Exception ex)
         {
-            //TODO: Locliazer
+            isLoadingDialog = false;
+            await refreshTask?.Invoke()!;
             return Result.Fail(message: $"Unknown exception occured {nameof(ex)}");
         }
     }
