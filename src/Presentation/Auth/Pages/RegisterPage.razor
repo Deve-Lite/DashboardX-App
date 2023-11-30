@@ -15,8 +15,9 @@
                      Model="@Model"
                      Validation="@(Validator.ValidateValue)"
                      ValidationDelay="0"
+                     Class="w-100 m-0 p-0"
                      Style="height:inherit;">
-                <MudGrid Class="w-100">
+                <MudGrid Class="w-100 m-0 p-0">
                     <MudItem xs="12">
                         <MudText Class="text-center"
                                  Color="Color.Primary"
@@ -83,8 +84,8 @@
                                    Color="Color.Dark"
                                    Size="Size.Large"
                                    StartIcon="@Icons.Material.Filled.ArrowBackIos"
-                                   OnClick="BackToLoginPage">
-                            @_localizer["Go Back"]
+                                   Href="/auth/login">
+                            @_localizer["Sign In"]
                         </MudButton>
                     </MudItem>
                 </MudGrid>
@@ -124,10 +125,5 @@
         RequestHelpers.InvokeAfterRequest(_snackbar, result);
 
         return result;
-    }
-
-    private void BackToLoginPage()
-    {
-        _navigationManager.NavigateTo("/auth/login");
     }
 }
