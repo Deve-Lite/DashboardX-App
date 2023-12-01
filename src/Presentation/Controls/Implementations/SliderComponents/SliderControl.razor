@@ -62,10 +62,9 @@
         if (!await ConfirmationDialog())
             return;
 
-        var topic = Control!.GetTopic(Device!);
         var payload = Control!.Attributes!.PayloadTemplate!.Replace("$value", $"{current}");
 
-        await Client!.PublishAsync(topic, payload, Control!.QualityOfService);
+        await PublishMessage(payload!);
     }
 
     private double CurrentValueAsync(string value, bool isInitilizing = false)

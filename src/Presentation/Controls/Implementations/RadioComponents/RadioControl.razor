@@ -67,6 +67,6 @@
             return;
 
         var payload = Control!.Attributes!.Payloads!.First(x => x.Key == newName).Value;
-        await Client!.PublishAsync(Control!.GetTopic(Device!), payload!, Control!.QualityOfService);
+        await PublishMessage(payload!);
     }
 }
