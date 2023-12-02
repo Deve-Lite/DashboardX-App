@@ -392,8 +392,8 @@ public class Client : IClient, IAsyncDisposable
 
             if (!result.Succeeded)
             {
-                _logger.LogError("Failed when connecting to broker.");
-                return Result.Fail(message:_localizer["Failed when connecting to broker."]);
+                _logger.LogError("Failed to fetch credentials.");
+                return Result.Fail(message:_localizer["Failed to fetch credentials."]);
             }
 
             if (!string.IsNullOrEmpty(result.Data.Username) && !string.IsNullOrEmpty(result.Data.Password))
@@ -401,11 +401,20 @@ public class Client : IClient, IAsyncDisposable
 
             var response = await _mqttClient.ConnectAsync(optionsBuilder.Build());
 
-            //TODO: Check reponse
-
-            var status = await SubscribeToTopics();
+            if(response.ResultCode == MqttClientConnectResultCode.NotAuthorized)
+            {
+                _logger.LogError("Failed to authorize.");
+                return Result.Fail(message: _localizer["Failed to authorize."]);
+            }
+            else if (response.ResultCode != MqttClientConnectResultCode.Success)
+            {
+                _logger.LogError("Failed to connect to broker: {code}.", response.ResultCode);
+                return Result.Fail(message: _localizer["Failed to connect to broker."]);
+            }
 
             IsConnected = true;
+
+            var status = await SubscribeToTopics();
             RerenderPageOnMessageReceived?.Invoke();
 
             return status;
@@ -474,10 +483,7 @@ public class Client : IClient, IAsyncDisposable
             if (!IsConnected)
                 return;
 
-            //TODO: Improve with while loop
-
             _logger.LogWarning("Client disconnected. Reconnecting...", _broker.Id);
-            RerenderPageOnMessageReceived?.Invoke();
             await _mqttClient.ReconnectAsync();
             await SubscribeToTopics();
             RerenderPageOnMessageReceived?.Invoke();
