@@ -1,26 +1,26 @@
-﻿using Presentation.Application.Interfaces;
+﻿namespace Presentation.Clients;
 
-namespace Presentation.Clients;
-
-//TODO: Thinkof extending class with localizer
 public class ClientService : IClientService, ILogoutObserver
 {
     private readonly IFetchBrokerService _brokerService;
     private readonly IFetchDeviceService _deviceService;
     private readonly IFetchControlService _controlService;
     private readonly IClientManager _clientManager;
+    private readonly IUnusedDeviceService _unusedDeviceService;
     private readonly ILogger<ClientService> _logger;
 
     public ClientService(IFetchBrokerService brokerService,
                          IFetchDeviceService deviceService,
                          IFetchControlService controlService,
                          IClientManager clientManager,
+                         IUnusedDeviceService unusedDeviceService,
                          ILogger<ClientService> logger)
     {
         _brokerService = brokerService;
         _deviceService = deviceService;
         _clientManager = clientManager;
         _controlService = controlService;
+        _unusedDeviceService = unusedDeviceService;
         _logger = logger;
     }
 
@@ -88,6 +88,12 @@ public class ClientService : IClientService, ILogoutObserver
         }
 
         await RemoveUnusedClients(usedClients);
+
+        var unusedDevices = devicesResult.Data
+            .Where(x => string.IsNullOrEmpty(x.BrokerId))
+            .ToList();
+
+        _unusedDeviceService.UpdateUnusedDevices(unusedDevices);
 
         var clientsResult = _clientManager.GetClients();
 

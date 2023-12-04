@@ -7,8 +7,8 @@ namespace Core.Devices;
 public class FetchDeviceService : AuthorizedService, IFetchDeviceService
 {
     public FetchDeviceService(HttpClient httpClient, 
-                         ILogger<FetchDeviceService> logger,
-                               IAuthorizationManager authorizationManager)
+                              ILogger<FetchDeviceService> logger,
+                              IAuthorizationManager authorizationManager)
         : base(httpClient, logger, authorizationManager)
     {
     }

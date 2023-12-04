@@ -4,6 +4,7 @@
 @using Presentation.Devices.Shared;
 @inject IClientService _clientService
 @inject IStringLocalizer<DeviceListPage> _localizer
+@inject IUnusedDeviceService _unusedDeviceService
 
 @inherits BasePage
 
@@ -26,7 +27,7 @@
 
             @foreach(var client in Clients.Where(x => x.GetDevices().Any()))
             {
-                <MudItem xs="12" lg="6" Class="p-0 m-0">
+                <MudItem xs="12" lg="6" Class="p-2 m-0 psm-0">
 
                     <MudText Align="Align.Left" Typo="Typo.h5" Class="hide-overlapping-text">
                         @client.GetBroker().Name
@@ -46,6 +47,30 @@
                     </MudGrid>
                 </MudItem>
             }
+
+            @if(UnusedDevices.Count > 1)
+            {
+                <MudItem xs="12" Class="p-0 m-0">
+
+                    <MudText Align="Align.Left" Typo="Typo.h5" Class="hide-overlapping-text">
+                        @_localizer["Unused devices"]
+                    </MudText>
+
+                    <MudProgressLinear Size="Size.Small" Color="Color.Primary" Rounded="true" Value="100" />
+
+                    <MudGrid Class="p-0 pt-2 m-0 w-100">
+
+                        @foreach (var device in UnusedDevices)
+                        {
+                            <MudItem xs="12" sm="6" md="4" lg="3" xl="2" xxl="1" Class="p-1 m-0">
+                                <UnusedDeviceElement Device="@device" />
+                            </MudItem>
+                        }
+
+                    </MudGrid>
+                </MudItem>
+            }
+
         </MudGrid>
     </LoadedContent>
 </PageLoading>
@@ -53,6 +78,8 @@
 @code
 {
     private IList<IClient> Clients { get; set; } = new List<IClient>();
+
+    private IList<Device> UnusedDevices { get; set; } = new List<Device>();
 
     public DeviceListPage()
     {
@@ -66,12 +93,30 @@
     {
         await base.OnInitializedAsync();
 
+        _loadingService.SetRefreshAction(SilentRefreshPage);
         await _loadingService.InvokeAsync(LoadPage);
     }
 
     protected async Task RefreshPage()
     {
         await _loadingService.InvokeAsync(LoadPage);
+    }
+
+    protected async Task SilentRefreshPage()
+    {
+        var result = await _clientService.GetClientsWithDevices(false);
+
+        if (result.Succeeded)
+        {
+            Clients = result.Data;
+
+            foreach (var client in Clients)
+                client.SetOnMessageReceivedEventHandler(RerenderPage);
+
+            UnusedDevices = _unusedDeviceService.GetUnusedDevices();
+
+            LoadedSuccessfully = true;
+        }
     }
 
     protected async Task<IResult> LoadPage()
@@ -84,6 +129,8 @@
 
             foreach (var client in Clients)
                 client.SetOnMessageReceivedEventHandler(RerenderPage);
+            
+            UnusedDevices = _unusedDeviceService.GetUnusedDevices();
 
             LoadedSuccessfully = true;
         }

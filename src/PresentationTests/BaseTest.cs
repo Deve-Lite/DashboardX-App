@@ -1,6 +1,8 @@
 ﻿namespace PresentationTests;
 
 using Microsoft.Extensions.Logging;
+using Presentation.Devices;
+using Presentation.Devices.Interfaces;
 
 public class BaseTest
 {
@@ -9,6 +11,7 @@ public class BaseTest
     public IFetchControlService FetchControlService { get; private set; }
     public IClientService ClientService { get; private set; }
     public IClientManager ClientManager { get; private set; }
+    public IUnusedDeviceService UnusedDeviceService { get; private set; }
     public ILogger<ClientService> Logger { get; private set; }
 
     public BaseTest()
@@ -18,8 +21,9 @@ public class BaseTest
         FetchControlService = new FetchControlServiceMockup();
         ClientManager = new ClientManagerMockup();
         Logger = new Logger<ClientService>(new LoggerFactory());
+        UnusedDeviceService = new UnusedDeviceService();
 
-        ClientService = new ClientService(FetchBrokerService, FetchDeviceService, FetchControlService, ClientManager, Logger);
+        ClientService = new ClientService(FetchBrokerService, FetchDeviceService, FetchControlService, ClientManager, UnusedDeviceService, Logger);
     }
 
     public async Task Setup()
@@ -58,7 +62,7 @@ public class BaseTest
         FetchControlService = new FetchControlServiceMockup();
         ClientManager = new ClientManagerMockup();
         Logger = new Logger<ClientService>(new LoggerFactory());
-        ClientService = new ClientService(FetchBrokerService, FetchDeviceService, FetchControlService, ClientManager, Logger);
-
+        UnusedDeviceService = new UnusedDeviceService();
+        ClientService = new ClientService(FetchBrokerService, FetchDeviceService, FetchControlService, ClientManager, UnusedDeviceService, Logger);
     }
 }

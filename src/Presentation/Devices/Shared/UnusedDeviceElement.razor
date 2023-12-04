@@ -1,0 +1,57 @@
+﻿@using Presentation.Devices.Shared.DeviceStates
+@using Presentation.Utils;
+
+@inject IStringLocalizer<DeviceElement> _localizer
+@inject IUnusedDeviceService _unusedDeviceService
+
+<MudPaper Class="m-0 p-0 rounded-4 animate-simple" Elevation="1">
+    <MudGrid Class="m-0 p-0 w-100">
+        <MudItem xs="12" Class="m-0 p-0">
+            <MudPaper Elevation="2" Class="m-0 p-1 rounded-4">
+                <MudGrid Class="m-0 p-0 w-100">
+                    <MudItem xs="2" sm="3" Class="m-0 p-2 d-flex justify-content-center align-items-center">
+                        <MudPaper Elevation="5"
+                                  Class="m-0 p-1 rounded-5"
+                                  Style="@($"background-color: {GetBackgroundColor()};")">
+                            <MudIcon Class="list-icon"
+                                     Icon="@IconUtils.GetIcon(Device.Icon?.Name!)" />
+                        </MudPaper>
+                    </MudItem>
+
+                    <MudItem xs="10" sm="9" Class="m-0 p-2">
+                        <MudGrid Class="m-0 p-0 w-100">
+                            <MudItem xs="12" Class="m-0 p-0">
+                                <MudText Typo="Typo.h6" Class="hide-overlapping-text text-600">
+                                    @Device.Name
+                                </MudText>
+                            </MudItem>
+
+                            <MudItem Class="m-0 p-0">
+                                <MudIconButton Class="z-10"
+                                               Icon="@IconUtils.DefaultEditIcon"
+                                               Variant="Variant.Filled"
+                                               OnClick="() => DevicePagesUtils.UpdateDevice(Device, _dialogService)" />
+                            </MudItem>
+
+                            <MudItem Class="m-0 p-0">
+                                <MudIconButton Class="z-10"
+                                               Icon="@IconUtils.DefaultRemoveIcon"
+                                               Variant="Variant.Filled"
+                                               OnClick="() => DevicePagesUtils.RemoveDevice(Device, _dialogService, _navigationManager)" />
+
+                            </MudItem>
+                        </MudGrid>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@code
+{
+    [Parameter]
+    public Device Device { get; set; } = default!;
+
+    public string GetBackgroundColor() => string.IsNullOrEmpty(Device.Icon.BackgroundHex) ? ThemeColors.ColorPrimary : Device.Icon.BackgroundHex;
+}
