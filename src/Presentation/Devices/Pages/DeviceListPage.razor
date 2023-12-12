@@ -2,6 +2,7 @@
 @using Presentation.Utils;
 @using Presentation.Controls.Implementations;
 @using Presentation.Devices.Shared;
+
 @inject IClientService _clientService
 @inject IStringLocalizer<DeviceListPage> _localizer
 @inject IUnusedDeviceService _unusedDeviceService
@@ -27,7 +28,7 @@
 
             @foreach(var client in Clients.Where(x => x.GetDevices().Any()))
             {
-                <MudItem xs="12" lg="6" Class="p-2 m-0 psm-0">
+                <MudItem xs="12" lg="6" Class="device-list-padding m-0 psm-0">
 
                     <MudText Align="Align.Left" Typo="Typo.h5" Class="hide-overlapping-text">
                         @client.GetBroker().Name

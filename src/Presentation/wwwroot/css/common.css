@@ -142,7 +142,18 @@
     overflow: scroll;
 }
 
+.device-list-padding {
+    padding: 0.25rem !important;
+    padding-bottom: 0.5rem !important;
+}
+
 @media screen and (max-width: 1280px) {
+
+    .device-list-padding {
+        padding: 0rem !important;
+        padding-bottom: 0.5rem !important;
+    }
+
     .ellipsis {
         width: 300px;
     }

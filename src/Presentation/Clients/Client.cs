@@ -258,7 +258,7 @@ public class Client : IClient, IAsyncDisposable
 
             return Result.Success();
         }
-        catch (ArgumentNullException e)
+        catch (InvalidOperationException e)
         {
             _logger.LogError("Failed to find device: {error}.", e.GetType());
             return AddDevice(device);

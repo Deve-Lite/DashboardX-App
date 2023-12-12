@@ -172,7 +172,9 @@
         if (string.IsNullOrEmpty(Model.Id))
             result = await _deviceService.CreateDevice(Model);
         else
+        {
             result = await _deviceService.UpdateDevice(Model);
+        }
 
         var success = RequestHelpers.InvokeAfterRequest(_snackbar, result, OnAdded);
 

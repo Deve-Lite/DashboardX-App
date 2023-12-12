@@ -1,14 +1,18 @@
-﻿namespace Presentation.Devices;
+﻿using Common.Devices.Models;
+
+namespace Presentation.Devices;
 
 public class DeviceService : IDeviceService
 {
     private readonly IFetchDeviceService _deviceService;
     private readonly IClientManager _clientManager;
+    private readonly IUnusedDeviceService _unusedDeviceService;
 
-    public DeviceService(IFetchDeviceService deviceService, IClientManager clientManager)
+    public DeviceService(IFetchDeviceService deviceService, IClientManager clientManager, IUnusedDeviceService unusedDeviceService)
     {
         _clientManager = clientManager;
         _deviceService = deviceService;
+        _unusedDeviceService = unusedDeviceService;
     }
 
     public async Task<IResult> RemoveDevice(string clientId, string deviceId)
@@ -27,6 +31,9 @@ public class DeviceService : IDeviceService
 
         if (removeResult.OperationState != OperationState.Success)
             return removeResult;
+
+        if(_unusedDeviceService.ContainsDevice(deviceId))
+            _unusedDeviceService.RemoveDevice(deviceId);
 
         return Result.Success(result.StatusCode);
     }
@@ -60,8 +67,13 @@ public class DeviceService : IDeviceService
         if (!clientResult.Succeeded)
             return Result.Fail();
 
+        //TODO: If broker is changing - remove from old broker and add to new!
+
         var updateResult = await clientResult.Data.UpdateDevice(result.Data);
-        
+
+        if (_unusedDeviceService.ContainsDevice(device.Id))
+            _unusedDeviceService.RemoveDevice(device.Id);
+
         return updateResult;
     }
 }

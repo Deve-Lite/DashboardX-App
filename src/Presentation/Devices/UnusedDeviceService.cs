@@ -14,6 +14,11 @@ public class UnusedDeviceService : IUnusedDeviceService
         _unusedDevices.RemoveAll(x => x.Id == deviceId);
     }
 
+    public bool ContainsDevice(string deviceId)
+    {
+        return _unusedDevices.Any(x => x.Id == deviceId);
+    }
+
     public void UpdateUnusedDevices(List<Device> devices)
     {
         try
