@@ -1,4 +1,6 @@
-﻿namespace Presentation.Clients;
+﻿using Common.Devices.Models;
+
+namespace Presentation.Clients;
 
 public class ClientService : IClientService, ILogoutObserver
 {
@@ -36,6 +38,15 @@ public class ClientService : IClientService, ILogoutObserver
 
         clientsResult.Data.Clear();
     }
+
+    public async Task<IResult<IClient>> GetClientWithDevice(string deviceId, bool fetch = true)
+    {
+        if (!fetch)
+            return _clientManager.GetClientWithDevice(deviceId);
+
+        throw new NotImplementedException("Cannot use this method in no fetch mode");
+    }
+
     public async Task<IResult<IList<IClient>>> GetClientsWithDevices(bool fetch = true)
     {
         if (!fetch)
@@ -221,7 +232,7 @@ public class ClientService : IClientService, ILogoutObserver
             }
             else
             {
-                var addResult = await client.AddDevices(device, result.Data);
+                var addResult = await client.AddDevice(device, result.Data);
                 //TODO: Handle addResult
             }
 

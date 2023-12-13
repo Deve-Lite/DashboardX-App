@@ -183,6 +183,7 @@ public class Client : IClient, IAsyncDisposable
     public IList<Control> GetControls(string deviceId) => _controls.Where(x => x.DeviceId == deviceId)
                                                                    .ToList();
     public IList<Control> GetControls() => _controls;
+
     public IList<Device> GetDevices() => _devices;
     public IResult AddDevice(Device device)
     {
@@ -192,7 +193,7 @@ public class Client : IClient, IAsyncDisposable
 
         return Result.Success();
     }
-    public async Task<IResult> AddDevices(Device device, List<Control> controls)
+    public async Task<IResult> AddDevice(Device device, IList<Control> controls)
     {
         _devices.Add(device);
 
@@ -269,7 +270,7 @@ public class Client : IClient, IAsyncDisposable
             return Result.Fail(message: _localizer["Unknown error occured."]);
         }
     }
-    public async Task<IResult> UpdateDevice(Device device, List<Control> controls)
+    public async Task<IResult> UpdateDevice(Device device, IList<Control> controls)
     {
         try
         {

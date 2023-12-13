@@ -1,6 +1,4 @@
-﻿using Common.Devices.Models;
-
-namespace Presentation.Devices;
+﻿namespace Presentation.Devices;
 
 public class DeviceService : IDeviceService
 {
@@ -22,18 +20,21 @@ public class DeviceService : IDeviceService
         if (!result.Succeeded)
             return result;
 
+        if (_unusedDeviceService.ContainsDevice(deviceId))
+        {
+            _unusedDeviceService.RemoveDevice(deviceId);
+            return result;
+        }
+
         var clientResult = _clientManager.GetClient(clientId);
 
-        if(!clientResult.Succeeded)
+        if (!clientResult.Succeeded)
             return Result.Warning();
 
         var removeResult = await clientResult.Data.RemoveDevice(deviceId);
 
         if (removeResult.OperationState != OperationState.Success)
             return removeResult;
-
-        if(_unusedDeviceService.ContainsDevice(deviceId))
-            _unusedDeviceService.RemoveDevice(deviceId);
 
         return Result.Success(result.StatusCode);
     }
@@ -55,25 +56,49 @@ public class DeviceService : IDeviceService
         return addResult;
     }
 
-    public async Task<IResult> UpdateDevice(DeviceDTO device)
+    public async Task<IResult> UpdateDevice(DeviceDTO device, string oldClientId)
     {
         var result = await _deviceService.UpdateDevice(device);
 
         if (!result.Succeeded)
             return Result.Fail(result.Messages, result.StatusCode);
 
-        var clientResult = _clientManager.GetClient(device.BrokerId);
+        if (_unusedDeviceService.ContainsDevice(device.Id))
+            return UpdateUnusedDevice(result.Data);
 
-        if (!clientResult.Succeeded)
+        if (oldClientId != device.BrokerId)
+            return await TransferDeviceFromClient(result.Data, oldClientId);
+
+        var currentClient = _clientManager.GetClient(device.BrokerId);
+
+        if (!currentClient.Succeeded)
+            return currentClient;
+
+        return await currentClient.Data.UpdateDevice(result.Data);
+    }
+
+    private IResult UpdateUnusedDevice(Device device)
+    {
+        var currentClient = _clientManager.GetClient(device.BrokerId);
+
+        if (!currentClient.Succeeded)
+            return currentClient;
+
+        return currentClient.Data.AddDevice(device);
+    } 
+
+    private async Task<IResult> TransferDeviceFromClient(Device device, string oldClientId)
+    {
+        var currentClient = _clientManager.GetClient(device.BrokerId);
+        var oldClient = _clientManager.GetClient(oldClientId);
+
+        if (!currentClient.Succeeded || !oldClient.Succeeded)
             return Result.Fail();
 
-        //TODO: If broker is changing - remove from old broker and add to new!
+        var deviceControls = oldClient.Data.GetControls(device.Id).ToList();
 
-        var updateResult = await clientResult.Data.UpdateDevice(result.Data);
+        await oldClient.Data.RemoveDevice(device.Id);
 
-        if (_unusedDeviceService.ContainsDevice(device.Id))
-            _unusedDeviceService.RemoveDevice(device.Id);
-
-        return updateResult;
+        return await currentClient.Data.AddDevice(device, deviceControls);
     }
 }

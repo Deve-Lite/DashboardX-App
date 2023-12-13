@@ -148,6 +148,7 @@
     {
         await base.OnInitializedAsync();
 
+        _loadingService.SetRefreshAction(SilentRefreshPage);
         await _loadingService.InvokeAsync(LoadPage);
     }
 
@@ -159,6 +160,34 @@
     protected async Task<IResult> LoadPage()
     {
         var result = await _clientService.GetClient(ClientId);
+
+        if (result.Succeeded)
+        {
+            Client = result.Data;
+            Client.SetOnMessageReceivedEventHandler(RerenderPage);
+            LoadedSuccessfully = true;
+            Device = Client.GetDevices().FirstOrDefault(x => x.Id == DeviceId)!;
+
+            BreadcrumbItems = new()
+            {
+                new BreadcrumbItem("Brokers", href: "/brokers"),
+                new BreadcrumbItem($"{Client!.GetBroker().Name}", href: $"/brokers/{Client!.GetBroker().Id}"),
+                new BreadcrumbItem($"{Device.Name}", href: $"devices/{Device.Id}/client/{Client!.GetBroker().Id}", true),
+            };
+        }
+        else
+        {
+            LoadedSuccessfully = false;
+            if (result.ShowToast)
+                _snackbar.Add(result.Messages[0], result.Severity);
+        }
+
+        return result;
+    }
+
+    protected async Task<IResult> SilentRefreshPage()
+    {
+        var result = await _clientService.GetClientWithDevice(DeviceId, false);
 
         if (result.Succeeded)
         {

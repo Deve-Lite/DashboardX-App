@@ -19,14 +19,14 @@ public class UnusedDeviceService : IUnusedDeviceService
         return _unusedDevices.Any(x => x.Id == deviceId);
     }
 
-    public void UpdateUnusedDevices(List<Device> devices)
+    public void UpdateUnusedDevices(IList<Device> devices)
     {
         try
         {
             var pairs = _unusedDevices.Select(x => (x, devices.FirstOrDefault(y => y.Id == x.Id)))
-    .Where(x => x.Item2 != null)
-    .Select(x => x.Item2!)
-    .ToDictionary(x => x.Id);
+                .Where(x => x.Item2 != null)
+                .Select(x => x.Item2!)
+                .ToDictionary(x => x.Id);
 
             foreach (var device in devices)
                 if (!pairs.ContainsKey(device.Id))
