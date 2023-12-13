@@ -2,6 +2,7 @@
 
 public interface IClientManager
 {
+    IResult<IClient> GetClientWithDevice(string deviceId);
     IResult<IClient> GetClient(string clientId);
     IResult<IList<IClient>> GetClients();
     IResult<IClient> AddClient(Broker broker);

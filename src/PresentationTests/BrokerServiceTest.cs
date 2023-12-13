@@ -1,5 +1,6 @@
 ﻿using Presentation.Brokers;
 using Presentation.Brokers.Interfaces;
+using Presentation.Devices;
 
 namespace PresentationTests;
 
@@ -9,7 +10,7 @@ public class BrokerServiceTest : BaseTest, IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        BrokerService = new BrokerService(FetchBrokerService, ClientManager);
+        BrokerService = new BrokerService(FetchBrokerService, ClientManager, new UnusedDeviceService());
         await Setup();
     }
 

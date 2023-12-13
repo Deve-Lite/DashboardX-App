@@ -48,7 +48,7 @@ public class ClientMockup : IClient
         return Result.Success();
     }
 
-    public Task<IResult> AddDevices(Device device, List<Control> controls)
+    public Task<IResult> AddDevice(Device device, IList<Control> controls)
     {
         Devices.Add(device);
         Controls.AddRange(controls);
@@ -135,8 +135,8 @@ public class ClientMockup : IClient
         return Task.FromResult((IResult) Result.Success());
     }
 
-    public Task<IResult> UpdateDevice(Device device, List<Control> controls)
-    {
+    public Task<IResult> UpdateDevice(Device device, IList<Control> controls)
+    { 
         UpdateDevice(device);
 
         foreach(var control in controls)

@@ -44,6 +44,15 @@ public class ClientManager : IClientManager
 
         return Result<IClient>.Success(client);
     }
+    public IResult<IClient> GetClientWithDevice(string deviceId) 
+    {
+        var client = _clients.FirstOrDefault(x => x.GetDevices().Any(x => x.Id == deviceId));
+
+        if (client is null)
+            return Result<IClient>.Fail();
+
+        return Result<IClient>.Success(client);
+    }
     public IResult<IClient> GetClient(string clientId)
     {
         if(_clients.Any(x => x.Id == clientId))

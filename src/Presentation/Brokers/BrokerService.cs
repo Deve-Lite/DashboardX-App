@@ -5,10 +5,13 @@ public class BrokerService : IBrokerService
     private readonly IFetchBrokerService _brokerService;
     private readonly IClientManager _clientManager;
 
-    public BrokerService(IFetchBrokerService brokerService, IClientManager clientManager)
+    private readonly IUnusedDeviceService _unusedDeviceService;
+
+    public BrokerService(IFetchBrokerService brokerService, IClientManager clientManager, IUnusedDeviceService unusedDeviceService)
     {
         _brokerService = brokerService;
         _clientManager = clientManager;
+        _unusedDeviceService=unusedDeviceService;
     }
 
     public async Task<IResult> UpdateBroker(BrokerDTO broker, BrokerCredentialsDTO brokerCredentialsDTO)
@@ -51,8 +54,15 @@ public class BrokerService : IBrokerService
         if (!result.Succeeded)
             return Result.Fail(result.Messages, result.StatusCode);
 
-        var deleteResult = await _clientManager.RemoveClient(brokerId);
+        var clientResult = _clientManager.GetClient(brokerId);
 
-        return deleteResult;
+        if (!clientResult.Succeeded)
+            return Result.Fail();
+
+        var devices = clientResult.Data.GetDevices();
+
+        _unusedDeviceService.UpdateUnusedDevices(devices);
+
+        return await _clientManager.RemoveClient(brokerId);
     }
 }

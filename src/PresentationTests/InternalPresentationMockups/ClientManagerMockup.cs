@@ -26,6 +26,16 @@ internal class ClientManagerMockup : IClientManager
         return Result<IList<IClient>>.Success(_clients);
     }
 
+    public IResult<IClient> GetClientWithDevice(string deviceId)
+    {
+        var client = _clients.First(x => x.GetDevices().Any(x => x.Id == deviceId));
+
+        if (client is null)
+            return Result<IClient>.Fail();
+
+        return Result<IClient>.Success(client);
+    }
+
     public Task<IResult> RemoveClient(string clientId)
     {
         _clients.RemoveAll(c => c.Id == clientId);
