@@ -29,10 +29,12 @@
                                 <MudItem xs="12"
                                          Class="m-0 p-0"
                                          Style="z-index:10;"
-                                @onclick="HandleExpand">
-                                    <MudText Typo="Typo.body2" Color="Color.Tertiary">
-                                        @UnderNameText
-                                    </MudText>
+                                         @onclick="HandleExpand">
+                                    <MudButton Class="p-0 m-0">
+                                        <MudText Typo="Typo.body2" Color="Color.Tertiary">
+                                            @UnderNameText
+                                        </MudText>
+                                    </MudButton>
                                 </MudItem>
                             </MudElement>
                         </MudGrid>
