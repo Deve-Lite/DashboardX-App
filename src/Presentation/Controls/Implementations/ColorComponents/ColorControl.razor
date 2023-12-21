@@ -81,11 +81,10 @@
         if (!await ConfirmationDialog())
             return;
 
-        var topic = Control!.GetTopic(Device!);
         var formattedValue = FormatColor(hexColor);
         var payload = Control!.Attributes!.PayloadTemplate!.Replace("$value", $"{formattedValue}");
 
-        await Client!.PublishAsync(topic, payload, Control!.QualityOfService);
+        await PublishMessage(payload);
     }
 
     public string FormatColor(string hex) => Control!.Attributes!.StringColorFormat! switch

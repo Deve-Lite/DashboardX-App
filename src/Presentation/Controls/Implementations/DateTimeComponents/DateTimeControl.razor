@@ -43,10 +43,17 @@
         if (!await ConfirmationDialog())
             return;
 
-        var topic = Control!.GetTopic(Device!);
         var payload = Control!.Attributes!.PayloadTemplate!
-        .Replace("$value", $"{(Control.Attributes.SendAsTicks.HasValue && Control.Attributes.SendAsTicks.Value ? current.Ticks : current)}");
+                      .Replace("$value", FormatTime(Control, current));
 
-        await Client!.PublishAsync(topic, payload, Control!.QualityOfService);
+        await PublishMessage(payload);
+    }
+
+    public static string FormatTime(Control control, DateTime current)
+    {
+        if (control!.Attributes.SendAsTicks.HasValue && control!.Attributes.SendAsTicks.Value)
+            return $"{current.Ticks}";
+
+        return $"{current}";
     }
 }

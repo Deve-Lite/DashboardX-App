@@ -1,5 +1,4 @@
-﻿using Core.App.Interfaces;
-using MQTTnet.Adapter;
+﻿using MQTTnet.Adapter;
 using MQTTnet.Client;
 using MQTTnet.Exceptions;
 using MQTTnet.Protocol;
@@ -20,7 +19,7 @@ public class Client : IClient, IAsyncDisposable
     private readonly IMqttClient _mqttClient;
     private readonly IFetchBrokerService _brokerService;
     private readonly ILogger<Client> _logger;
-    private readonly ISnackbar _snackbar;
+    private readonly IStringLocalizer<Client> _localizer;
     private readonly IList<Device> _devices;
     private readonly IList<Control> _controls;
     private readonly Broker _broker;
@@ -35,14 +34,14 @@ public class Client : IClient, IAsyncDisposable
                   IMqttClient mqttClient,
                   IFetchBrokerService brokerService,
                   ILogger<Client> clientLogger,
-                  ISnackbar snackbar,
+                  IStringLocalizer<Client> localizer,
                   Broker broker)
     {
         _broker = broker;
         _mqttClient = mqttClient;
         _brokerService = brokerService;
+        _localizer = localizer;
         TopicService = topic;
-        _snackbar = snackbar;
         _logger = clientLogger;
 
         InitializeCallbacks();
@@ -92,20 +91,22 @@ public class Client : IClient, IAsyncDisposable
                 var status = result.Items.First().ResultCode;
 
                 if (!ValidMqttResultCodes.Any(x => x == status))
-                    return Result.Warning();
+                    return Result.Warning(message: _localizer["Failed to subscribe to topic."]);
 
                 control.IsSubscribed = true;
             }
 
             return Result.Success();
         }
-        catch (ArgumentNullException)
+        catch (ArgumentNullException e)
         {
-            return Result.Fail();
+            _logger.LogError("Failed to find device for {client}", _broker.Name);
+            return Result.Fail(message: _localizer["Couldn't find device for control."]);
         }
-        catch
+        catch (Exception e)
         {
-            return Result.Fail();
+            _logger.LogError("Unknown error occured: {error}.", e.GetType());
+            return Result.Fail(message: _localizer["Unknown error occured."]);
         }
     }
     public async Task<IResult> UpdateControl(Control control)
@@ -137,13 +138,15 @@ public class Client : IClient, IAsyncDisposable
 
             return Result.Success();
         }
-        catch (ArgumentNullException)
+        catch (ArgumentNullException e)
         {
-            return Result.Fail();
+            _logger.LogError("Failed to find device for {client}", _broker.Name);
+            return Result.Fail(message: _localizer["Couldn't find device for control."]);
         }
-        catch
+        catch (Exception e)
         {
-            return Result.Fail();
+            _logger.LogError("Unknown error occured: {error}.", e.GetType());
+            return Result.Fail(message: _localizer["Unknown error occured."]);
         }
     }
     public async Task<IResult> RemoveControl(string controlId)
@@ -161,22 +164,26 @@ public class Client : IClient, IAsyncDisposable
 
             return Result.Success();
         }
-        catch (ArgumentNullException)
+        catch (ArgumentNullException e)
         {
+            _logger.LogWarning("Failed to find control for device: {error}.", e.GetType());
             return Result.Warning();
         }
-        catch (MqttCommunicationException)
+        catch (MqttCommunicationException e)
         {
-            //Failed to unsubscribe
+            _logger.LogWarning("Failed to disconnect control: {error}.", e.GetType());
             return Result.Warning();
         }
-        catch
+        catch (Exception e)
         {
-            return Result.Fail();
+            _logger.LogError("Unknown error occured: {error}.", e.GetType());
+            return Result.Fail(message: _localizer["Unknown error occured."]);
         }
     }
-    public IList<Control> GetControls(string deviceId) => _controls.Where(x => x.DeviceId == deviceId).ToList();
+    public IList<Control> GetControls(string deviceId) => _controls.Where(x => x.DeviceId == deviceId)
+                                                                   .ToList();
     public IList<Control> GetControls() => _controls;
+
     public IList<Device> GetDevices() => _devices;
     public IResult AddDevice(Device device)
     {
@@ -186,7 +193,7 @@ public class Client : IClient, IAsyncDisposable
 
         return Result.Success();
     }
-    public async Task<IResult> AddDevices(Device device, List<Control> controls)
+    public async Task<IResult> AddDevice(Device device, IList<Control> controls)
     {
         _devices.Add(device);
 
@@ -196,7 +203,8 @@ public class Client : IClient, IAsyncDisposable
         {
             var result = await AddControl(control);
 
-            if (status.OperationState ==  OperationState.Success && result.OperationState == OperationState.Warning)
+            if (status.OperationState ==  OperationState.Success && 
+                result.OperationState == OperationState.Warning)
                 status = Result.Warning();
 
             if (result.OperationState == OperationState.Error)
@@ -217,7 +225,8 @@ public class Client : IClient, IAsyncDisposable
             if (currentDevice.EditedAt == device.EditedAt)
                 return Result.Success();
 
-            var controls = _controls.Where(x => x.DeviceId == device.Id)
+            var controls = _controls
+                .Where(x => x.DeviceId == device.Id)
                 .ToList();
 
             if(currentDevice.BaseDevicePath != device.BaseDevicePath)
@@ -250,17 +259,18 @@ public class Client : IClient, IAsyncDisposable
 
             return Result.Success();
         }
-        catch (ArgumentNullException)
+        catch (InvalidOperationException e)
         {
+            _logger.LogError("Failed to find device: {error}.", e.GetType());
             return AddDevice(device);
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            //TODO: Locliazer
-            return Result.Fail(message: $"Unknown exception occured {nameof(ex)}");
+            _logger.LogError("Unknown error occured: {error}.", e.GetType());
+            return Result.Fail(message: _localizer["Unknown error occured."]);
         }
     }
-    public async Task<IResult> UpdateDevice(Device device, List<Control> controls)
+    public async Task<IResult> UpdateDevice(Device device, IList<Control> controls)
     {
         try
         {
@@ -286,13 +296,15 @@ public class Client : IClient, IAsyncDisposable
 
             return status;
         }
-        catch (ArgumentNullException)
+        catch (ArgumentNullException e)
         {
+            _logger.LogError("Failed to find device: {error}.", e.GetType());
             return AddDevice(device);
         }
-        catch
+        catch (Exception e)
         {
-            return Result.Fail();
+            _logger.LogError("Unknown error occured: {error}.", e.GetType());
+            return Result.Fail(message: _localizer["Unknown error occured."]);
         }
     }
     public async Task<IResult> RemoveDevice(string deviceId)
@@ -310,29 +322,30 @@ public class Client : IClient, IAsyncDisposable
 
             return Result.Success();
         }
-        catch (ArgumentNullException)
+        catch (ArgumentNullException e)
         {
+            _logger.LogWarning("Failed to find device: {error}.", e.GetType());
             return Result.Warning();
         }
-        catch
+        catch (Exception e)
         {
-            return Result.Fail();
+            _logger.LogError("Unknown error occured: {error}.", e.GetType());
+            return Result.Fail(message: _localizer["Unknown error occured."]);
         }
     }
     public bool HasDevice(string deviceId) => _devices.Any(x => x.Id == deviceId);
-   
-    public async Task DisconnectAsync()
-    {
-        IsConnected = false;
-        RerenderPageOnMessageReceived?.Invoke();
-        await _mqttClient.DisconnectAsync();
-    }
+
     public async Task<IResult> PublishAsync(string topic, string payload, MqttQualityOfServiceLevel quality)
     {
         try
         {
             if (!_mqttClient.IsConnected)
-                await ConnectAsync();
+            {
+                var connectionResult = await ConnectAsync();
+
+                if (!connectionResult.Succeeded)
+                    return connectionResult;
+            }
 
             var mqttMessage = new MqttApplicationMessageBuilder()
                    .WithTopic(topic)
@@ -343,25 +356,34 @@ public class Client : IClient, IAsyncDisposable
             var mqttResult = await _mqttClient.PublishAsync(mqttMessage);
 
             if (mqttResult.ReasonCode != MqttClientPublishReasonCode.Success)
-                return Result.Fail();
+            {
+                _logger.LogError("Failed to publish payload.");
+                return Result.Fail(message: _localizer["Failed to publish data."]);
+            }
 
             return Result.Success();
         }
         catch (Exception e)
         {
-            _logger.LogError("Failed to send request", e.Message);
-
-            return Result.Fail();
+            _logger.LogError("Publish operation failed due to {error}.\n{message}", e.GetType(), e.Message);
+            return Result.Fail(message: _localizer["Unknown error when publishing data."]);
         }
+    }
+    public async Task DisconnectAsync()
+    {
+        IsConnected = false;
+        RerenderPageOnMessageReceived?.Invoke();
+        await _mqttClient.DisconnectAsync();
     }
     public async Task<IResult> ConnectAsync()
     {
-        //TODO: Refactor
         try
         {
             if (!_broker.SSL)
-                return Result.Fail();
-
+            {
+                _logger.LogError("You cannot connect to broker without secure connection.");
+                return Result.Fail(message: _localizer["You cannot connect to broker without secure connection."]);
+            }
             var optionsBuilder = new MqttClientOptionsBuilder()
                 .WithClientId(_broker.ClientId)
                 .WithWebSocketServer($"wss://{_broker.Server}:{_broker.Port}/mqtt")
@@ -369,42 +391,46 @@ public class Client : IClient, IAsyncDisposable
 
             var result = await _brokerService.GetBrokerCredentials(_broker.Id);
 
-            if (result.Succeeded && !string.IsNullOrEmpty(result.Data.Username) && !string.IsNullOrEmpty(result.Data.Password))
+            if (!result.Succeeded)
+            {
+                _logger.LogError("Failed to fetch credentials.");
+                return Result.Fail(message:_localizer["Failed to fetch credentials."]);
+            }
+
+            if (!string.IsNullOrEmpty(result.Data.Username) && !string.IsNullOrEmpty(result.Data.Password))
                 optionsBuilder = optionsBuilder.WithCredentials(result.Data.Username, result.Data.Password);
 
             var response = await _mqttClient.ConnectAsync(optionsBuilder.Build());
 
-            var status = Result.Success();
-
-            foreach (var control in _controls)
+            if(response.ResultCode == MqttClientConnectResultCode.NotAuthorized)
             {
-                if (!control.ShouldBeSubscribed())
-                    continue;
-
-                var device = _devices.First(x => x.Id == control.DeviceId);
-                var subResult = await _mqttClient.SubscribeAsync(control.GetTopic(device), control.QualityOfService);
-
-                if(!ValidMqttResultCodes.Any(x => x == subResult.Items.First().ResultCode))
-                    status = Result.Warning();
+                _logger.LogError("Failed to authorize.");
+                return Result.Fail(message: _localizer["Failed to authorize."]);
+            }
+            else if (response.ResultCode != MqttClientConnectResultCode.Success)
+            {
+                _logger.LogError("Failed to connect to broker: {code}.", response.ResultCode);
+                return Result.Fail(message: _localizer["Failed to connect to broker."]);
             }
 
             IsConnected = true;
+
+            var status = await SubscribeToTopics();
             RerenderPageOnMessageReceived?.Invoke();
 
             return status;
         }
         catch (MqttConnectingFailedException cex)
         {
-            _snackbar.Add("Failed when authenticating to broker.", Severity.Error);
-            _logger.LogError("Failed to authenticate to broker.", cex.Message);
             IsConnected = false;
+            _logger.LogError("Failed to authenticate to broker.", cex.Message);
             return Result.Fail(message: "Failed to authenticate to broker.");
         }
         catch (Exception e)
         {
-            _snackbar.Add("Failed when connecting to broker.", Severity.Error);
-            _logger.LogError("Failed to connect to broker.", e.Message);
+
             IsConnected = false;
+            _logger.LogError("Failed to connect to broker.", e.Message);
             return Result.Fail(message: "Failed to connect to broker.");
         }
     }
@@ -421,6 +447,27 @@ public class Client : IClient, IAsyncDisposable
         _mqttClient.Dispose();
     }
 
+    private async Task<IResult> SubscribeToTopics()
+    {
+        var status = Result.Success();
+
+        foreach (var control in _controls)
+        {
+            if (!control.ShouldBeSubscribed())
+                continue;
+
+            var device = _devices.First(x => x.Id == control.DeviceId);
+            var subResult = await _mqttClient.SubscribeAsync(control.GetTopic(device), control.QualityOfService);
+
+            if (!ValidMqttResultCodes.Any(x => x == subResult.Items.First().ResultCode))
+                status = Result.Warning(message: _localizer["Failed to subscribe some topics."]);
+            else
+                control.IsSubscribed = true;
+        }
+
+        return status;
+    }
+
     private void InitializeCallbacks()
     {
         _mqttClient.ApplicationMessageReceivedAsync += async (e) =>
@@ -428,7 +475,7 @@ public class Client : IClient, IAsyncDisposable
             var topic = e.ApplicationMessage.Topic;
             var message = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
             await TopicService.UpdateMessageOnTopic(_broker.Id, topic, message);
-            _logger.LogInformation("Message received. {topic} {message}", topic, message);
+            _logger.LogInformation("Message received: {topic}\nMessage: {message}", topic, message);
             RerenderPageOnMessageReceived?.Invoke();
         };
 
@@ -438,8 +485,8 @@ public class Client : IClient, IAsyncDisposable
                 return;
 
             _logger.LogWarning("Client disconnected. Reconnecting...", _broker.Id);
-            RerenderPageOnMessageReceived?.Invoke();
             await _mqttClient.ReconnectAsync();
+            await SubscribeToTopics();
             RerenderPageOnMessageReceived?.Invoke();
             _logger.LogWarning("Client reconnected.", _broker.Id);
         };

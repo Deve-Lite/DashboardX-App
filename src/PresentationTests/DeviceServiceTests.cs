@@ -9,7 +9,7 @@ public class DeviceServiceTests : BaseTest, IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        DeviceService = new DeviceService(FetchDeviceService, ClientManager);
+        DeviceService = new DeviceService(FetchDeviceService, ClientManager, new UnusedDeviceService());
         await Setup();
     }
 
@@ -65,7 +65,7 @@ public class DeviceServiceTests : BaseTest, IAsyncLifetime
             Placing = "NewPlacing"
         };
 
-        var result = await DeviceService!.UpdateDevice(updatedDevice);
+        var result = await DeviceService!.UpdateDevice(updatedDevice, updatedDevice.BrokerId);
 
         Assert.NotNull(result);
         Assert.True(result.Succeeded);

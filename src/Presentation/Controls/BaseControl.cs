@@ -9,6 +9,8 @@ public partial class BaseControl : ComponentBase
     protected IStringLocalizer<BaseControl> BaseLocalizer { get; set; } = default!;
     [Inject]
     protected IDialogService? DialogService { get; set; }
+    [Inject]
+    protected ISnackbar? SnackbarService { get; set; }
 
     [Parameter]
     public Control? Control { get; set; }
@@ -82,4 +84,11 @@ public partial class BaseControl : ComponentBase
 
     public async Task<bool> ConfirmationDialog() => await ConfirmationDialog(BaseLocalizer!["Action Requires Confirmation"], BaseLocalizer!["You are required to confirm before sending data."]);
 
+    public async Task PublishMessage(string payload)
+    {
+        var result = await Client!.PublishAsync(Control!.GetTopic(Device!), payload, Control!.QualityOfService);
+
+        if (!result.Succeeded && result.ShowToast)
+            SnackbarService!.Add(result.Messages[0], Severity.Error);
+    }
 }

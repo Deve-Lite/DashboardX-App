@@ -5,13 +5,13 @@ public class ClientManager : IClientManager
     private readonly MqttFactory _factory;
     private readonly IFetchBrokerService _brokerService;
     private readonly ILocalStorageService _localStorage;
-    private readonly ISnackbar _snackbar;
+    private readonly IStringLocalizer<Client> _localizer;
     private readonly ILogger<Client> _clientLogger;
     private readonly IList<IClient> _clients;
 
     public ClientManager(IFetchBrokerService brokerService,
                          ILocalStorageService storage,
-                         ISnackbar snackbar,
+                         IStringLocalizer<Client> localizer,
                          ILogger<Client> clientLogger,
                          MqttFactory factory)
     {
@@ -19,8 +19,7 @@ public class ClientManager : IClientManager
         _clientLogger = clientLogger;
         _brokerService = brokerService;
         _localStorage = storage;
-        _snackbar = snackbar;
-
+        _localizer = localizer;
         _clients = new List<IClient>();
     }
 
@@ -28,7 +27,7 @@ public class ClientManager : IClientManager
     {
         var topicService = new TopicService(_localStorage);
         var mqttClient = _factory.CreateMqttClient();
-        var client = new Client(topicService, mqttClient, _brokerService, _clientLogger, _snackbar, broker);
+        var client = new Client(topicService, mqttClient, _brokerService, _clientLogger, _localizer, broker);
 
         _clients.Add(client);
 
@@ -42,6 +41,15 @@ public class ClientManager : IClientManager
         var client = _clients.First(x => x.Id == broker.Id);
         
         await client.UpdateBroker(broker);
+
+        return Result<IClient>.Success(client);
+    }
+    public IResult<IClient> GetClientWithDevice(string deviceId) 
+    {
+        var client = _clients.FirstOrDefault(x => x.GetDevices().Any(x => x.Id == deviceId));
+
+        if (client is null)
+            return Result<IClient>.Fail();
 
         return Result<IClient>.Success(client);
     }

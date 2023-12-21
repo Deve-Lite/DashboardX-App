@@ -117,15 +117,14 @@
     [Parameter]
     public DeviceDTO Model { get; set; } = new();
 
-    [Parameter]
-    public string ClientId { get; set; } = string.Empty;
-
+    private string ClientId { get; set; } = string.Empty;
     private DeviceValidator DeviceValidator = new();
     private List<Broker> AvaliableBrokers = new();
 
     protected override async Task OnInitializedAsync()
     {
         var result = await _clientService.GetClients(false);
+        ClientId = Model.BrokerId;
 
         if (result.Succeeded)
         {
@@ -172,7 +171,7 @@
         if (string.IsNullOrEmpty(Model.Id))
             result = await _deviceService.CreateDevice(Model);
         else
-            result = await _deviceService.UpdateDevice(Model);
+            result = await _deviceService.UpdateDevice(Model, ClientId);
 
         var success = RequestHelpers.InvokeAfterRequest(_snackbar, result, OnAdded);
 

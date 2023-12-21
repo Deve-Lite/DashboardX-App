@@ -1,7 +1,6 @@
 ﻿@using Presentation.Shared.Dialogs;
 @using Presentation.Utils;
 
-
 @inject IStringLocalizer<DeviceState> _localizer
 
 @if (Condition == DeviceCondition.None)
@@ -189,17 +188,17 @@ else
                 return;
         }
 
-        var topic = Control!.GetTopic(Device!);
         var payload = Control.Attributes.OffPayload;
 
         if (onPayload)
-        {
             payload = Control.Attributes.OnPayload;
-        }
 
         Value = payload!;
 
-        await Client!.PublishAsync(topic, payload!, Control!.QualityOfService);
+        var publishResult = await Client!.PublishAsync(Control!.GetTopic(Device!), payload!, Control!.QualityOfService);
+
+        if (!publishResult.Succeeded && publishResult.ShowToast)
+             _snackbar.Add(publishResult.Messages[0], Severity.Error);
 
         StateHasChanged();
     }

@@ -100,7 +100,7 @@
         if (current == Control.Attributes.OnPayload)
             payload = Control.Attributes.OffPayload;
 
-        await Client!.PublishAsync(Control!.GetTopic(Device!), payload!, Control!.QualityOfService);
+        await PublishMessage(payload!);
     }
 }
 

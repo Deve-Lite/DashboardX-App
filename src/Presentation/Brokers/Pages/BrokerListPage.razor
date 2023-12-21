@@ -99,12 +99,4 @@
         foreach (var client in Clients)
             client?.ClearOnMessageReceivedEventHandler();
     }
-
-    private async Task ConnectAsync(Client client)
-    {
-        var result = await client.ConnectAsync();
-
-        if (result.Succeeded && result.ShowToast)
-            _snackbar.Add(result.Messages.First(), Severity.Error);
-    }
 }

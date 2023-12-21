@@ -26,7 +26,7 @@
         if (!await ConfirmationDialog())
             return;
 
-        await Client!.PublishAsync(Control!.GetTopic(Device!), Control?.Attributes?.Payload!, Control!.QualityOfService);
+        await PublishMessage(Control?.Attributes?.Payload!);
     }
 }
 

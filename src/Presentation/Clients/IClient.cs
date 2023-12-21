@@ -1,5 +1,4 @@
-﻿using Core.App.Interfaces;
-using MQTTnet.Protocol;
+﻿using MQTTnet.Protocol;
 
 namespace Presentation.Clients;
 
@@ -23,10 +22,10 @@ public interface IClient
 
     IList<Device> GetDevices();
     IResult AddDevice(Device device);
-    Task<IResult> AddDevices(Device device, List<Control> controls);
+    Task<IResult> AddDevice(Device device, IList<Control> controls);
     Task<IResult> RemoveDevice(string deviceId);
     Task<IResult> UpdateDevice(Device device);
-    Task<IResult> UpdateDevice(Device device, List<Control> controls);
+    Task<IResult> UpdateDevice(Device device, IList<Control> controls);
     bool HasDevice(string deviceId);
 
     Task<IResult> ConnectAsync();
