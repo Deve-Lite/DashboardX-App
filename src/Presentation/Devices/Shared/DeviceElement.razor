@@ -6,22 +6,22 @@
 <MudPaper Class="m-0 p-0 rounded-4 animate-simple" Elevation="1">
     <MudExpansionPanel>
         <TitleContent>
-            <MudGrid Class="m-0 p-0 w-100" @onclick="HandleDeviceClick">
-                <MudItem xs="2" sm="3" Class="m-0 p-2 d-flex justify-content-center align-items-center">
+            <MudElement Class="m-0 p-0 w-100 d-flex justify-content-start align-content-center" @onclick="HandleDeviceClick">
+                <MudElement Class="m-0 p-2 d-flex justify-content-center align-items-center">
                     <MudPaper Elevation="5"
                               Class="m-0 p-1 rounded-5"
                               Style="@($"background-color: {GetBackgroundColor()};")">
                         <MudIcon Class="list-icon"
                                  Icon="@IconUtils.GetIcon(Device.Icon?.Name!)" />
                     </MudPaper>
-                </MudItem>
+                </MudElement>
 
-                <MudItem xs="10" sm="9" Class="m-0 p-2">
+                <MudElement Class="m-0 p-2  d-flex justify-content-start align-content-center">
                     <MudText Typo="Typo.h6" Class="hide-overlapping-text text-600" Style="font-weight: 500;">
                         @Device.Name
                     </MudText>
-                </MudItem>
-            </MudGrid>
+                </MudElement>
+            </MudElement>
         </TitleContent>
         <ChildContent>
             <MudGrid Class="m-0 p-0">
