@@ -51,7 +51,7 @@ public class Control : BaseModel
     public bool NotifyOnPublish { get; set; } = false;
     public ControlAttributes Attributes { get; set; } = new();
 
-    public bool IsSubscribed { get; set; } = false;
+    public ControlSubscribeStatus SubscribeStatus { get; set; } = ControlSubscribeStatus.NotAttempt;
 
     public ControlDTO Dto() => new ControlDTO
     {

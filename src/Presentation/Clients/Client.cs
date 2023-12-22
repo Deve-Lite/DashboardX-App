@@ -91,11 +91,16 @@ public class Client : IClient, IAsyncDisposable
                 var status = result.Items.First().ResultCode;
 
                 if (!ValidMqttResultCodes.Any(x => x == status))
+                {
+                    control.SubscribeStatus = ControlSubscribeStatus.FailedToSubscribe;
                     return Result.Warning(message: _localizer["Failed to subscribe to topic."]);
+                }
 
-                control.IsSubscribed = true;
+                control.SubscribeStatus = ControlSubscribeStatus.Subscribed;
+                return Result.Success();
             }
 
+            control.SubscribeStatus = ControlSubscribeStatus.NotSubscribable;
             return Result.Success();
         }
         catch (ArgumentNullException e)
@@ -131,11 +136,16 @@ public class Client : IClient, IAsyncDisposable
                 var status = result.Items.First().ResultCode;
 
                 if (!ValidMqttResultCodes.Any(x => x == status))
+                {
+                    control.SubscribeStatus = ControlSubscribeStatus.FailedToSubscribe;
                     return Result.Warning();
+                }
 
-                control.IsSubscribed = true;
+                control.SubscribeStatus = ControlSubscribeStatus.Subscribed;
+                return Result.Success();
             }
 
+            control.SubscribeStatus = ControlSubscribeStatus.NotSubscribable;
             return Result.Success();
         }
         catch (ArgumentNullException e)
@@ -454,15 +464,23 @@ public class Client : IClient, IAsyncDisposable
         foreach (var control in _controls)
         {
             if (!control.ShouldBeSubscribed())
+            {
+                control.SubscribeStatus = ControlSubscribeStatus.NotSubscribable;
                 continue;
+            }
 
             var device = _devices.First(x => x.Id == control.DeviceId);
             var subResult = await _mqttClient.SubscribeAsync(control.GetTopic(device), control.QualityOfService);
 
             if (!ValidMqttResultCodes.Any(x => x == subResult.Items.First().ResultCode))
+            {
+                control.SubscribeStatus = ControlSubscribeStatus.FailedToSubscribe;
                 status = Result.Warning(message: _localizer["Failed to subscribe some topics."]);
+            }
             else
-                control.IsSubscribed = true;
+            {
+                control.SubscribeStatus = ControlSubscribeStatus.Subscribed;
+            }
         }
 
         return status;

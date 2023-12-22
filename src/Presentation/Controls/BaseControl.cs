@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Presentation.Shared.Dialogs;
+using Presentation.Utils;
 
 namespace Presentation.Controls;
 
@@ -25,8 +26,23 @@ public partial class BaseControl : ComponentBase
     [CascadingParameter]
     protected bool IsDarkMode { get; set; }
 
+    protected virtual string DefaultIcon => IconUtils.DefualtIcon;
+
+    public virtual string GetIcon()
+    {
+        if (Control!.SubscribeStatus == ControlSubscribeStatus.FailedToSubscribe)
+            return Icons.Material.Filled.SmsFailed;
+
+        return DefaultIcon;
+    }
+
     public virtual string GetBackgroundColor()
     {
+        if (Control!.SubscribeStatus == ControlSubscribeStatus.FailedToSubscribe) 
+        {
+
+        }
+
         if (!Control!.IsAvailable)
         {
             var background = AppTheme!.Palette.DrawerBackground;
@@ -42,6 +58,11 @@ public partial class BaseControl : ComponentBase
 
     public virtual string GetBorderBackgroundColor()
     {
+        if (Control!.SubscribeStatus == ControlSubscribeStatus.FailedToSubscribe)
+        {
+
+        }
+
         if (!Control!.IsAvailable)
         {
             if (IsDarkMode)
