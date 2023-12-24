@@ -12,7 +12,7 @@
 
                 <MudItem xs="12" Style="position:absolute;"
                          Class="m-0 p-2 d-flex justify-content-end align-items-center">
-                    <MudIcon Icon="@Icon"
+                    <MudIcon Icon="@GetIcon()"
                              Style="max-height:16px; max-width:16px;" />
                 </MudItem>
 
@@ -52,7 +52,6 @@ else
     public RenderFragment? CustomView { get; set; }
     [Parameter]
     public string Icon { get; set; } = IconUtils.DefualtIcon;
-
     [Parameter]
     public Func<Task> ActionAsync { get; set; } = default!;
     [Parameter]
@@ -61,12 +60,15 @@ else
     public Func<string> BorderBackgroundColor { get; set; }
     [Parameter]
     public Func<string> Name { get; set; }
+    [Parameter]
+    public Func<string> NewIcon { get; set; }
 
     public BaseControlView()
     {
         BackgroundColor = base.GetBackgroundColor;
         BorderBackgroundColor = base.GetBorderBackgroundColor;
         Name = base.GetName;
+        NewIcon = base.GetIcon;
     }
 
     public override string GetBackgroundColor() => BackgroundColor.Invoke();
@@ -74,6 +76,7 @@ else
     public override string GetBorderBackgroundColor() => BorderBackgroundColor.Invoke();
 
     public override string GetName() => Name.Invoke();
+    public override string GetIcon() => NewIcon.Invoke();
 
     public async Task InvokeActionAsync() => await ActionAsync();
 }
