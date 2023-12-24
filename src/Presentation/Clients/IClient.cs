@@ -30,6 +30,7 @@ public interface IClient
 
     Task<IResult> ConnectAsync();
     Task<IResult> PublishAsync(string topic, string payload, MqttQualityOfServiceLevel quality);
+    Task<IResult> SubscribeToTopic(string controlId);
     Task DisconnectAsync();
     ValueTask DisposeAsync();
 }

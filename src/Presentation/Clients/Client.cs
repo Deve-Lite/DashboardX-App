@@ -55,7 +55,7 @@ public class Client : IClient, IAsyncDisposable
     {
         RerenderPageOnMessageReceived = refreshAction;
     }
-    public void ClearOnMessageReceivedEventHandler() 
+    public void ClearOnMessageReceivedEventHandler()
     {
         RerenderPageOnMessageReceived = null;
     }
@@ -63,7 +63,7 @@ public class Client : IClient, IAsyncDisposable
     public Broker GetBroker() => _broker;
     public async Task UpdateBroker(Broker broker)
     {
-        if(broker.EditedAt == _broker.EditedAt)
+        if (broker.EditedAt == _broker.EditedAt)
             return;
 
         var connected = _mqttClient.IsConnected;
@@ -213,7 +213,7 @@ public class Client : IClient, IAsyncDisposable
         {
             var result = await AddControl(control);
 
-            if (status.OperationState ==  OperationState.Success && 
+            if (status.OperationState ==  OperationState.Success &&
                 result.OperationState == OperationState.Warning)
                 status = Result.Warning();
 
@@ -221,7 +221,7 @@ public class Client : IClient, IAsyncDisposable
                 status = Result.Fail();
         }
 
-        if(status.OperationState == OperationState.Success)
+        if (status.OperationState == OperationState.Success)
             device.SuccessfullControlsDownload = true;
 
         return status;
@@ -239,7 +239,7 @@ public class Client : IClient, IAsyncDisposable
                 .Where(x => x.DeviceId == device.Id)
                 .ToList();
 
-            if(currentDevice.BaseDevicePath != device.BaseDevicePath)
+            if (currentDevice.BaseDevicePath != device.BaseDevicePath)
             {
                 foreach (var control in controls)
                     await RemoveControl(control.Id);
@@ -404,7 +404,7 @@ public class Client : IClient, IAsyncDisposable
             if (!result.Succeeded)
             {
                 _logger.LogError("Failed to fetch credentials.");
-                return Result.Fail(message:_localizer["Failed to fetch credentials."]);
+                return Result.Fail(message: _localizer["Failed to fetch credentials."]);
             }
 
             if (!string.IsNullOrEmpty(result.Data.Username) && !string.IsNullOrEmpty(result.Data.Password))
@@ -412,7 +412,7 @@ public class Client : IClient, IAsyncDisposable
 
             var response = await _mqttClient.ConnectAsync(optionsBuilder.Build());
 
-            if(response.ResultCode == MqttClientConnectResultCode.NotAuthorized)
+            if (response.ResultCode == MqttClientConnectResultCode.NotAuthorized)
             {
                 _logger.LogError("Failed to authorize.");
                 return Result.Fail(message: _localizer["Failed to authorize."]);
@@ -442,6 +442,38 @@ public class Client : IClient, IAsyncDisposable
             IsConnected = false;
             _logger.LogError("Failed to connect to broker.", e.Message);
             return Result.Fail(message: "Failed to connect to broker.");
+        }
+    }
+
+    public async Task<IResult> SubscribeToTopic(string controlId)
+    {
+        try
+        {
+            var control = _controls.First(x => x.Id == controlId);
+
+            if (control.SubscribeStatus == ControlSubscribeStatus.NotSubscribable)
+                return Result.Warning(message: _localizer["Control cannot be subscribed."]);
+
+            if (control.SubscribeStatus == ControlSubscribeStatus.Subscribed)
+                return Result.Success();
+
+            var device = _devices.First(x => x.Id == control.DeviceId);
+
+            var result = await _mqttClient.SubscribeAsync(control.GetTopic(device), control.QualityOfService);
+
+            if (!ValidMqttResultCodes.Any(x => x == result.Items.First().ResultCode))
+            {
+                control.SubscribeStatus = ControlSubscribeStatus.FailedToSubscribe;
+                return Result.Warning(message: _localizer["Failed to subscribe some topics."]);
+            }
+
+            control.SubscribeStatus = ControlSubscribeStatus.Subscribed;
+
+            return Result.Success();
+        }
+        catch (InvalidOperationException e)
+        {
+            return Result.Warning(message: _localizer["Failed to find control or device."]);
         }
     }
 
