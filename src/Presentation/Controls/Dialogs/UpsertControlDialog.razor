@@ -11,20 +11,19 @@
 
 <MudDialog ClassContent="my-mud-dialog-content">
     <DialogContent>
-        <LoadingDialog>
+        <PagedLoadingDialog FirstPage="@FirstPage">
             <Title>
                 <MudText Align="Align.Start"
                          Typo="Typo.h6">
                     @Title()
                 </MudText>
             </Title>
-            <Content>
+            <FirstPageContent>
                 <MudForm @ref="Form"
                          Model="@Model"
                          Validation="@(Validator.ValidateValue)"
                          ValidationDelay="0"
                          Class="m-0 p-0 w-100">
-
                     <MudGrid Class="m-0 p-0 w-100">
 
                         <MudItem xs="3"
@@ -93,10 +92,9 @@
                             <MudSwitch @bind-Checked="Model.IsConfiramtionRequired"
                                        Label="@_localizer["Sending data requires confirmation"]"
                                        Color="Color.Primary" />
-
                         </MudItem>
 
-                        <MudItem xs="12">
+                        <MudItem xs="12" Style="margin-bottom: 1rem;">
                             <MudSelect Label="@_localizer["Control Type"]"
                                        For="(() => Model.Type)"
                                        Variant="Variant.Filled"
@@ -116,10 +114,17 @@
                                 <MudSelectItem Value="ControlType.State">@_localizer["State (Two Way)"]</MudSelectItem>
                             </MudSelect>
                         </MudItem>
+                    </MudGrid>
+                </MudForm>
+            </FirstPageContent>
 
-                        <MudItem xs="12" Class="p-0 pt-3 pb-3 m-0">
-                            <MudProgressLinear Size="Size.Small" Color="Color.Tertiary" Rounded="true" Value="100" />
-                        </MudItem>
+            <SecondPageContent>
+                <MudForm @ref="Form"
+                         Model="@Model"
+                         Validation="@(Validator.ValidateValue)"
+                         ValidationDelay="0"
+                         Class="m-0 p-0 w-100">
+                    <MudGrid Class="m-0 p-0 w-100">
 
                         @if (Model.Type == ControlType.Button)
                         {
@@ -409,27 +414,47 @@
 
                         }
                     </MudGrid>
-
                 </MudForm>
-            </Content>
-            <Actions>
-                <MudButton OnClick="Cancel">
+            </SecondPageContent>
+
+            <FirstPageActions>
+                <MudButton OnClick="Cancel"
+                           Variant="Variant.Filled"
+                           Color="Color.Error">
                     @_localizer["Cancel"]
+                </MudButton>
+                <MudButton OnClick="Next"
+                           Variant="Variant.Filled"
+                           Color="Color.Info">
+                    @_localizer["Next"]
+                </MudButton>
+            </FirstPageActions>
+
+            <SecondPageActions>
+                <MudButton OnClick="Cancel"
+                           Variant="Variant.Filled"
+                           Color="Color.Error">
+                    @_localizer["Cancel"]
+                </MudButton>
+                <MudButton OnClick="Back"
+                           Variant="Variant.Filled"
+                           Color="Color.Info">
+                    @_localizer["Back"]
                 </MudButton>
                 <MudButton OnClick="SubmitAsync"
                            Variant="Variant.Filled"
                            Color="Color.Primary">
                     @_localizer["Submit"]
                 </MudButton>
-            </Actions>
-        </LoadingDialog>
+            </SecondPageActions>
+        </PagedLoadingDialog>
     </DialogContent>
 </MudDialog>
 
 @code
 {
     [Parameter]
-    public ControlDTO Model { get; set; } = default;
+    public ControlDTO Model { get; set; }
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
 
@@ -437,6 +462,8 @@
     public MudForm RadioForm = new();
     public RadioOption RadioOptions = new();
     public RadioOptionValidator RadioValidator = new();
+
+    public bool FirstPage { get; set; } = true;
 
     protected override string Title()
         => !string.IsNullOrWhiteSpace(Model.Id) ? _localizer["Update Control"] : _localizer["Add Control"];
@@ -478,6 +505,21 @@
         StateHasChanged();
     }
 
+
+    private async Task Next()
+    {
+        await Form.Validate();
+
+        if (!Form.IsValid)
+            return;
+
+        FirstPage = false;
+    }
+
+    private void Back()
+    {
+        FirstPage = true;
+    }
 
     private async Task SubmitAsync()
     {
