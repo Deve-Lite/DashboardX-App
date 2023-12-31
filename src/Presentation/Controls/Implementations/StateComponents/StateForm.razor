@@ -1,0 +1,45 @@
+﻿@inject IStringLocalizer<StateForm> _localizer
+
+@inherits ControlBaseForm
+
+<MudForm @ref="Form"
+         Model="@Model"
+         Validation="@(Validator.ValidateValue)"
+         ValidationDelay="0"
+         Class="m-0 p-0 w-100">
+    <MudGrid Class="m-0 p-0 w-100">
+        <MudItem xs="12">
+            <MudText>
+                @_localizer["State control purpos is to determinate if device is on or off and affect device state."]
+            </MudText>
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudTextField @bind-Value="Model.OnPayload"
+                          T="string"
+                          Lines="5"
+                          Label="@_localizer["On Payload"]"
+                          Variant="Variant.Filled"
+                          OnlyValidateIfDirty="true"
+                          Class="p-0 m-0"
+                          HelperText="@_localizer["When this payload is seen device is on."]"
+                          For="@(() => Model.OnPayload)" />
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudTextField @bind-Value="Model.OffPayload"
+                          T="string"
+                          Lines="5"
+                          Label="@_localizer["Off Payload"]"
+                          Variant="Variant.Filled"
+                          OnlyValidateIfDirty="true"
+                          Class="p-0 m-0"
+                          HelperText="@_localizer["When this payload is seen device is off."]"
+                          For="@(() => Model.OffPayload)" />
+        </MudItem>
+    </MudGrid>
+</MudForm>
+
+@code {
+
+}

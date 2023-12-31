@@ -1,0 +1,68 @@
+﻿@inherits MudComponentBase
+
+@if (_loadingService.IsDialogLoading)
+{
+    <MudGrid Class="d-flex w-100 p-0 pt-4 pb-4 m-0"
+         Style="width:100px!important; height: 100px!important">
+        <MudItem xs="12"
+             Class="p-0 m-0 d-flex justify-content-center align-items-center">
+            <MudProgressCircular Class="p-0 m-0"
+                             Color="Color.Tertiary"
+                             Size="Size.Large"
+                             Indeterminate="true" />
+        </MudItem>
+    </MudGrid>
+}
+else if (FirstPage)
+{
+    <MudGrid Class="d-flex w-100 p-0 m-0">
+        <MudItem xs="12" Class="p-0 m-0 dialog-title">
+            @Title
+        </MudItem>
+        <MudItem xs="12" Class="p-0 m-0">
+            <MudItem Class="dialog-content">
+                @FirstPageContent
+            </MudItem>
+        </MudItem>
+        <MudItem xs="12" Class="dialog-footer">
+            @FirstPageActions
+        </MudItem>
+    </MudGrid>
+}
+else
+{
+    <MudGrid Class="d-flex w-100 p-0 m-0">
+        <MudItem xs="12" Class="p-0 m-0 dialog-title">
+            @Title
+        </MudItem>
+        <MudItem xs="12" Class="p-0 m-0">
+            <MudItem Class="dialog-content">
+                @SecondPageContent
+            </MudItem>
+        </MudItem>
+        <MudItem xs="12" Class="dialog-footer">
+            @SecondPageActions
+        </MudItem>
+    </MudGrid>
+}
+
+@code 
+{
+    [Parameter]
+    public RenderFragment? Title { get; set; }
+
+    [Parameter]
+    public RenderFragment? FirstPageContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? SecondPageContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? FirstPageActions { get; set; }
+
+    [Parameter]
+    public RenderFragment? SecondPageActions { get; set; }
+
+    [Parameter]
+    public bool FirstPage { get; set; } = true;
+}

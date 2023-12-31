@@ -25,7 +25,7 @@ public class ControlService : IControlService
         return await clientResult.Data.RemoveControl(control.Id);
     }
 
-    public async Task<IResult> CreateControl(string clientId, ControlDTO dto)
+    public async Task<IResult> CreateControl(string clientId, ControlDto dto)
     {
         var result = await _deviceService.CreateControl(dto);
 
@@ -40,7 +40,7 @@ public class ControlService : IControlService
         return await clientResult.Data.AddControl(result.Data);
     }
 
-    public async Task<IResult> UpdateControl(string clientId, ControlDTO dto)
+    public async Task<IResult> UpdateControl(string clientId, ControlDto dto)
     {
         var result = await _deviceService.UpdateControl(dto);
 

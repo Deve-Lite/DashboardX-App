@@ -1,0 +1,54 @@
+﻿@inject IStringLocalizer<ColorForm> _localizer
+
+@inherits ControlBaseForm
+
+<MudForm @ref="Form"
+         Model="@Model"
+         Validation="@(Validator.ValidateValue)"
+         ValidationDelay="0"
+         Class="m-0 p-0 w-100">
+    <MudGrid Class="m-0 p-0 w-100">
+        <MudItem xs="12">
+            <MudText>
+                @_localizer["This control allows to send color into device."]
+            </MudText>
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudTextField @bind-Value="Model.PayloadTemplate"
+                          T="string"
+                          Lines="5"
+                          Label="@_localizer["Payload Template"]"
+                          Variant="Variant.Filled"
+                          OnlyValidateIfDirty="true"
+                          Class="p-0 m-0"
+                          HelperText="@_localizer["Provide payload to be send on click with inserted value."]"
+                          For="@(() => Model.PayloadTemplate)" />
+        </MudItem>
+
+        <MudItem xs="7">
+            <MudSelect @bind-Value="Model.ColorFormat"
+                       Label="@_localizer["Format Type"]"
+                       Variant="Variant.Filled"
+                       AnchorOrigin="Origin.BottomCenter"
+                       Disabled="true"
+                       T="ColorFormat">
+
+                <MudSelectItem Value="ColorFormat.HexRGB">@_localizer["Hex RGB (#FFFFFF)"]</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+
+        <MudItem xs="5">
+            <MudButton Variant="Variant.Filled" Color="Color.Tertiary" OnClick="InsertMapping">
+                @_localizer["Insert $value"]
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</MudForm>
+
+@code {
+    private void InsertMapping()
+    {
+        Model.PayloadTemplate += "$value";
+    }
+}

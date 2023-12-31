@@ -1,0 +1,33 @@
+﻿@inject IStringLocalizer<ButtonForm> _localizer
+
+@inherits ControlBaseForm
+
+<MudForm @ref="Form"
+         Model="@Model"
+         Validation="@(Validator.ValidateValue)"
+         ValidationDelay="0"
+         Class="m-0 p-0 w-100">
+    <MudGrid Class="m-0 p-0 w-100">
+                    
+        <MudItem xs="12">
+            <MudText> @_localizer["Button is simplest control sending payload to broker when clicked."] </MudText>
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudTextField @bind-Value="Model.Payload"
+                          T="string"
+                          Lines="5"
+                          OnlyValidateIfDirty="true"
+                          Class="p-0 m-0"
+                          Variant="Variant.Filled"
+                          Label="@_localizer["Payload"]"
+                          HelperText="@_localizer["Provide payload to be send on click."]"
+                          For="@(() => Model.Payload)" />
+        </MudItem>
+
+    </MudGrid>
+</MudForm>
+
+@code {
+
+}

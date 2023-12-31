@@ -2,17 +2,27 @@
 
 namespace Common.Controls.Models;
 
-public class ControlDTO : BaseModel
+public class ControlDto : BaseModel
 {
-    public ControlDTO()
+    public ControlDto()
     {
         Type = ControlType.Text;
     }
 
-    public ControlDTO(string deviceId)
+    public ControlDto(ControlModel control, ControlAttributesModel attributes)
     {
-        DeviceId = deviceId;
-        Type = ControlType.Text;
+        Id = control.Id;
+        DeviceId = control.DeviceId;
+        Name = control.Name;
+        Icon = control.Icon.Copy();
+        Topic = control.Topic;
+        Type = control.Type;
+        QualityOfService = control.QualityOfService;
+        DisplayName = control.DisplayName;
+        IsAvailable = control.IsAvailable;
+        IsConfiramtionRequired = control.IsConfiramtionRequired;
+        NotifyOnPublish = control.NotifyOnPublish;
+        Attributes = attributes.Attributes();
     }
 
     [JsonPropertyName("deviceId")]
@@ -80,5 +90,5 @@ public class ControlDTO : BaseModel
     public bool NotifyOnPublish { get; set; } = false;
 
     [JsonPropertyName("attributes")]
-    public ControlAttributes Attributes { get; set; } = new();
+    public ControlAttributesDto Attributes { get; set; } = new();
 }

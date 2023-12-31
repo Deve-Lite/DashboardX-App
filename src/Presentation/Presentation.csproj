@@ -16,12 +16,6 @@
 		<ExternalConsole>true</ExternalConsole>
 	</PropertyGroup>
 	<ItemGroup>
-	  <Compile Remove="Controls\Implementations\StateComponents\**" />
-	  <Content Remove="Controls\Implementations\StateComponents\**" />
-	  <EmbeddedResource Remove="Controls\Implementations\StateComponents\**" />
-	  <None Remove="Controls\Implementations\StateComponents\**" />
-	</ItemGroup>
-	<ItemGroup>
 		<PackageReference Include="Blazored.LocalStorage" Version="4.4.0" />
 		<PackageReference Include="Blazored.SessionStorage" Version="2.4.0" />
 		<PackageReference Include="FluentValidation" Version="11.7.1" />
