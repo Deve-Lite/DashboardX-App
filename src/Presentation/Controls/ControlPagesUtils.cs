@@ -8,7 +8,7 @@ public static class ControlPagesUtils
     {
         var parameters = new DialogParameters<UpsertControlDialog>
         {
-            {  x => x.Model, new ControlDTO { DeviceId = DeviceId } },
+            {  x => x.Model, new ControlModel { DeviceId = DeviceId } },
             {  x => x.ClientId, ClientId }
         };
         var options = new DialogOptions()
@@ -25,7 +25,8 @@ public static class ControlPagesUtils
         var parameters = new DialogParameters<UpsertControlDialog>
         {
             {  x => x.ClientId, DeviceId },
-            {  x => x.Model, control.Dto() }
+            {  x => x.Model, control.FormModel() },
+            {  x => x.AttributesModel, control.Attributes.FormModel() }
         };
 
         var options = new DialogOptions()

@@ -2,7 +2,7 @@
 
 namespace Common.Controls.Validators;
 
-public class ControlValidator : BaseValidator<ControlDTO>
+public class ControlValidator : BaseValidator<ControlDto>
 {
 
     public ControlValidator() : base()

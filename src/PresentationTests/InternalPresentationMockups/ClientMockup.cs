@@ -144,4 +144,9 @@ public class ClientMockup : IClient
 
         return Task.FromResult((IResult) Result.Success());
     }
+
+    public Task<IResult> SubscribeToTopic(string controlId)
+    {
+        throw new NotImplementedException();
+    }
 }

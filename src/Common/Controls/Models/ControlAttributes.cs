@@ -82,4 +82,38 @@ public class ControlAttributes
             MinValue = MinValue
         };
     }
+
+    public ControlAttributesModel FormModel()
+    {
+        var payloads = Payloads == null ? null : new Dictionary<string, string>(Payloads);
+
+        return new()
+        {
+            Payload = Payload,
+            Payloads = payloads,
+            OnPayload = OnPayload,
+            OffPayload = OffPayload,
+            PayloadTemplate = PayloadTemplate,
+            ColorFormat = ColorFormatEnum,
+            SendAsTicks = Convert.ToBoolean(SendAsTicks),
+            MaxValue = Convert.ToDouble(MaxValue),
+            MinValue = Convert.ToDouble(MinValue)
+        };
+    }
+
+    public ControlAttributesDto Dto()
+    {
+        return new()
+        {
+            Payload = Payload,
+            Payloads = Payloads,
+            OnPayload = OnPayload,
+            OffPayload = OffPayload,
+            PayloadTemplate = PayloadTemplate,
+            StringColorFormat = StringColorFormat,
+            SendAsTicks = SendAsTicks,
+            MaxValue = MaxValue,
+            MinValue = MinValue
+        };
+    }
 }

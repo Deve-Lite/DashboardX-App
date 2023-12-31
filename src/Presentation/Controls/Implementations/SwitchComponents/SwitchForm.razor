@@ -1,0 +1,57 @@
+﻿@inject IStringLocalizer<SwitchForm> _localizer
+
+@inherits ControlBaseForm
+
+<MudForm @ref="Form"
+         Model="@Model"
+         Validation="@(Validator.ValidateValue)"
+         ValidationDelay="0"
+         Class="m-0 p-0 w-100">
+    <MudGrid Class="m-0 p-0 w-100">
+        <MudItem xs="12">
+            <MudText>
+                @_localizer["Switch control allows to determinate state in device as yes or no."]
+            </MudText>
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudTextField @bind-Value="Model.OnPayload"
+                          T="string"
+                          Lines="5"
+                          Label="@_localizer["On Payload"]"
+                          Variant="Variant.Filled"
+                          OnlyValidateIfDirty="true"
+                          Class="p-0 m-0"
+                          HelperText="@_localizer["Patyload to be send when on action is performed."]"
+                          For="@(() => Model.OnPayload)" />
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudTextField @bind-Value="Model.OffPayload"
+                          T="string"
+                          Lines="5"
+                          Label="@_localizer["Off Payload"]"
+                          Variant="Variant.Filled"
+                          OnlyValidateIfDirty="true"
+                          Class="p-0 m-0"
+                          HelperText="@_localizer["Patyload to be send when off action is performed."]"
+                          For="@(() => Model.OffPayload)" />
+        </MudItem>
+    </MudGrid>
+</MudForm>
+
+@*
+    @inject IStringLocalizer<SwitchForm> _localizer
+
+@inherits ControlBaseForm
+
+<MudForm @ref="Form"
+         Model="@Model"
+         Validation="@(Validator.ValidateValue)"
+         ValidationDelay="0"
+         Class="m-0 p-0 w-100">
+    <MudGrid Class="m-0 p-0 w-100">
+
+    </MudGrid>
+</MudForm>
+*@

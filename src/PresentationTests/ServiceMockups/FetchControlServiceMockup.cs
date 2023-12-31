@@ -6,7 +6,7 @@ internal class FetchControlServiceMockup : IFetchControlService
 
     private List<Control> Controls { get; set; } = new();
 
-    public Task<IResult<Control>> UpdateControl(ControlDTO control)
+    public Task<IResult<Control>> UpdateControl(ControlDto control)
     {
         var oldControl = Controls.First(x => x.Id == control.Id);
 
@@ -15,7 +15,7 @@ internal class FetchControlServiceMockup : IFetchControlService
         return Task.FromResult((IResult<Control>)Result<Control>.Success(oldControl));
     }
 
-    public Task<IResult<Control>> CreateControl(ControlDTO control)
+    public Task<IResult<Control>> CreateControl(ControlDto control)
     {
         var copy = new Control(control.Id, control);
         Controls.Add(copy);
