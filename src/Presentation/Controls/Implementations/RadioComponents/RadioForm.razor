@@ -1,0 +1,125 @@
+﻿@inject IStringLocalizer<RadioForm> _localizer
+
+@inherits ControlBaseForm
+
+<MudForm @ref="Form"
+         Model="@Model"
+         Validation="@(Validator.ValidateValue)"
+         ValidationDelay="0"
+         Class="m-0 p-0 w-100">
+    <MudGrid Class="m-0 p-0 w-100">
+        <MudItem xs="12">
+            <MudText>
+                @_localizer["Radio control allows to represent few actions as one, ex. device mode."]
+            </MudText>
+        </MudItem>
+
+        <MudItem xs="12" Class="m-0 p-0 pt-2">
+            <MudTextField @bind-Value="RadioOptions.Payload"
+                          T="string"
+                          Lines="4"
+                          OnlyValidateIfDirty="true"
+                          Class="p-0 m-0"
+                          Label="@_localizer["Payload"]"
+                          Variant="Variant.Filled"
+                          HelperText="@_localizer["Provide payload to be send on click."]"
+                          For="@(() => RadioOptions.Payload)" />
+        </MudItem>
+
+        <MudItem xs="8" Class="m-0 p-0 pt-2">
+            <MudTextField @bind-Value="RadioOptions.Name"
+                          T="string"
+                          Label="@_localizer["Option Name"]"
+                          Variant="Variant.Filled"
+                          OnlyValidateIfDirty="true"
+                          Clearable="true"
+                          Class="p-0 m-0"
+                          HelperText="@_localizer["Provide meaningful name for option."]"
+                          For="@(() => RadioOptions.Name)" />
+        </MudItem>
+
+        <MudItem xs="4" Class="d-flex justify-content-center align-items-center m-0 p-0 pt-2">
+            <MudButton OnClick="AddOption"
+                       Size="Size.Medium"
+                       Variant="Variant.Filled"
+                       Color="Color.Tertiary"
+                       EndIcon="@Icons.Material.Filled.Add">
+                @_localizer["Add"]
+            </MudButton>
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudSimpleTable Hover="true" Dense="true">
+
+                <MudTr>
+                    <MudTd>
+                        @_localizer["Name"]
+                    </MudTd>
+                    <MudTd>
+                        @_localizer["Options"]
+                    </MudTd>
+                </MudTr>
+
+                @foreach (var option in Model!.Payloads!)
+                {
+                    <MudTr Class="p-0 m-0">
+                        <MudTd>@option.Key</MudTd>
+                        <MudTd>
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" OnClick="()=>EditOption(option.Key)" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Remove" OnClick="()=>RemoveOption(option.Key)" />
+                        </MudTd>
+                    </MudTr>
+                }
+
+            </MudSimpleTable>
+        </MudItem>
+    </MudGrid>
+</MudForm>
+
+@code {
+    public RadioOption RadioOptions = new();
+    public new RadioOptionValidator Validator = new();
+
+    public override Task<bool> IsValid()
+    {
+        return Task.FromResult(Model.Payloads.Any());
+    }
+
+    private async Task AddOption()
+    {
+        await Form.Validate();
+
+        if (!Form.IsValid)
+            return;
+
+        if (Model!.Payloads!.ContainsKey(RadioOptions.Name))
+        {
+            _snackbar.Add(_localizer["This option already exists."], Severity.Warning);
+            return;
+        }
+
+        if (Model!.Payloads!.ContainsValue(RadioOptions.Payload))
+        {
+            _snackbar.Add(_localizer["This payload already is used."], Severity.Warning);
+            return;
+        }
+
+        Model!.Payloads!.Add(RadioOptions.Name, RadioOptions.Payload);
+        RadioOptions = new();
+    }
+
+    private void EditOption(string name)
+    {
+        var payload = Model!.Payloads![name];
+
+        RadioOptions.Name = name;
+        RadioOptions.Payload = payload;
+
+        Model!.Payloads!.Remove(name);
+    }
+
+    private void RemoveOption(string name)
+    {
+        Model!.Payloads!.Remove(name);
+    }
+}

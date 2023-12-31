@@ -39,10 +39,10 @@ public class ClientService : IClientService, ILogoutObserver
         clientsResult.Data.Clear();
     }
 
-    public async Task<IResult<IClient>> GetClientWithDevice(string deviceId, bool fetch = true)
+    public Task<IResult<IClient>> GetClientWithDevice(string deviceId, bool fetch = true)
     {
         if (!fetch)
-            return _clientManager.GetClientWithDevice(deviceId);
+            return Task.FromResult(_clientManager.GetClientWithDevice(deviceId));
 
         throw new NotImplementedException("Cannot use this method in no fetch mode");
     }

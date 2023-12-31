@@ -19,7 +19,7 @@ public class FetchControlService : AuthorizedService, IFetchControlService
             Route = $"api/v1/devices/{deviceId}/controls"
         };
 
-        var response = await SendAsync<List<ControlDTO>>(request);
+        var response = await SendAsync<List<ControlDto>>(request);
 
         if (response.Succeeded)
         {
@@ -44,9 +44,9 @@ public class FetchControlService : AuthorizedService, IFetchControlService
 
     }
 
-    public async Task<IResult<Control>> CreateControl(ControlDTO dto)
+    public async Task<IResult<Control>> CreateControl(ControlDto dto)
     {
-        var request = new Request<ControlDTO>
+        var request = new Request<ControlDto>
         {
             Method = HttpMethod.Post,
             Route = $"api/v1/devices/{dto.DeviceId}/controls",
@@ -58,7 +58,7 @@ public class FetchControlService : AuthorizedService, IFetchControlService
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-        var response = await SendAsync<BaseModel, ControlDTO>(request, options);
+        var response = await SendAsync<BaseModel, ControlDto>(request, options);
 
         if (!response.Succeeded)
             return Result<Control>.Fail(response.Messages, response.StatusCode);
@@ -68,9 +68,9 @@ public class FetchControlService : AuthorizedService, IFetchControlService
         return Result<Control>.Success(control, response.StatusCode);
     }
 
-    public async Task<IResult<Control>> UpdateControl(ControlDTO dto)
+    public async Task<IResult<Control>> UpdateControl(ControlDto dto)
     {
-        var request = new Request<ControlDTO>
+        var request = new Request<ControlDto>
         {
             Method = HttpMethod.Patch,
             Route = $"api/v1/devices/{dto.DeviceId}/controls/{dto.Id}",

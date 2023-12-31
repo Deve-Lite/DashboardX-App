@@ -17,7 +17,7 @@ public class Control : BaseModel
         Type = ControlType.Text;
     }
 
-    public Control(string newId, ControlDTO dto)
+    public Control(string newId, ControlDto dto)
     {
         Id = newId;
         DeviceId = dto.DeviceId;
@@ -30,7 +30,7 @@ public class Control : BaseModel
         IsAvailable = dto.IsAvailable;
         IsConfiramtionRequired = dto.IsConfiramtionRequired;
         NotifyOnPublish = dto.NotifyOnPublish;
-        Attributes = dto.Attributes.Copy();
+        Attributes = dto.Attributes.Model();
     }
 
     #endregion
@@ -51,9 +51,9 @@ public class Control : BaseModel
     public bool NotifyOnPublish { get; set; } = false;
     public ControlAttributes Attributes { get; set; } = new();
 
-    public bool IsSubscribed { get; set; } = false;
+    public ControlSubscribeStatus SubscribeStatus { get; set; } = ControlSubscribeStatus.NotAttempt;
 
-    public ControlDTO Dto() => new ControlDTO
+    public ControlModel ToModel() => new ControlModel
     {
         Id = Id,
         DeviceId = DeviceId,
@@ -66,7 +66,6 @@ public class Control : BaseModel
         IsAvailable = IsAvailable,
         IsConfiramtionRequired = IsConfiramtionRequired,
         NotifyOnPublish = NotifyOnPublish,
-        Attributes = Attributes.Copy(),
     };
 
     public bool ShouldBeSubscribed()
@@ -94,7 +93,7 @@ public class Control : BaseModel
         Attributes = newControl.Attributes.Copy();
     }
 
-    public static Control FromDto(ControlDTO x) => new Control
+    public static Control FromDto(ControlDto x) => new Control
     {
         Id = x.Id,
         DeviceId = x.DeviceId,
@@ -107,6 +106,25 @@ public class Control : BaseModel
         IsAvailable = x.IsAvailable,
         IsConfiramtionRequired = x.IsConfiramtionRequired,
         NotifyOnPublish = x.NotifyOnPublish,
-        Attributes = x.Attributes.Copy(),
+        Attributes = x.Attributes.Model(),
     };
+
+    public ControlDto Dto()
+    {
+        return new ControlDto
+        {
+            Id = Id,
+            DeviceId = DeviceId,
+            Name = Name,
+            Icon = Icon.Copy(),
+            Topic = Topic,
+            Type = Type,
+            QualityOfService = QualityOfService,
+            DisplayName = DisplayName,
+            IsAvailable = IsAvailable,
+            IsConfiramtionRequired = IsConfiramtionRequired,
+            NotifyOnPublish = NotifyOnPublish,
+            Attributes = Attributes.Dto(),
+        };
+    }
 }

@@ -1,0 +1,63 @@
+﻿@inject IStringLocalizer<SliderForm> _localizer
+
+@inherits ControlBaseForm
+
+<MudForm @ref="Form"
+         Model="@Model"
+         Validation="@(Validator.ValidateValue)"
+         ValidationDelay="0"
+         Class="m-0 p-0 w-100">
+    <MudGrid Class="m-0 p-0 w-100">
+        <MudItem xs="12">
+            <MudText>
+                @_localizer["Slider control sending payload is to broker when slided. Current slided value will be matched to $value field."]
+            </MudText>
+        </MudItem>
+
+        <MudItem xs="6">
+            <MudNumericField @bind-Value="Model.MinValue"
+                             T="double"
+                             Label="@_localizer["Slider Min"]"
+                             OnlyValidateIfDirty="true"
+                             HelperText="@_localizer["Minimal slider value."]"
+                             Variant="Variant.Filled"
+                             For="@(() => Model.MinValue)" />
+        </MudItem>
+
+        <MudItem xs="6">
+            <MudNumericField @bind-Value="Model.MaxValue"
+                             T="double"
+                             Label="@_localizer["Slider Max"]"
+                             OnlyValidateIfDirty="true"
+                             HelperText="@_localizer["Maximal slider value."]"
+                             Variant="Variant.Filled"
+                             For="@(() => Model.MaxValue)" />
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudTextField @bind-Value="Model.PayloadTemplate"
+                          T="string"
+                          Lines="5"
+                          Label="@_localizer["Payload Template"]"
+                          Variant="Variant.Filled"
+                          OnlyValidateIfDirty="true"
+                          Class="p-0 m-0"
+                          HelperText="@_localizer["Provide payload to be send on click with inserted value."]"
+                          For="@(() => Model.PayloadTemplate)" />
+        </MudItem>
+
+        <MudItem xs="6">
+            <MudButton Variant="Variant.Filled" Color="Color.Tertiary" OnClick="InsertMapping">
+                @_localizer["Insert $value"]
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</MudForm>
+
+@code 
+{
+    private void InsertMapping()
+    {
+        Model.PayloadTemplate += "$value";
+    }
+}

@@ -1,0 +1,17 @@
+﻿@inject IStringLocalizer<TextForm> _localizer
+
+@inherits ControlBaseForm
+
+<MudForm @ref="Form"
+         Model="@Model"
+         Validation="@(Validator.ValidateValue)"
+         ValidationDelay="0"
+         Class="m-0 p-0 w-100">
+    <MudGrid Class="m-0 p-0 w-100">
+        <MudItem xs="12">
+            <MudText>
+                @_localizer["Text control just displays last recveived data on topic."]
+            </MudText>
+        </MudItem>
+    </MudGrid>
+</MudForm>
