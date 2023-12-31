@@ -4,6 +4,11 @@ namespace Common.Controls.Models;
 
 public class ControlModel : BaseModel
 {
+    public ControlModel()
+    {
+        Type = ControlType.Text;
+    }
+
     public string DeviceId { get; set; } = string.Empty;
 
     public string Name { get; set; } = string.Empty;

@@ -53,7 +53,7 @@ public class Control : BaseModel
 
     public ControlSubscribeStatus SubscribeStatus { get; set; } = ControlSubscribeStatus.NotAttempt;
 
-    public ControlModel FormModel() => new ControlModel
+    public ControlModel ToModel() => new ControlModel
     {
         Id = Id,
         DeviceId = DeviceId,

@@ -204,7 +204,7 @@
     [Parameter]
     public string ClientId { get; set; } = string.Empty;
 
-    public ControlValidator Validator = new();
+    public ControlModelValidator Validator = new();
     public ControlBaseForm SubForm { get; set; } = new();
 
     public bool FirstPage { get; set; } = true;
@@ -214,38 +214,8 @@
 
     private void TypeChanged(ControlType typeSelected)
     {
-        AttributesModel = new();
-        AttributesModel.Type = typeSelected;
-
-        switch (typeSelected)
-        {
-            case ControlType.Slider:
-                AttributesModel.PayloadTemplate = string.Empty;
-                AttributesModel.MinValue = 0;
-                AttributesModel.MaxValue = 100;
-                break;
-            case ControlType.Switch or ControlType.State:
-                AttributesModel.OnPayload = string.Empty;
-                AttributesModel.OffPayload = string.Empty;
-                break;
-            case ControlType.Button:
-                AttributesModel.Payload = string.Empty;
-                break;
-            case ControlType.Radio:
-                AttributesModel.Payloads = new();
-                break;
-            case ControlType.DateTime:
-                AttributesModel.SendAsTicks = false;
-                AttributesModel.PayloadTemplate = string.Empty;
-                break;
-            case ControlType.Color:
-                AttributesModel.PayloadTemplate = string.Empty;
-                AttributesModel.ColorFormat = ColorFormat.HexRGB;
-                break;
-            default:
-                break;
-        }
-
+        Model.Type = typeSelected;
+        AttributesModel = new(typeSelected);
         StateHasChanged();
     }
 
@@ -290,7 +260,7 @@
         if (!isSubFormValid)
             return result;
 
-        ControlDto dto = new();
+        var dto = new ControlDto(Model, AttributesModel);
 
         if (string.IsNullOrEmpty(Model.Id))
             result = await _controlService.CreateControl(ClientId, dto);

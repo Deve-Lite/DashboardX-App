@@ -83,12 +83,13 @@ public class ControlAttributes
         };
     }
 
-    public ControlAttributesModel FormModel()
+    public ControlAttributesModel ToModel(ControlType type)
     {
         var payloads = Payloads == null ? null : new Dictionary<string, string>(Payloads);
 
         return new()
         {
+            Type = type,
             Payload = Payload,
             Payloads = payloads,
             OnPayload = OnPayload,

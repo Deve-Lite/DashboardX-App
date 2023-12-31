@@ -1,6 +1,4 @@
-﻿using Common.Controls.Extensions;
-
-namespace Common.Controls.Models;
+﻿namespace Common.Controls.Models;
 
 public class ControlAttributesDto
 {
@@ -95,10 +93,10 @@ public class ControlAttributesDto
 
     public static ControlAttributesDto Text()
     {
-        return null;
+        return new ControlAttributesDto();
     }
 
-    public  ControlAttributes Model()
+    public ControlAttributes Model()
     {
         return new ControlAttributes
         {

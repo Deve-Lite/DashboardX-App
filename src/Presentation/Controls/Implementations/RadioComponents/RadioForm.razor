@@ -14,48 +14,38 @@
             </MudText>
         </MudItem>
 
-        <MudItem xs="12">
-            <MudForm @ref="RadioOptionForm"
-                     Class="m-0 p-0 w-100"
-                     Model="@RadioOptions"
-                     Validation="@(RadioValidator.ValidateValue)"
-                     ValidationDelay="0">
-                <MudGrid Class="m-0 p-0 w-100">
-                    <MudItem xs="12" Class="m-0 p-0 pt-2">
-                        <MudTextField @bind-Value="RadioOptions.Payload"
-                                      T="string"
-                                      Lines="4"
-                                      OnlyValidateIfDirty="true"
-                                      Class="p-0 m-0"
-                                      Label="@_localizer["Payload"]"
-                                      Variant="Variant.Filled"
-                                      HelperText="@_localizer["Provide payload to be send on click."]"
-                                      For="@(() => RadioOptions.Payload)" />
-                    </MudItem>
+        <MudItem xs="12" Class="m-0 p-0 pt-2">
+            <MudTextField @bind-Value="RadioOptions.Payload"
+                          T="string"
+                          Lines="4"
+                          OnlyValidateIfDirty="true"
+                          Class="p-0 m-0"
+                          Label="@_localizer["Payload"]"
+                          Variant="Variant.Filled"
+                          HelperText="@_localizer["Provide payload to be send on click."]"
+                          For="@(() => RadioOptions.Payload)" />
+        </MudItem>
 
-                    <MudItem xs="8" Class="m-0 p-0 pt-2">
-                        <MudTextField @bind-Value="RadioOptions.Name"
-                                      T="string"
-                                      Label="@_localizer["Option Name"]"
-                                      Variant="Variant.Filled"
-                                      OnlyValidateIfDirty="true"
-                                      Clearable="true"
-                                      Class="p-0 m-0"
-                                      HelperText="@_localizer["Provide meaningful name for option."]"
-                                      For="@(() => RadioOptions.Name)" />
-                    </MudItem>
+        <MudItem xs="8" Class="m-0 p-0 pt-2">
+            <MudTextField @bind-Value="RadioOptions.Name"
+                          T="string"
+                          Label="@_localizer["Option Name"]"
+                          Variant="Variant.Filled"
+                          OnlyValidateIfDirty="true"
+                          Clearable="true"
+                          Class="p-0 m-0"
+                          HelperText="@_localizer["Provide meaningful name for option."]"
+                          For="@(() => RadioOptions.Name)" />
+        </MudItem>
 
-                    <MudItem xs="4" Class="d-flex justify-content-center align-items-center m-0 p-0 pt-2">
-                        <MudButton OnClick="AddOption"
-                                   Size="Size.Medium"
-                                   Variant="Variant.Filled"
-                                   Color="Color.Tertiary"
-                                   EndIcon="@Icons.Material.Filled.Add">
-                            @_localizer["Add"]
-                        </MudButton>
-                    </MudItem>
-                </MudGrid>
-            </MudForm>
+        <MudItem xs="4" Class="d-flex justify-content-center align-items-center m-0 p-0 pt-2">
+            <MudButton OnClick="AddOption"
+                       Size="Size.Medium"
+                       Variant="Variant.Filled"
+                       Color="Color.Tertiary"
+                       EndIcon="@Icons.Material.Filled.Add">
+                @_localizer["Add"]
+            </MudButton>
         </MudItem>
 
         <MudItem xs="12">
@@ -87,15 +77,19 @@
 </MudForm>
 
 @code {
-    public MudForm RadioOptionForm = new();
     public RadioOption RadioOptions = new();
-    public RadioOptionValidator RadioValidator = new();
+    public new RadioOptionValidator Validator = new();
+
+    public override Task<bool> IsValid()
+    {
+        return Task.FromResult(Model.Payloads.Any());
+    }
 
     private async Task AddOption()
     {
-        await RadioOptionForm.Validate();
+        await Form.Validate();
 
-        if (!RadioOptionForm.IsValid)
+        if (!Form.IsValid)
             return;
 
         if (Model!.Payloads!.ContainsKey(RadioOptions.Name))

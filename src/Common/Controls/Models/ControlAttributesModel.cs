@@ -16,6 +16,45 @@ public class ControlAttributesModel
     public ColorFormat ColorFormat { get; set; }
     public bool SendAsTicks { get; set; }
 
+    public ControlAttributesModel()
+    {
+        Type = ControlType.Text;
+    }
+
+    public ControlAttributesModel(ControlType type)
+    {
+        Type = type;
+
+        switch (type)
+        {
+            case ControlType.Slider:
+                PayloadTemplate = string.Empty;
+                MinValue = 0;
+                MaxValue = 100;
+                break;
+            case ControlType.Switch or ControlType.State:
+                OnPayload = string.Empty;
+                OffPayload = string.Empty;
+                break;
+            case ControlType.Button:
+                Payload = string.Empty;
+                break;
+            case ControlType.Radio:
+                Payloads = new();
+                break;
+            case ControlType.DateTime:
+                SendAsTicks = false;
+                PayloadTemplate = string.Empty;
+                break;
+            case ControlType.Color:
+                PayloadTemplate = string.Empty;
+                ColorFormat = ColorFormat.HexRGB;
+                break;
+            default:
+                break;
+        }
+    }
+
     public ControlAttributesDto Attributes()
     {
         switch(Type)

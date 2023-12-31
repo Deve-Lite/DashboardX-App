@@ -1,4 +1,5 @@
-﻿using Presentation.Controls.Dialogs;
+﻿using Presentation.Clients;
+using Presentation.Controls.Dialogs;
 
 namespace Presentation.Controls;
 
@@ -20,13 +21,13 @@ public static class ControlPagesUtils
         var result = await dialog.Result;
     }
 
-    public static async Task UpdateControl(IDialogService dialogService, Control control, string DeviceId)
+    public static async Task UpdateControl(IDialogService dialogService, Control control, string ClientId)
     {
         var parameters = new DialogParameters<UpsertControlDialog>
         {
-            {  x => x.ClientId, DeviceId },
-            {  x => x.Model, control.FormModel() },
-            {  x => x.AttributesModel, control.Attributes.FormModel() }
+            {  x => x.ClientId, ClientId },
+            {  x => x.Model, control.ToModel() },
+            {  x => x.AttributesModel, control.Attributes.ToModel(control.Type) }
         };
 
         var options = new DialogOptions()

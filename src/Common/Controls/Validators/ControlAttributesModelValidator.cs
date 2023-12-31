@@ -1,10 +1,11 @@
 ﻿using Common.Controls.Models;
+using Microsoft.Extensions.Localization;
 
 namespace Common.Controls.Validators;
 
-public class ControlAttributesValidator : BaseValidator<ControlAttributesModel>
+public class ControlAttributesModelValidator : BaseValidator<ControlAttributesModel>
 {
-    public ControlAttributesValidator() : base()
+    public ControlAttributesModelValidator(IStringLocalizer<ControlAttributesModelValidator> _localizer) : base()
     {
         RuleFor(x => x.Payload)
             .Length(1, 128)
@@ -12,6 +13,8 @@ public class ControlAttributesValidator : BaseValidator<ControlAttributesModel>
 
         RuleFor(x => x.PayloadTemplate)
             .Length(1, 256)
+            .Must(x => x.Contains("$value"))
+            .WithMessage(_localizer["Payload template must contain $value"])
             .When(x => x.Type == ControlType.Slider || x.Type == ControlType.DateTime || x.Type == ControlType.Color);
 
         RuleFor(x => x.MinValue)
