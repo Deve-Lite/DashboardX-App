@@ -5,7 +5,7 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
-		<Version>0.0.5</Version>
+		<Version>0.1.0</Version>
 		<Authors>Łukasz Kolber</Authors>
 	</PropertyGroup>
 
