@@ -2,6 +2,7 @@ using Presentation;
 using Presentation.Auth;
 using Presentation.Brokers;
 using Presentation.Controls;
+using Presentation.DataSync;
 using Presentation.Devices;
 using Presentation.Users;
 
@@ -16,6 +17,7 @@ builder.AddAuthServices();
 builder.AddClientServices();
 builder.AddUserServices();
 builder.AddApplicationServices();
+builder.AddDataSyncServices();
 
 var host = builder.Build();
 

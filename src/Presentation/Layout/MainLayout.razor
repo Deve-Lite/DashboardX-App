@@ -1,3 +1,4 @@
+@using Presentation.DataSync;
 @using Presentation.Utils;
 @using Presentation.Extensions;
 @using Presentation.Layout.Navigation;
@@ -7,6 +8,7 @@
 @inject ILocalStorageService _localStorage
 @inject IPrefrenceService _preferenceService
 @inject IClientService _clientService
+@inject ISynchronizer _synchronizer
 
 @inherits LayoutComponentBase
 
@@ -58,6 +60,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await _synchronizer.Connect();
+
         _preferenceService.OnPreferenceChange = async (preferences) =>
         {
             try
