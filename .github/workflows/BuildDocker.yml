@@ -1,9 +1,14 @@
 name: Build Docker Containers
 
-on:
+on:  
+  pull_request:
+    branches:
+    - main
+    - development
   push:
     branches:
       - main 
+      - development
 
 jobs:
   build:
